@@ -1,0 +1,1 @@
+# (Limpeza e normalização de dados de Selenium/CSV)

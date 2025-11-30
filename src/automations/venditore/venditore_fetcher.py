@@ -1,0 +1,1 @@
+# (IMAPlib/POP3: Lógica para baixar o CSV por e-mail)

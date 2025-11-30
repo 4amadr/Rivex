@@ -1,0 +1,1 @@
+# (Extração de Dados via API/requests)

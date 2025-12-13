@@ -124,22 +124,29 @@ class TokenCallix:
             if 'engine' in locals():
                 engine.dispose()
 
-cliente_site = ['essence', 'investe_mais', 'corplar',
+cliente_site = [
+                    'informacred',
+                    'connection', 'ello_consultoria',
+                    'essence', 'investe_mais', 'corplar',
                     'quality', 'lunart3', 'valm',
-                    'datateck', 'rdf', 'credbi', 'money_solutions']
+                    'datateck', 'rdf', 'credbi', 'money_solutions'
+                ]
 
 users = [
-    'login_callix_essence', 'login_callix_investe_mais', 'login_callix_corplar',
+            'login_informacred', 'login_connection', 'login_ello_consultoria',
+            'login_callix_essence', 'login_callix_investe_mais', 'login_callix_corplar',
             'login_callix_quality','login_callix_lunart3', 'login_callix_valm',
              'login_callix_datateck',
             'login_callix_rdf', 'login_callix_credbi', 'login_callix_money_solutions'
          ]
 
 passwords = [
-    'senha_callix_essence', 'senha_callix_inteste_mais', 'senha_callix_corplar',
+                'senha_informacred', 'senha_connection', 'senha_ello_consultoria',
+                'senha_callix_essence', 'senha_callix_inteste_mais', 'senha_callix_corplar',
                 'senha_callix_quality', 'senha_callix_lunart3', 'senha_callix_valm',
                 'senha_callix_datateck',
                 'senha_callix_rdf', 'senha_callix_credbi','senha_callix_money_solutions'
+
 ]
 
 
@@ -156,11 +163,12 @@ if __name__ == '__main__':
             database = tc.create_df(token_callix, cliente)
             tc.create_database_tokens(database)
             print(f'\nTokens coletados com sucesso no site {cliente}')
+            driver.quit()
+            time.sleep(3)
         except Exception as e:
             print(f'\nERRO: ao coletar os tokens do callix no site {cliente}', e)
             continue
+            driver.quit()
 
-
-driver.quit()
 print('Driver fechado!')
 

@@ -14,6 +14,7 @@ import argparse
 import callix_token_db
 from callix_token_db import CallixDB
 
+
 load_dotenv()
 
 class CallixAPI:
@@ -35,6 +36,9 @@ class CallixAPI:
         link_tratado = f"{cliente_link.lower().replace(' ', '')}contech"
 
         url = f"https://{link_tratado}.callix.com.br/api/v1/campaign_completed_calls"
+
+        print(f'url da vez {url}')
+        print(f'token da vez {token}')
 
         print(f'Cliente selecionado {link_tratado}')
 
@@ -178,24 +182,119 @@ class CallixAPI:
             recusadas = 0
             return recusadas
 
+    def performace_usuario(self, cliente_link, ano, mes, dia, token):
+        '''Função para coletar a performace dos usuários'''
+        data_inicio = f"{ano}-{mes:02d}-{dia:02d}T00:00:00.000Z"
+        data_fim = f"{ano}-{mes:02d}-{dia:02d}T23:59:59.999Z"
+
+        # tratar a requisição
+        # alguns clientes vem com nome capitalizado e sem o sufixo "contech"
+        link_tratado = f"{cliente_link.lower().replace(' ', '')}contech"
+
+        url = f"https://{link_tratado}contech.callix.com.br/api/v1/user_performance_reports"
+
+        print(f'Cliente selecionado {cliente_link}')
+
+        querystring = {
+            "filter[date]": f"{data_inicio},{data_fim}"
+        }
+
+        headers = {
+            "Content-Type": "application/json",
+            "Authorization": f"Bearer {token}"
+        }
+        try:
+            response = requests.request("GET", url, headers=headers, params=querystring)
+            if response.status_code == 200:
+                performace = response.json()
+                print(f"Performace do usuário: {cliente_link} coletada")
+                return performace
+
+            else:
+                print(f"Erro em essence requisição bloqueada para a requisição de pérformace para o cliente {cliente_link}: {response.status_code}")
+                print(f" {response.text}")
+                return None
+
+        except Exception as e:
+            print(f"Erro em essence ao buscar dados de performace: {e} do cliente {cliente_link}")
+            return None
+
+    def limpeza_json(self, performace_suja, cliente_link):
+        '''Função para limpar o arquivo .json pegando apenas os dados que importam
+        nesse caso em especifico o ID do agente + quantas chamadas ele fez'''
+
+        print(f'Iniciando limpeza do .JSON do cliente {cliente_link}')
+
+        # vou criar um dicionario vazio para depois adicionar o ID do cliente e quantas chamadas cada ID fez
+        dados_agente = {}
+        try:
+            if 'data' in performace_suja:
+                data = performace_suja['data']
+                for identific in data:
+                    if 'id' in identific:
+                        # id de cada agente coletado
+                        dados_agente['ID Agente'] = identific['id']
+        except Exception as erro_coleta_id:
+            print(f'Ocorreu um erro para gerar o ID dos agentes para o Cliente {cliente_link}.\nDetalhes do erro: {erro_coleta_id}')
+            return None
+
+        try:
+            # lógica para pegar as chamadas de cada cliente
+            for atributo in data:
+                if 'attributes' in atributo:
+                    dados_chamadas = atributo['attributes']
+                    if 'answered_count' in dados_chamadas:
+                        dados_agente['Chamadas Manuais'] = dados_chamadas['manual_calls']
+                        dados_agente['Tempo medio de serviço'] = dados_chamadas['average_service_time']
+                        dados_agente['Chamadas de campanha'] = dados_chamadas['campaign_calls']
+                        dados_agente['Chamadas Regeitadas'] = dados_chamadas['reject_count']
+                        dados_agente['Chamadas Respondidas'] = dados_chamadas['answered_count']
+                        dados_agente['Tempo total (Segundos)'] = dados_chamadas['total']
+                        dados_agente['Tempo Disponível (Segundos)'] = dados_chamadas['available_time']
+                        dados_agente['Tempo em Ligação (Segundos)'] = dados_chamadas['in_call_time']
+                        dados_agente['Tempo em chamadas manuais (Segundos)'] = dados_chamadas['manual_call_time']
+                        return dados_agente
+        except Exception as erro_coleta_chamadas_agente:
+            print(f'Erro durante a coleta de chamadas de cada agente para o cliente: {cliente_link}: {erro_coleta_chamadas_agente}')
+            return None
+
+
 
 
 if __name__ == '__main__':
-    print('iniciando coleta de dados de telefonia no callix...')
+    print('\niniciando coleta de dados de telefonia no callix...')
     # vou gerar a data formatada para inserir no dataframe posteriormente
     # definindo a data como ontem
 
     dia = int(datetime.today().day)
     ontem = dia - 1
+    # para verificações nas segundas feiras
+    sexta = dia - 3
+    # para verificações aos sabados
+    #ontem = 28
     mes = int(datetime.today().month)
+    #mes = 11
     ano = int(datetime.today().year)
     hoje = date.today()
     ontem_data = hoje - timedelta(days=1)
     ontem_formatado = ontem_data.strftime('%d/%m/%Y')
 
     try:
-        clientes_ativos = ['Essence', 'investmais', 'Corplar', 'Quality', 'Lunart 3',
-                        'valm', 'Datateck', 'RDF', 'afsilva', 'Money Solutions']
+        clientes_ativos = [
+            'investmais',  # 1. investmaiscontech...
+            'valm',  # 2. valmcontech...
+            'Money Solutions',  # 3. moneysolutionscontech...
+            'Essence',  # 4. essencecontech...
+            'Corplar',  # 5. corplarcontech...
+            'Datateck',  # 6. datateckcontech...
+            'RDF',  # 7. rdfcontech...
+            'afsilva',  # 8. afsilvacontech...
+            'informacred',  # 9. informacredcontech...
+            'connection',  # 10. connectioncontech...
+            'elloconsultoria',  # 11. elloconsultoriacontech...
+            'Quality',  # 12. qualitycontech...
+            'Lunart 3'  # 13. lunart3contech...
+        ]
         
         cd = CallixDB()
         token_db, cliente_db = cd.get_token_and_client_from_db()
@@ -216,19 +315,23 @@ if __name__ == '__main__':
         recusadas_lista = []
         totais_lista = []
         data_lista = []
+        agentes_lista = []
         
         print(f"Quantidade de clientes: {len(clientes_ativos)}")
         for cliente_site, token in zip(CA.cliente, CA.token):
             try:
 
-                print(f'Coletando dados do cliente {cliente_site} dia {ontem}-{mes}-{ano}... ')
-
+                print(f'\nColetando dados do cliente {cliente_site} dia {ontem}/{mes}/{ano}... ')
+                time.sleep(10)
+                print('Proteção de segurança para evitar o erro 429')
                 completas_bruto = CA.chamadas_completas(cliente_site, ano, mes, ontem, token)
-                time.sleep(2)
+                time.sleep(15)
                 recusadas_bruto = CA.chamadas_recusadas_brutas(cliente_site, ano, mes, ontem, token)
-                print('Coletando chamadas abandonadas, aguarde um minuto...')
+                print('\nColetando chamadas abandonadas, aguarde um minuto...')
                 time.sleep(60)
                 abandonadas_bruto = CA.chamadas_abandonadas(cliente_site, ano, mes, ontem, token)
+                performace_suja = CA.performace_usuario()
+                agente_e_chamadas = CA.limpeza_json(performace_suja)
 
                 print(f'Todas os dados de chamadas de {cliente_site} foram coletadas em .JSON, iniciando agora a conversão')
 
@@ -253,7 +356,8 @@ if __name__ == '__main__':
                     'Chamadas': totais,
                     'Completas': completas,
                     'Recusadas': recusadas,
-                    'Abandonadas': abandonadas
+                    'Abandonadas': abandonadas,
+                    'Dados Por agente': agente_e_chamadas,
                 }
                 print("\nInformações de Consumo do Cliente")
 
@@ -275,12 +379,13 @@ if __name__ == '__main__':
             'Chamadas': totais_lista,
             'Completas': completas_lista,
             'Recusadas': recusadas_lista,
-            'Abandonadas': abandonadas_lista
+            'Abandonadas': abandonadas_lista,
+            'Agentes': agente_e_chamadas,
         }
                 
         print('Gerando agora o arquivo .csv')
         df = pd.DataFrame(dados_clientes_completos)
-        df.to_csv(f'clientes_callix_dia{ontem}.csv', columns=['Cliente', 'Data', 'Chamadas', 'Completas',
+        df.to_csv(f'clientes_callix_dia{ontem}-{mes}-{ano}.csv', columns=['Cliente', 'Data', 'Chamadas', 'Completas',
         'Recusadas', 'Abandonadas'])
         print('Arquivo gerado com sucesso!')
     except Exception as erro_df:

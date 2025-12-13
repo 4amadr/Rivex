@@ -18,45 +18,111 @@ import re
 load_dotenv()
 
 
-def select_date():
-    hoje = date.today()
-    dia_semana = hoje.weekday()  # segunda = 0
 
-    if dia_semana == 0:  # se for segunda feira vai dar a lógica para coleta de dados para sexta e sabado
-        sexta = hoje - timedelta(days=3)
-        sabado = hoje - timedelta(days=2)
-        ontem = hoje - timedelta(days=1)
-    else:
-        ontem = hoje - timedelta(days=1)
-        sexta = ontem - timedelta(days=(ontem.weekday() - 4) % 7)
-        sabado = ontem - timedelta(days=(ontem.weekday() - 5) % 7)
-    return sexta, sabado, ontem, dia_semana
-
-
-
-def selecionar_dia(driver, dia_da_coleta, periodo):
-    """Seleciona o dia de ontem no calendário do Maxima VoIP."""
+def selecionar_dia(driver, data_desejada, periodo):
+    """Seleciona uma data no calendário do Maxima VoIP."""
     fs = FastSelenium(driver, timeout=20)
-    elementos = driver.find_elements('xpath', f'//td[contains(@id,"frmAsrSub:date{periodo}DayCell")][normalize-space(text())="{dia_da_coleta}"]')
+
+    hoje = date.today()
+    precisa_voltar_mes = (data_desejada.month != hoje.month or data_desejada.year != hoje.year)
+
+    if precisa_voltar_mes:
+        try:
+            botao_voltar = f'//*[@id="frmAsrSub:date{periodo}Header"]/table/tbody/tr/td[2]/div'
+            fs.click_button(botao_voltar)
+            print(f"Voltando mês para selecionar {data_desejada}")
+            time.sleep(1.5)
+        except Exception as e:
+            print(f"Erro ao voltar mês:", e)
+            return False
+
+    dia_da_coleta = data_desejada.day
+
+    # XPath que EXCLUI boundary-dates (dias de outros meses)
+    xpath_dia_correto = f'//td[contains(@id,"frmAsrSub:date{periodo}DayCell")][normalize-space(text())="{dia_da_coleta}"][contains(@class,"rich-calendar-btn")]'
+
+    try:
+        print(f"=== Aguardando dia {data_desejada} estar disponível no DOM ===")
+        WebDriverWait(driver, 10).until(
+            EC.presence_of_element_located((By.XPATH, xpath_dia_correto))
+        )
+    except Exception as erro_espera:
+        print(f'Timeout aguardando o dia {dia_da_coleta} aparecer.')
+        return False
+
+    # Buscar apenas elementos com rich-calendar-btn (dias do mês correto)
+    elementos = driver.find_elements('xpath', xpath_dia_correto)
+
+    print(f"=== Buscando dia {data_desejada}: {len(elementos)} elementos encontrados ===")
+
     for elemento in elementos:
         dia = elemento.text.strip()
         if dia == str(dia_da_coleta):
-            print(f'Elemento do dia:{dia}, dia selecionado {dia_da_coleta}, quantidade de elementos {len(elementos)}')
+            print(f'Clicando no dia correto: {dia} (data: {data_desejada})')
             try:
+                driver.execute_script("arguments[0].scrollIntoView(true);", elemento)
+                time.sleep(0.3)
                 elemento.click()
-            except Exception as e:
-                print("Nem o JS conseguiu clicar, aí é derrota total:", e)
-                return False
+                print(f"✓ Dia {data_desejada} selecionado com sucesso!")
+                return True
+            except Exception as erro_clique:
+                print(f'Erro ao clicar:', erro_clique)
+                try:
+                    driver.execute_script("arguments[0].click();", elemento)
+                    print(f"✓ Dia {data_desejada} selecionado via JS!")
+                    return True
+                except Exception as erro_js:
+                    print(f"Erro no JS click:", erro_js)
+                    return False
+
+    print(f"Nenhum dia válido {data_desejada} encontrado")
+    return False
 
 
-def selecionar_dia_minutagem_custo(driver, periodo, dia_selecionado):
-    '''Seleciona dia do mês atual'''
+def selecionar_dia_minutagem_custo(driver, data_desejada, periodo):
+    '''Seleciona dia no calendário, voltando mês se necessário'''
+    from datetime import date, timedelta
+
     fs = FastSelenium(driver, timeout=20)
 
-    xpath = f'//td[contains(@id,"frmCdr:date{periodo}DayCell") and normalize-space()="{dia_selecionado}"]'
-    elementos = driver.find_elements('xpath', xpath)
+    # Converter para date se for string ou int
+    if isinstance(data_desejada, (int, str)):
+        # Se passou só o dia, calcular ontem
+        data_ontem = date.today() - timedelta(days=1)
+        dia_selecionado = int(data_desejada)
+        data_desejada = data_ontem  # usar data de ontem para verificar mês
+    else:
+        # Já é um objeto date
+        dia_selecionado = data_desejada.day
 
-    print(f"=== Buscando dia {dia_selecionado}: {len(elementos)} elementos encontrados ===\n")
+    hoje = date.today()
+    precisa_voltar_mes = (data_desejada.month != hoje.month or data_desejada.year != hoje.year)
+
+    if precisa_voltar_mes:
+        try:
+            botao_voltar = f'//*[@id="frmCdr:date{periodo}Header"]/table/tbody/tr/td[2]/div'
+            fs.click_button(botao_voltar)
+            print(f"Voltando mês para selecionar {data_desejada}")
+            time.sleep(1.5)
+        except Exception as e:
+            print(f"Erro ao voltar mês:", e)
+            return False
+
+    # XPath que filtra apenas dias do mês correto
+    xpath_dia_correto = f'//td[contains(@id,"frmCdr:date{periodo}DayCell")][normalize-space(text())="{dia_selecionado}"][contains(@class,"rich-calendar-btn")]'
+
+    try:
+        print(f"=== Aguardando dia {data_desejada} estar disponível no DOM ===")
+        WebDriverWait(driver, 10).until(
+            EC.presence_of_element_located((By.XPATH, xpath_dia_correto))
+        )
+    except Exception as erro_espera:
+        print(f'Timeout aguardando o dia {dia_selecionado} aparecer.')
+        return False
+
+    elementos = driver.find_elements('xpath', xpath_dia_correto)
+
+    print(f"=== Buscando dia {data_desejada}: {len(elementos)} elementos encontrados ===\n")
 
     for i, elemento in enumerate(elementos):
         classes = elemento.get_attribute('class') or ""
@@ -64,20 +130,19 @@ def selecionar_dia_minutagem_custo(driver, periodo, dia_selecionado):
 
         print(f"Elemento [{i}]: ID={elem_id}, Classes={classes}")
 
-        # FILTRO: Apenas dias com rich-calendar-btn E SEM boundary-dates
         if "rich-calendar-btn" in classes and "rich-calendar-boundary-dates" not in classes:
             try:
                 time.sleep(0.5)
                 driver.execute_script("arguments[0].scrollIntoView({block: 'center'});", elemento)
                 time.sleep(0.3)
                 driver.execute_script("arguments[0].click();", elemento)
-                print(f"✓ Clique executado no elemento [{i}] - dia {dia_selecionado} do mês atual\n")
+                print(f"✓ Clique executado no elemento [{i}] - dia {data_desejada} selecionado\n")
                 return True
             except Exception as e:
                 print(f"ERRO ao clicar: {e}")
                 continue
 
-    print(f"Nenhum dia válido {dia_selecionado} encontrado\n")
+    print(f"Nenhum dia válido {data_desejada} encontrado\n")
     return False
 
 
@@ -95,7 +160,7 @@ def login_maxima(driver, user_mail, password):
     except Exception as e:
         print('ops, error', e)
 
-def get_asr_maxima(driver, dia_selecionado):
+def get_asr_maxima(driver, dia_selecionado, hoje):
     '''Function to get data from maximavoip rs'''
     fs = FastSelenium(driver, timeout=20)
     try:
@@ -107,10 +172,10 @@ def get_asr_maxima(driver, dia_selecionado):
             selecionar_dia(driver, dia_selecionado, 'from')
         except Exception as erro_dia:
             print('Erro ao selecionar o dia', erro_dia)
+
         # selecionar data final
         fs.click_button('//*[@id="frmAsrSub:datetoInputDate"]')
-        selecionar_dia(driver, dia_selecionado,'to')
-        time.sleep(1)
+        selecionar_dia(driver, dia_selecionado, 'to')
         # clicar de novo no calendario
         fs.click_button('//*[@id="frmAsrSub:datetoInputDate"]')
         # clicar em horario
@@ -140,38 +205,41 @@ def get_asr_maxima(driver, dia_selecionado):
             chamadas = int(chamadas_texto)
         else:
             print("elemento não encontrado")
+            chamadas = 0
         return chamadas
     except Exception as erro_asr:
         print('ops, erro durante configuração do asr', erro_asr)
 
+
 def tratar_dados(minutagem, valor):
     '''função para converter os valores de chamadas e minutagens em float'''
-    if minutagem and valor: # verificação basica se os valores existem
-        if valor:
-            valor = valor.replace(',', '.') # trocar por ponto para facilitar a converção para float
-            try:
-                valor = round(float(valor), 2) # convertendo para float
-            except ValueError:
-                print("Valor invalido de minutagem: ", valor)
-                valor = 0.0
-        else:
-            valor = 0.0
-        print("Valor: ", valor)
 
-        # convertendo a minutagem para float
-        if minutagem:
-            minutagem_texto = minutagem.strip(':')
-            try:
-                h, m, s = map(int, minutagem_texto.split(':'))
-                minutagem_float = h * 60 + m + s / 60
-                print("Minutagem: ", minutagem_float)
-                return minutagem_float, valor
-            except ValueError:
-                print("Erro no tratamento de minutagem: ", minutagem_texto)
-                return False
+    # Se não houver dados válidos, retorna zeros
+    if not minutagem or not valor:
+        print("Dados inválidos recebidos. Minutagem ou valor ausente.")
+        return 0.0, 0.0
+
+    # Processar valor
+    try:
+        valor = valor.replace(',', '.')
+        valor = round(float(valor), 2)
+    except (ValueError, AttributeError):
+        print(f"Valor inválido de custo: {valor}")
+        valor = 0.0
+
+    # Processar minutagem
+    try:
+        minutagem_texto = minutagem.strip(':')
+        h, m, s = map(int, minutagem_texto.split(':'))
+        minutagem_float = h * 60 + m + s / 60
+        print(f"Minutagem: {minutagem_float}, Valor: {valor}")
+        return minutagem_float, valor
+    except (ValueError, AttributeError):
+        print(f"Erro no tratamento de minutagem: {minutagem}")
+        return 0.0, valor  # Retorna valor processado mesmo se minutagem falhar
 
 
-def get_min_value_maxima_voip(driver, dia_coleta):
+def get_min_value_maxima_voip(driver, dia_coleta, hoje):
     '''Função para coletar os valores de custo e minutagem'''
     fs = FastSelenium(driver, timeout=20)
     # ir até chamadas
@@ -179,12 +247,14 @@ def get_min_value_maxima_voip(driver, dia_coleta):
     time.sleep(1)
     # selecionar data inicial
     fs.click_button('//*[@id="frmCdr:datefromInputDate"]')
+    # voltar o mês
     time.sleep(1)
-    selecionar_dia_minutagem_custo(driver, 'from', dia_coleta)
+    selecionar_dia_minutagem_custo(driver, dia_coleta, 'from')
+
     fs.click_button('//*[@id="frmCdr:datetoInputDate"]')
     time.sleep(1)
     # selecionar data final
-    selecionar_dia_minutagem_custo(driver, 'to', dia_coleta)
+    selecionar_dia_minutagem_custo(driver, dia_coleta, 'to')
     #sair
     fs.click_button('//*[@id="frmCdr:tabFilter"]/table/tbody/tr/td')
     # ok
@@ -201,104 +271,6 @@ def get_min_value_maxima_voip(driver, dia_coleta):
         valor_sujo = 0.0
         return False
     return minutagem, valor
-
-def virada_mes_asr(driver):
-    """Função simples utilizada apenas para virar o mês
-    caso a coleta seja realizada entre os dias 1, 2, 3"""
-    fs = FastSelenium(driver, timeout=20)
-    # clique para voltar ao mês anterior
-    try:
-        # clica na opção de asr
-        fs.click_button('//*[@id="iconfrmMenu:j_id49"]')
-        # selecionar data inicial
-        fs.click_button('//*[@id="frmAsrSub:datefromInputDate"]')
-        time.sleep(1)
-        # seleciona o mês anterior
-        fs.click_button('/html/body/table/tbody/tr[4]/td/table/tbody/tr/td[2]/form/table/tbody/tr[2]/td/table/tbody/tr/td/table[1]/tbody/tr[1]/td[2]/div/table/tbody/tr[1]/td/table/tbody/tr/td[2]/div')
-        fs.click_button('//*[@id="frmAsrSub:datefromDayCell33"]')
-        time.sleep(1)
-        # selecionar data final
-        fs.click_button('//*[@id="frmAsrSub:datetoInputDate"]')
-        time.sleep(1)
-        fs.click_button('//*[@id="frmAsrSub:datetoHeader"]/table/tbody/tr/td[2]/div')
-        # selecionar ultimo dia do mês
-        fs.click_button('//*[@id="frmAsrSub:datetoDayCell33"]')
-
-        # clicar de novo no calendario
-        fs.click_button('//*[@id="frmAsrSub:datetoInputDate"]')
-        # clicar em horario
-        fs.click_button('//*[@id="frmAsrSub:datetoFooter"]/table/tbody/tr/td[3]/div')
-        # digitar hora 23
-        hora_final = WebDriverWait(driver, 20).until(
-            EC.element_to_be_clickable((By.CSS_SELECTOR, '#frmAsrSub\\:datetoTimeHours'))
-        )
-        hora_final.clear()
-        hora_final.send_keys("23")
-        minuto_final = WebDriverWait(driver, 20).until(
-            EC.element_to_be_clickable((By.CSS_SELECTOR, '#frmAsrSub\\:datetoTimeMinutes'))
-        )
-        minuto_final.clear()
-        minuto_final.send_keys("59")
-        time.sleep(3)
-        #ok
-        fs.click_button('//*[@id="frmAsrSub:datetoTimeEditorButtonOk"]/span')
-        # ultimo ok
-        fs.click_button('//*[@id="frmAsrSub:j_id100"]')
-        # pegar os dados que interessam
-        chamadas = fs.xpath_data('//*[@id="frmAsrSub:listAsrs:0:j_id113"]')
-        # convertendo para texto
-        if chamadas:
-            # converter para string
-            chamadas_texto = chamadas.strip()
-            # converte para inteiro
-            chamadas = int(chamadas_texto)
-            return chamadas
-        else:
-            print("elemento não encontrado")
-        return 0
-    except Exception as e:
-        print('ops, error', e)
-
-def virada_mes_minutagem_custo(driver):
-    '''Função para coletar dados de custo e minutagem
-    em viradas de mês'''
-    fs = FastSelenium(driver, timeout=20)
-    # ir até chamadas
-    fs.click_button('//*[@id="iconfrmMenu:j_id50"]')
-    time.sleep(1)
-    # selecionar data inicial
-    fs.click_button('//*[@id="frmCdr:datefromInputDate"]')
-    time.sleep(2)
-    # seleciona o mês anterior
-    fs.click_button('/html/body/table/tbody/tr[4]/td/table/tbody/tr/td[2]/form/table/tbody/tr[2]/td/table/tbody/tr/td/table/tbody/tr[1]/td[2]/div/table/tbody/tr[1]/td/table/tbody/tr/td[2]/div')
-    # selecionar o ultimo dia do mes
-    fs.click_button('//*[@id="frmCdr:datefromDayCell33"]')
-    # selecionar data final
-    fs.click_button('/html/body/table/tbody/tr[4]/td/table/tbody/tr/td[2]/form/table/tbody/tr[2]/td/table/tbody/tr/td/table/tbody/tr[1]/td[4]/div/span/input[1]')
-    time.sleep(1)
-    # seleciona o mês anterior
-    fs.click_button('/html/body/table/tbody/tr[4]/td/table/tbody/tr/td[2]/form/table/tbody/tr[2]/td/table/tbody/tr/td/table/tbody/tr[1]/td[4]/div/table/tbody/tr[1]/td/table/tbody/tr/td[2]/div')
-    fs.click_button('//*[@id="frmCdr:datetoDayCell33"]')
-    # selecionar data maxima
-    # sair
-    fs.click_button('//*[@id="frmCdr:tabFilter"]/table/tbody/tr/td')
-    # ok
-    fs.click_button('//*[@id="frmCdr:tabFilter"]/table/tbody/tr/td/div/input[2]')
-    try:
-        minutagem_suja = fs.xpath_data(
-            '/html/body/table/tbody/tr[4]/td/table/tbody/tr/td[2]/form/table/tbody/tr[2]/td/table/tbody/tr/td/table[2]/tfoot/tr/td[2]')
-        minutagem = minutagem_suja.strip(':')
-        valor_sujo = fs.xpath_data(
-            '/html/body/table/tbody/tr[4]/td/table/tbody/tr/td[2]/form/table/tbody/tr[2]/td/table/tbody/tr/td/table[2]/tfoot/tr/td[3]')
-        valor = valor_sujo.strip()
-        print("Minutagem e custo coletados!")
-    except ValueError:
-        print("Erro durante a coleta de minutagem e custo(ANTES DO TRATAMENTO), tipo de erro: Valores invalidos")
-        minutagem_suja = 0.0
-        valor_sujo = 0.0
-        return False
-    return minutagem, valor
-
 
 clientes = [
 
@@ -356,15 +328,21 @@ clientes = [
 
 ]
 
+clientes_teste = [
+{'email': os.getenv('AGS_TELECOM_EMAIL'), 'senha': os.getenv('AGS_TELECOM_PASSWORD'), 'ID': '2261#02', 'cliente': 'AGS Telecom'},
+{'email': os.getenv('IGGO_EMAIL'), 'senha': os.getenv('IGGO_PASSWORD'), 'ID': '2245#01', 'cliente': 'Iggo'}
+]
 # definir o dia como ontem
 hoje = date.today()
 dia_semana = hoje.isoweekday()  # dias da semana, começando por 1 = Segunda
+
+# calculo de datas completas
 ontem_date = hoje - timedelta(days=1)
 dias_ate_sabado = (dia_semana - 6) % 7
 ultimo_sabado = hoje - timedelta(days=dias_ate_sabado if dias_ate_sabado != 0 else 7)
+ultima_sexta = ultimo_sabado - timedelta(days=1)  # sexta é 1 dia antes do sábado
 ontem = ontem_date.day # dia do mês de ontem
 sabado = ultimo_sabado.day # dia do mês que foi sabado
-
 dia_selecionado = ontem
 
 url = 'http://cliente.maximavoip.net:8080/SipPulsePortal/pages/login/login.jsf'
@@ -373,20 +351,37 @@ dados_gerais_sexta = []
 dados_gerais_sabado = []
 dados_gerais = []  # dias normais
 
-def coletar_dados(driver, cliente, data_alvo):
-    """Coleta todos os dados necessários de um cliente para uma data"""
-    print(f"Coletando dados do cliente {cliente['cliente']} para o dia {data_alvo}...")
 
-    minutagem_bruto, valor_bruto = get_min_value_maxima_voip(driver, data_alvo)
-    chamadas = get_asr_maxima(driver, data_alvo)
-    minutagem, valor = tratar_dados(minutagem_bruto, valor_bruto)
+def coletar_dados(driver, cliente, data_inicio, data_fim):
+    """Coleta todos os dados necessários de um cliente para uma data
 
-    return {
+    Args:
+        data_inicio: objeto date com a data a ser consultada
+        data_fim: objeto date com a data final do período (geralmente a mesma data)
+    """
+    print(f"DEBUG: Coletando de {data_inicio} até {data_fim}")
+    print(f"Coletando dados do cliente {cliente['cliente']} para o dia {data_inicio.strftime('%d/%m/%Y')}...")
+
+    minutagem_bruto, valor_bruto = get_min_value_maxima_voip(driver, data_inicio, data_fim)
+    if minutagem_bruto == '00:00:00': # se não teve minutagem não teve consumo
+        chamadas = 0
+        print(f'cliente {cliente["cliente"]} zerado. Pulando')
+        driver.quit()
+        return 0, 0
+    else:
+        chamadas = get_asr_maxima(driver, data_inicio, data_fim)
+        minutagem, valor = tratar_dados(minutagem_bruto, valor_bruto)
+
+    dados = {
+        'Data': data_inicio.strftime('%d/%m/%Y'),
         'cliente': cliente['cliente'],
         'Chamadas': chamadas,
         'minutagem': minutagem,
         'custo': valor,
     }
+    print(dados)
+
+    return dados
 
 
 if __name__ == '__main__':
@@ -395,49 +390,45 @@ if __name__ == '__main__':
         print(f"Coleta atual, Cliente: {cliente['cliente']}")
 
         driver = FastSelenium.run_driver(url)
-        sexta, sabado, ontem, dia_semana = select_date()
 
         login_maxima(driver, cliente.get('email'), cliente.get('senha'))
 
         # caso seja segunda feira, vai coletar os ultimos dados da ultima semana
         # vai buscar por dados de sexta e de sabado
-        if dia_semana == 0:
-            print("coletando sexta e sábado")
+        if dia_semana == 1:  # CORRIGIDO: segunda é 1, não 0
+            print("É segunda-feira! Coletando sexta e sábado")
 
             # Sexta
-            dados = coletar_dados(driver, cliente, sexta)
+            dados = coletar_dados(driver, cliente, ultima_sexta, ultima_sexta)
             dados_gerais_sexta.append(dados)
             print("Dados de sexta coletados.")
 
             # Sábado
-            dados_sabado = coletar_dados(driver, cliente, sabado)
+            dados_sabado = coletar_dados(driver, cliente, ultimo_sabado, ultimo_sabado)
             dados_gerais_sabado.append(dados_sabado)
             print("Dados de sábado coletados.")
 
-
         else:
             print("Iniciando coleta de dados comum")
-            dados = coletar_dados(driver, cliente, ontem.day)
+            dados = coletar_dados(driver, cliente, ontem_date, ontem_date)
             dados_gerais.append(dados)
             print("Dados de ontem da Maxima Voip coletados.")
 
         driver.quit()
 
-
     try:
         if dados_gerais_sexta:
-            pd.DataFrame(dados_gerais_sexta).to_csv(f'dados_sexta-{sexta}.csv', index=False)
+            pd.DataFrame(dados_gerais_sexta).to_csv(f'dados_sexta-{ultima_sexta.day}.csv', index=False)
             print("Arquivo de sexta criado.")
 
         if dados_gerais_sabado:
-            pd.DataFrame(dados_gerais_sabado).to_csv(f'dados_sabado-{sabado}.csv', index=False)
+            pd.DataFrame(dados_gerais_sabado).to_csv(f'dados_sabado-{ultimo_sabado.day}.csv', index=False)
             print("Arquivo de sábado criado.")
 
         if dados_gerais:
-            pd.DataFrame(dados_gerais).to_csv(f'dados_dia-{ontem}.csv', index=False)
+            pd.DataFrame(dados_gerais).to_csv(f'dados_dia-{ontem_date.day}.csv', index=False)
             print("Arquivo de dias normais criado.")
 
     except Exception as erro_csv:
         print("Erro ao gerar arquivos CSV:", erro_csv)
-
 

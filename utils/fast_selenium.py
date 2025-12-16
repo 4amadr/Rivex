@@ -151,19 +151,19 @@ class FastSelenium:
 
     def clique_com_css(self, seletor_css):
         """Função para clicar com o seletor css"""
-    try:
-        # Wait for the element to be visible and clickable
-        # This is crucial for handling dynamic content and ensuring the element is ready for interaction
-        element = WebDriverWait(driver, 10).until(
-            EC.element_to_be_clickable((By.CSS_SELECTOR, seletor_css))
-        )
+        try:
+            # Wait for the element to be visible and clickable
+            # This is crucial for handling dynamic content and ensuring the element is ready for interaction
+            element = WebDriverWait(self.driver, 10).until(
+                EC.element_to_be_clickable((By.CSS_SELECTOR, seletor_css))
+            )
 
-        # Click the element
-        element.click()
+            # Click the element
+            element.click()
 
-        print("Element clicked successfully!")
-    except Exception as e:
-        print(f"An error occurred: {e}")
+            print("Element clicked successfully!")
+        except Exception as e:
+            print(f"An error occurred: {e}")
 
     def coletar_dados_com_seletor_css(self, seletor_css_dados):
         try:

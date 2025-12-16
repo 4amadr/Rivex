@@ -1,0 +1,125 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd" >
+<html xmlns="http://www.w3.org/1999/xhtml">
+ <head>
+  <meta content="text/html; charset=utf-8" http-equiv="Content-Type"/>
+  <link class="component" href="/SipPulsePortal/a4j/s/3_3_3.Finalorg/richfaces/renderkit/html/css/basic_both.xcss/DATB/eAFrvajdHLp8hjQAEgwDtA__.jsf" rel="stylesheet" type="text/css"/>
+  <link class="component" href="/SipPulsePortal/a4j/s/3_3_3.Finalorg/richfaces/renderkit/html/css/extended_both.xcss/DATB/eAFrvajdHLp8hjQAEgwDtA__.jsf" media="rich-extended-skinning" rel="stylesheet" type="text/css"/>
+  <link class="component" href="/SipPulsePortal/a4j/s/3_3_3.Finalcss/toolBar.xcss/DATB/eAFrvajdHLp8hjQAEgwDtA__.jsf" rel="stylesheet" type="text/css"/>
+  <link class="component" href="/SipPulsePortal/a4j/g/3_3_3.Finalorg/richfaces/renderkit/html/css/msg.css.jsf" rel="stylesheet" type="text/css"/>
+  <link class="component" href="/SipPulsePortal/a4j/g/3_3_3.Finalorg/richfaces/renderkit/html/css/msgs.css.jsf" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript">
+   window.RICH_FACES_EXTENDED_SKINNING_ON=true;
+  </script>
+  <script src="/SipPulsePortal/a4j/g/3_3_3.Finalorg/richfaces/renderkit/html/scripts/skinning.js.jsf" type="text/javascript">
+  </script>
+  <link class="user" href="/SipPulsePortal/css/default.css" rel="stylesheet" type="text/css"/>
+  <script src="/SipPulsePortal/jsflot/prototype-1.6.0.2.js.jsf" type="text/javascript">
+  </script>
+  <!--[if IE]><script language="javascript" type="text/javascript" src="/SipPulsePortal/jsflot/base64.js.jsf"></script><![endif]-->
+  <!--[if IE]><script language="javascript" type="text/javascript" src="/SipPulsePortal/jsflot/excanvas.js.jsf"></script><![endif]-->
+  <script src="/SipPulsePortal/jsflot/canvas2image.js.jsf" type="text/javascript">
+  </script>
+  <script src="/SipPulsePortal/jsflot/canvastext.js.jsf" type="text/javascript">
+  </script>
+  <script src="/SipPulsePortal/jsflot/flotr.js.jsf" type="text/javascript">
+  </script>
+  <script src="/SipPulsePortal/jsflot/dateformat.js.jsf" type="text/javascript">
+  </script>
+  <script src="/SipPulsePortal/jsflot/jsflotAjaxscript.js.jsf" type="text/javascript">
+  </script>
+  <script src="/SipPulsePortal/jsflot/logskeleton.js.jsf" type="text/javascript">
+  </script>
+  <title>
+   User Portal
+  </title>
+  <style type="text/css">
+   .rich-messages-marker img {padding-right:7px;}
+              .rich-message-label {color:red;}
+              .top {vertical-align:top;}
+  </style>
+ </head>
+ <body bgcolor="#CCCCCC" style="margin-top:0px; margin-left: 0px">
+  <table align="center" bgcolor="#FFFFFF" border="0" cellpadding="0" cellspacing="0" width="1002">
+   <tr>
+    <td colspan="2">
+     <table border="0" cellpadding="0" cellspacing="0" class="rich-toolbar" height="10" id="j_id8" width="1002">
+      <tr valign="middle">
+       <td style="width:100%">
+       </td>
+      </tr>
+     </table>
+    </td>
+   </tr>
+   <tr>
+    <td width="170">
+     <a href="/SipPulsePortal">
+      <img src="/SipPulsePortal/images/logo-portal.png" style="margin-left: 5px; margin-top: 10px; border: 0px"/>
+     </a>
+    </td>
+    <td align="right">
+    </td>
+   </tr>
+   <tr>
+    <td align="center" colspan="2" style="height: 25px;">
+     <div align="center">
+      <span id="_viewRoot:status">
+       <span id="_viewRoot:status.start" style="display: none">
+        <img src="/SipPulsePortal/images/loading.gif"/>
+        <img alt="" class="rich-spacer" height="1" id="j_id19" src="/SipPulsePortal/a4j/g/3_3_3.Finalimages/spacer.gif.jsf" width="5"/>
+        Processing...
+       </span>
+       <span id="_viewRoot:status.stop">
+        <table cellpadding="0" cellspacing="0" class="rich-messages" id="divMessage" style="display: none; text-align: center; width: 100%">
+         <tbody>
+          <tr>
+           <td>
+           </td>
+          </tr>
+         </tbody>
+        </table>
+       </span>
+      </span>
+     </div>
+    </td>
+   </tr>
+   <tr>
+    <td align="center" colspan="2" height="525" valign="top">
+     <center>
+      <div class="divError500">
+       The user session are expired.
+      </div>
+     </center>
+    </td>
+   </tr>
+   <tr>
+    <td colspan="2">
+     <table border="0" cellpadding="0" cellspacing="0" class="rich-toolbar" height="5" id="j_id31" width="1002">
+      <tr valign="middle">
+       <td style="width:100%">
+       </td>
+      </tr>
+     </table>
+    </td>
+   </tr>
+   <tr>
+    <td colspan="2" height="2">
+    </td>
+   </tr>
+   <tr>
+    <td colspan="2">
+     <table border="0" cellpadding="0" cellspacing="0" class="rich-toolbar" height="22" id="j_id33" width="1002">
+      <tr valign="middle">
+       <td style="width:100%">
+       </td>
+       <td class="rich-toolbar-item" style=";">
+        <span class="textoBranco">
+         Powered by SIP Pulse
+        </span>
+       </td>
+      </tr>
+     </table>
+    </td>
+   </tr>
+  </table>
+ </body>
+</html>

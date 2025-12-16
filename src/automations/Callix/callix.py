@@ -269,7 +269,7 @@ if __name__ == '__main__':
     dia = int(datetime.today().day)
     ontem = dia - 1
     # para verificações nas segundas feiras
-    sexta = dia - 3
+    sexta = dia - 1
     # para verificações aos sabados
     #ontem = 28
     mes = int(datetime.today().month)
@@ -315,7 +315,7 @@ if __name__ == '__main__':
         recusadas_lista = []
         totais_lista = []
         data_lista = []
-        agentes_lista = []
+
         
         print(f"Quantidade de clientes: {len(clientes_ativos)}")
         for cliente_site, token in zip(CA.cliente, CA.token):
@@ -330,8 +330,6 @@ if __name__ == '__main__':
                 print('\nColetando chamadas abandonadas, aguarde um minuto...')
                 time.sleep(60)
                 abandonadas_bruto = CA.chamadas_abandonadas(cliente_site, ano, mes, ontem, token)
-                performace_suja = CA.performace_usuario()
-                agente_e_chamadas = CA.limpeza_json(performace_suja)
 
                 print(f'Todas os dados de chamadas de {cliente_site} foram coletadas em .JSON, iniciando agora a conversão')
 
@@ -357,7 +355,6 @@ if __name__ == '__main__':
                     'Completas': completas,
                     'Recusadas': recusadas,
                     'Abandonadas': abandonadas,
-                    'Dados Por agente': agente_e_chamadas,
                 }
                 print("\nInformações de Consumo do Cliente")
 
@@ -380,7 +377,6 @@ if __name__ == '__main__':
             'Completas': completas_lista,
             'Recusadas': recusadas_lista,
             'Abandonadas': abandonadas_lista,
-            'Agentes': agente_e_chamadas,
         }
                 
         print('Gerando agora o arquivo .csv')

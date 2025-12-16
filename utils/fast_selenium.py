@@ -47,6 +47,16 @@ class FastSelenium:
         except Exception as e:
             print(f'Error trying to click, error type: {e}')
             return False
+
+    def find_class(self, class_name):
+        """Function to find a class by name"""
+        try:
+            element = WebDriverWait(self.driver, 15).until(
+                EC.presence_of_element_located((By.CLASS_NAME, class_name))
+            )
+            return element.text
+        except Exception as e:
+            print(f'Error finding class: {e}')
         
     def xpath_data(self, xpath):
         """"Function to get data from xpath"""

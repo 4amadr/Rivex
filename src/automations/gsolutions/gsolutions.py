@@ -1,6 +1,14 @@
 import os
+import sys
+from pathlib import Path
 from datetime import datetime, date, timedelta
 import requests
+
+# Adiciona o diretório raiz do projeto ao sys.path
+project_root = Path(__file__).parent.parent.parent.parent
+if str(project_root) not in sys.path:
+    sys.path.insert(0, str(project_root))
+
 from utils.fast_selenium import FastSelenium
 from dotenv import load_dotenv
 import time
@@ -29,6 +37,7 @@ class GSolutionsData:
             print(f'Error on login(GSOLUTIONS), type error: {e}')
             return False
 
+
     def get_data_gs(self, driver, operadora):
         '''Function to get data from gs page'''
         try:
@@ -42,14 +51,12 @@ class GSolutionsData:
             gs.select_date()
             fs.click_button('//*[@id="site"]/form/table/tbody/tr[5]/td/div/input')
 
-
-            # para pegar o html da página
-            html = driver.page_source
-            return html
+            return True
         except Exception as erro:
             print(f'Erro no caminho de minutagem e custos {operadora}', erro)
             return False
 
+    
     def select_date(self):
         '''Função para fazer a seleção de data'''
 
@@ -71,32 +78,17 @@ class GSolutionsData:
         except Exception as e:
             print(f'Erro ao selecionar o dia {ontem}', e)
 
-    def req_dados(self, operadora):
+
+    def coleta_dados(self, operadora):
         """Função para pegar o html da página"""
-        print(f'Iniciando tratamento de dados para a operadora {operadora}')
-        html = driver.page_source
-        soup = BeautifulSoup(html, 'html.parser')
-        linhas = soup.find_all("tr")
-        return linhas
+        print(f'Iniciando coleta de dados para a operadora {operadora}')
 
-    def tratamento_html(self, linhas, operadora):
-        '''Função para pegar apenas os dados que precisamos do HTML'''
-        print(f'iniciando tratamento de html para a operadora {operadora}')
+        dados = []
+        fs = FastSelenium(driver, timeout=20)
+        tabela = fs.xpath_data('//*[@id="site"]/table/tbody/tr/td/table')
+        print(tabela)
+        return tabela
 
-        for linha in linhas:
-            tabelas = linha.find_all('table')
-            for tabela in tabelas:
-                linhas_dados = tabela.find_all('td')
-                print(linhas_dados)
-                return linhas_dados
-
-    def remover_html(self, linhas_dados, operadora):
-        '''Função para transformar os dados e remover a marcação HTML deles'''
-        valores = [td.get_text(strip=True) for td in linhas_dados]
-        print(valores)
-        return True
-
-        print(f'Iniciando o tratamento de linhas de dados para a operadora {operadora}')
 
     def go_to_calls_gs(self, driver):
         '''Função para ir até as chamadas tarifadas'''
@@ -127,7 +119,6 @@ class GSolutionsData:
             
             print('opção selecionada')
             time.sleep(5)
-            # falta terminar, está indo até o botão de opções após filtrar.............
 
 if __name__ == '__main__':
     print('Iniciando coleta de dados da GSolutions...')
@@ -139,14 +130,9 @@ if __name__ == '__main__':
         gs = GSolutionsData(login_gs, password_gs, url_gs, operadora)
         driver = FastSelenium.run_driver(url_gs)
         gs.login_gs(login_gs, password_gs, operadora)
-        html = gs.get_data_gs(driver, operadora)
-        linhas = gs.req_dados(operadora)
-        linha_dados = gs.tratamento_html(linhas, operadora)
-        gs.remover_html(linha_dados, operadora)
-        #gs.go_to_calls_gs(driver)
-       # gs.get_chamadas_tarifadas(lista_cliente)
+        cookies = gs.get_data_gs(driver, operadora)
+        conteudo_html = gs.req_dados(operadora, cookies)
         print("Coleta finalizada com sucesso!")
     except Exception as e:
         print(f'ERRO: {e} ao coletar dados da Gsolutions')
         
-    # em desenvolvimento...

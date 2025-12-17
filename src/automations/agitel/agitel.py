@@ -1,4 +1,5 @@
 import os
+import time
 
 import selenium
 from sqlalchemy.ext.horizontal_shard import set_shard_id
@@ -20,7 +21,7 @@ class OperadorasLogin:
         self.url = url
         self.operadora = operadora
 
-    def login(self, login, password, operadora):
+    def login_agitel(self, login, password, operadora):
         '''Login function'''
 
         fs = FastSelenium(driver, timeout=20)
@@ -50,39 +51,50 @@ class OperadorasLogin:
             print(f'Erro ao entrar na página de dados {erro_pag}')
             return False
 
+
+    def selecionar_data(self):
+        '''Função para definir a data a ser inserida no filtro da operadora'''
+        hoje = date.today()
+        ontem = hoje - timedelta(days=1)
+        mes = ontem.month
+        dia = ontem.day
+        ano = ontem.year
+        data_completa = f'{dia}/{mes}/{ano}'
+        print('Dia selecionado', data_completa)
+        return data_completa
+
+
     def config_date(self, operadora):
         '''Select date function'''
-        fs = FastSelenium(driver, timeout=20)
 
-        data_hoje = date.today()
-        ontem = data_hoje - timedelta(days=1)
+        fs = FastSelenium(driver, timeout=20)
+        ol = OperadorasLogin
+        ontem = ol.selecionar_data(self)
 
         try:
             fs.click_button('//*[@id="periodopre"]')
             fs.click_button('//*[@id="periodopre"]/option[5]')
 
-            # selecionei o periodo customizado para dar maior controle sobre a data
+            # selecionei o período customizado para dar maior controle sobre a data
             fs.type_text('//*[@id="periodocustom"]/input[1]', ontem)
+            time.sleep(1)
             fs.type_text('//*[@id="periodocustom"]/input[3]', ontem)
+            print(f'Definindo a data como {ontem}')
             fs.click_button('//*[@id="site"]/form/table/tbody/tr[5]/td/div/input')
             print(f' {operadora} com Dados filtrados')
-            cookies = driver.get_cookies()
-            return cookies
-
+            return True
         except Exception as erro_config:
-            print(f'Erro na operadora {operadora}ao filtrar os dias: {erro_config}')
+            print(f'Erro na operadora {operadora} ao filtrar os dias: {erro_config}')
             return False
 
-    def get_agent_data(self, cookies, url):
+    def coletar_tabela(self):
         '''function to get agent data'''
+        fs = FastSelenium(driver, timeout=20)
 
-        response = requests.get(url, cookies=cookies)
-
-        if response.status_code == 200:
-            dados_operadora = response.text
-            return dados_operadora
-        else:
-            print(f'Requisição mal feita {response.status_code}')
+        # pegar para pegar a tabela
+        tabela_dados = fs.xpath_data('//*[@id="site"]/table/tbody/tr/td/table')
+        print(tabela_dados)
+        return tabela_dados
 
 
 if __name__ == '__main__':
@@ -94,10 +106,10 @@ if __name__ == '__main__':
     try:
         ol = OperadorasLogin(login, password, url_agitel, operadora)
         driver = FastSelenium.run_driver(url_agitel)
-        ol.login(login, password, operadora)
+        ol.login_agitel(login, password, operadora)
         ol.pag_dados()
         cookies = ol.config_date(operadora)
-        ol.get_agent_data(cookies, url_agitel)
+        tabela = ol.coletar_tabela()
     except Exception as erro_login:
         print(f'Erro {erro_login} Durante a coleta de dados')
 

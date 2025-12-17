@@ -1,1 +1,0 @@
-# (Ponto de entrada: Apenas chama o Pipeline_manager)

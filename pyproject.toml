@@ -1,0 +1,19 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "Rivex"
+version = "0.0.3"
+description = "Automacoes Rivex"
+requires-python = ">=3.8"
+dependencies = [
+    "selenium",
+    "webdriver-manager",
+    "urllib3"
+]
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["src*", "utils*"]  
+namespaces = false

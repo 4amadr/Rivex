@@ -1,13 +1,12 @@
 import os
 import time
 
-import selenium
-from sqlalchemy.ext.horizontal_shard import set_shard_id
+from bs4 import BeautifulSoup
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.wait import WebDriverWait
 from webdriver_manager.core import driver
-import requests
 from utils.fast_selenium import FastSelenium
-import dotenv
-from datetime import datetime, timedelta
+from datetime import timedelta
 from datetime import date
 from dotenv import load_dotenv
 import pandas as pd
@@ -51,7 +50,6 @@ class OperadorasLogin:
             print(f'Erro ao entrar na página de dados {erro_pag}')
             return False
 
-
     def selecionar_data(self):
         '''Função para definir a data a ser inserida no filtro da operadora'''
         hoje = date.today()
@@ -62,7 +60,6 @@ class OperadorasLogin:
         data_completa = f'{dia}/{mes}/{ano}'
         print('Dia selecionado', data_completa)
         return data_completa
-
 
     def config_date(self, operadora):
         '''Select date function'''
@@ -87,14 +84,34 @@ class OperadorasLogin:
             print(f'Erro na operadora {operadora} ao filtrar os dias: {erro_config}')
             return False
 
-    def coletar_tabela(self):
+    def coletar_fonte_pagina(self):
         '''function to get agent data'''
         fs = FastSelenium(driver, timeout=20)
-
         # pegar para pegar a tabela
-        tabela_dados = fs.xpath_data('//*[@id="site"]/table/tbody/tr/td/table')
-        print(tabela_dados)
-        return tabela_dados
+        time.sleep(4)
+        html = driver.page_source
+        return html
+
+    def coletar_tabela(self, html):
+        try:
+            soup = BeautifulSoup(html, 'html.parser')
+            tabela = soup.select('table.tabela_azul')[1]
+            if tabela:
+                df = pd.read_html(str(tabela), match='Minutos', header=1)[0]
+                print(df.columns)
+                print(df.shape)
+                print(df.head(3))
+                return df
+            else:
+                print('Não existe tabela')
+                return False
+
+        except Exception as erro_tabela:
+            print('Erro durante a tentativa de transformar a tabela', erro_tabela)
+            return False
+
+    def criar_dataframe(self, tabela_dados):
+        '''Função para transformar a tabela coletada em um dataframe'''
 
 
 if __name__ == '__main__':
@@ -109,7 +126,12 @@ if __name__ == '__main__':
         ol.login_agitel(login, password, operadora)
         ol.pag_dados()
         cookies = ol.config_date(operadora)
-        tabela = ol.coletar_tabela()
+        html = ol.coletar_fonte_pagina()
+        #tabela = ol.criar_dataframe(html)
+        df = ol.coletar_tabela(html)
+        #df = ol.criar_dataframe(tabela)
+        driver.quit()
+
     except Exception as erro_login:
         print(f'Erro {erro_login} Durante a coleta de dados')
 

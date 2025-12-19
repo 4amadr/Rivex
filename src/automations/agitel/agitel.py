@@ -5,6 +5,8 @@ from bs4 import BeautifulSoup
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.wait import WebDriverWait
 from webdriver_manager.core import driver
+
+from src.automations.MaximaVoip.maxima_voip import ontem
 from utils.fast_selenium import FastSelenium
 from datetime import timedelta
 from datetime import date
@@ -127,10 +129,10 @@ if __name__ == '__main__':
         ol.pag_dados()
         cookies = ol.config_date(operadora)
         html = ol.coletar_fonte_pagina()
-        #tabela = ol.criar_dataframe(html)
         df = ol.coletar_tabela(html)
-        #df = ol.criar_dataframe(tabela)
         driver.quit()
+        print('Iniciando a criação do arquivo.csv')
+        df.to_csv(f'Agitel-{ontem}.csv')
 
     except Exception as erro_login:
         print(f'Erro {erro_login} Durante a coleta de dados')

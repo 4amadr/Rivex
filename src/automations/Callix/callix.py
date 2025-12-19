@@ -37,9 +37,6 @@ class CallixAPI:
 
         url = f"https://{link_tratado}.callix.com.br/api/v1/campaign_completed_calls"
 
-        print(f'url da vez {url}')
-        print(f'token da vez {token}')
-
         print(f'Cliente selecionado {link_tratado}')
 
         querystring = {
@@ -109,10 +106,6 @@ class CallixAPI:
         
         url = f"https://{link_tratado}.callix.com.br/api/v1/campaign_missed_calls"
 
-        print(f"Cliente original: {repr(cliente_link)}")
-        print(f"Link tratado: {repr(link_tratado)}")
-        print(f"URL final: {url}")
-        print(f"Comprimento: {len(cliente_link)}")
 
         querystring = {"filter[started_at]":f"{data_inicio},{data_fim}",
         # filtro para chamadas abandonadas: 9 = Abandonada
@@ -167,8 +160,7 @@ class CallixAPI:
     def chamadas_recusadas(self, recusadas_semi_bruto, abandonadas):
         '''Função para calcular o valor limpo das chamadas recusadas'''
         try:
-            recusadas = recusadas_semi_bruto - abandonadas
-            print('Chamadas, recusadas: ', recusadas )
+            recusadas = int(recusadas_semi_bruto - abandonadas)
             return recusadas
             # vou adicionar uma condição
             # chamadas recusadas quase nunca vai ser menor que abandonadas
@@ -178,7 +170,7 @@ class CallixAPI:
                 print("Erro de lógica em chamadas recusadas, colete novamente!")
                 return False
         except Exception as e:
-            print(f"ERRO: {e} durante o tratamento das recusadas")
+            print(f"ERRO: {e} durante o tratamento das chamadas recusadas")
             recusadas = 0
             return recusadas
 
@@ -191,7 +183,7 @@ class CallixAPI:
         # alguns clientes vem com nome capitalizado e sem o sufixo "contech"
         link_tratado = f"{cliente_link.lower().replace(' ', '')}contech"
 
-        url = f"https://{link_tratado}contech.callix.com.br/api/v1/user_performance_reports"
+        url = f"https://{link_tratado}.callix.com.br/api/v1/user_performance_reports"
 
         print(f'Cliente selecionado {cliente_link}')
 
@@ -211,7 +203,7 @@ class CallixAPI:
                 return performace
 
             else:
-                print(f"Erro em essence requisição bloqueada para a requisição de pérformace para o cliente {cliente_link}: {response.status_code}")
+                print(f"Erro em essence requisição bloqueada para a requisição de performace para o cliente {cliente_link}: {response.status_code}")
                 print(f" {response.text}")
                 return None
 
@@ -219,47 +211,42 @@ class CallixAPI:
             print(f"Erro em essence ao buscar dados de performace: {e} do cliente {cliente_link}")
             return None
 
-    def limpeza_json(self, performace_suja, cliente_link):
+    def limpeza_json(self, performace_suja):
         '''Função para limpar o arquivo .json pegando apenas os dados que importam
         nesse caso em especifico o ID do agente + quantas chamadas ele fez'''
 
-        print(f'Iniciando limpeza do .JSON do cliente {cliente_link}')
-
         # vou criar um dicionario vazio para depois adicionar o ID do cliente e quantas chamadas cada ID fez
         dados_agente = {}
-        try:
-            if 'data' in performace_suja:
-                data = performace_suja['data']
-                for identific in data:
-                    if 'id' in identific:
-                        # id de cada agente coletado
-                        dados_agente['ID Agente'] = identific['id']
-        except Exception as erro_coleta_id:
-            print(f'Ocorreu um erro para gerar o ID dos agentes para o Cliente {cliente_link}.\nDetalhes do erro: {erro_coleta_id}')
-            return None
+        chamadas_respondidas_lista = []
+        if 'data' in performace_suja:
+            data = performace_suja['data']
+            for identific in data:
+                if 'id' in identific:
+                    # id de cada agente coletado
+                    dados_agente['ID Agente'] = identific['id']
+                    # essa lógica acima pega o ID de cada agente. Por enquanto vou deixar ela inacabada pois vou usar ela só quando os dados forem para o banco de dados
+                    # intenção é poder analisar completamente o desempenho de cada agente
 
-        try:
-            # lógica para pegar as chamadas de cada cliente
-            for atributo in data:
-                if 'attributes' in atributo:
-                    dados_chamadas = atributo['attributes']
-                    if 'answered_count' in dados_chamadas:
-                        dados_agente['Chamadas Manuais'] = dados_chamadas['manual_calls']
-                        dados_agente['Tempo medio de serviço'] = dados_chamadas['average_service_time']
-                        dados_agente['Chamadas de campanha'] = dados_chamadas['campaign_calls']
-                        dados_agente['Chamadas Regeitadas'] = dados_chamadas['reject_count']
-                        dados_agente['Chamadas Respondidas'] = dados_chamadas['answered_count']
-                        dados_agente['Tempo total (Segundos)'] = dados_chamadas['total']
-                        dados_agente['Tempo Disponível (Segundos)'] = dados_chamadas['available_time']
-                        dados_agente['Tempo em Ligação (Segundos)'] = dados_chamadas['in_call_time']
-                        dados_agente['Tempo em chamadas manuais (Segundos)'] = dados_chamadas['manual_call_time']
-                        return dados_agente
-        except Exception as erro_coleta_chamadas_agente:
-            print(f'Erro durante a coleta de chamadas de cada agente para o cliente: {cliente_link}: {erro_coleta_chamadas_agente}')
-            return None
+        for lista in data:
+            if 'attributes' in lista:
+                chamadas = lista['attributes']
+                if 'answered_count' in chamadas:
+                    chamadas_respondidas = chamadas['answered_count']
+                    chamadas_respondidas_lista.append(chamadas_respondidas)
 
+        return chamadas_respondidas_lista
 
-
+    def logica_chamadas(self, dados_agente):
+        '''função para filtrar apenas os agentes que fizeram mais de 4 chamadas o retorno vai ser o len() da lista de agentes após a lógica'''
+        for agente in dados_agente:
+            if agente < 4:
+                dados_agente.pop()
+                chamadas_tratadas = len(dados_agente)
+                print(chamadas_tratadas)
+                return chamadas_tratadas
+            else:
+                chamadas_tratadas = len(dados_agente)
+                return chamadas_tratadas
 
 if __name__ == '__main__':
     print('\niniciando coleta de dados de telefonia no callix...')
@@ -315,9 +302,8 @@ if __name__ == '__main__':
         recusadas_lista = []
         totais_lista = []
         data_lista = []
+        agentes_lista = []
 
-        
-        print(f"Quantidade de clientes: {len(clientes_ativos)}")
         for cliente_site, token in zip(CA.cliente, CA.token):
             try:
 
@@ -330,6 +316,9 @@ if __name__ == '__main__':
                 print('\nColetando chamadas abandonadas, aguarde um minuto...')
                 time.sleep(60)
                 abandonadas_bruto = CA.chamadas_abandonadas(cliente_site, ano, mes, ontem, token)
+                performace_suja = CA.performace_usuario(cliente_site, ano, mes, ontem, token)
+                agentes_sujos = CA.limpeza_json(performace_suja)
+                agentes = CA.logica_chamadas(agentes_sujos)
 
                 print(f'Todas os dados de chamadas de {cliente_site} foram coletadas em .JSON, iniciando agora a conversão')
 
@@ -344,7 +333,8 @@ if __name__ == '__main__':
                 completas_lista.append(completas)  
                 abandonadas_lista.append(abandonadas)  
                 recusadas_lista.append(recusadas)   
-                totais_lista.append(totais)         
+                totais_lista.append(totais)
+                agentes_lista.append(agentes)
                 
                 
                 # print de dados separados por clientes
@@ -355,6 +345,7 @@ if __name__ == '__main__':
                     'Completas': completas,
                     'Recusadas': recusadas,
                     'Abandonadas': abandonadas,
+                    'Agentes': agentes,
                 }
                 print("\nInformações de Consumo do Cliente")
 
@@ -377,6 +368,7 @@ if __name__ == '__main__':
             'Completas': completas_lista,
             'Recusadas': recusadas_lista,
             'Abandonadas': abandonadas_lista,
+            'Agentes': agentes_lista,
         }
                 
         print('Gerando agora o arquivo .csv')

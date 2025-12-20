@@ -9,28 +9,29 @@ class IPBoxAPI:
         self.token = token
         self.url = url
 
-    def coleta_dados(self, url, token, dia, mes, ano):
-        '''Função para a coleta de dados do IPBox'''
+    def coletar_dados_de_agentes(self, token, dia, mes, ano):
+        '''Função para a coleta de dados de agentes e desempenho do IPBox
+        a função coleta todos os agentes e as suas informações de ligação no determinado dia'''
 
-        payload = f'de={ano}{mes:02d}{dia:02d}000000ate={ano}{mes:02d}{dia:02d}235959'
+        url = 'https://contech1.ipboxcloud.com.br:8624/ipbox/api/getPA1'
+
+        payload = f'de={ano}{mes:02d}{dia:02d}000000&ate={ano}{mes:02d}{dia:02d}235959'
 
         headers = {
-            'Authorization': token,
+            'Authorization': f'{token}',
             'Content-Type': 'application/x-www-form-urlencoded'
         }
 
         response = requests.request("POST", url, headers=headers, data=payload)
-        print("STATUS:", response.status_code)
-        print("HEADERS:", response.headers)
-        print("BODY:", response.text)
-        dados = response.headers.get('Content-Type')
         if response.status_code == 200:
-            print('Dados coletados do IPBox!')
-            return dados
-        else:
-            print(f'Erro ao coletar dados do IPBox: {response.status_code}')
-            return False
-        
+            try:
+                json_agentes = response.json()["data"]
+                return json_agentes
+            except Exception as erro_req:
+                print(f'ERRO: {erro_req} Ao coletar dados do IPBOX')
+
+
+
 
 if __name__ == '__main__':
     ipbox = IPBoxAPI(
@@ -43,4 +44,4 @@ if __name__ == '__main__':
     ano = int(datetime.today().year)
     url = os.getenv('url_ipbox')
     token = os.getenv('token_ipbox')
-    ipbox.coleta_dados(url, token, dia_ontem, mes, ano)
+    ipbox.coletar_relatorios_de_chamadas(token, dia_ontem, mes, ano)

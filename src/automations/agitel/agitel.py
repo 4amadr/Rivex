@@ -1,12 +1,7 @@
 import os
 import time
-
 from bs4 import BeautifulSoup
-from selenium.webdriver.common.by import By
-from selenium.webdriver.support.wait import WebDriverWait
 from webdriver_manager.core import driver
-
-from src.automations.MaximaVoip.maxima_voip import ontem
 from utils.fast_selenium import FastSelenium
 from datetime import timedelta
 from datetime import date
@@ -88,7 +83,6 @@ class OperadorasLogin:
 
     def coletar_fonte_pagina(self):
         '''function to get agent data'''
-        fs = FastSelenium(driver, timeout=20)
         # pegar para pegar a tabela
         time.sleep(4)
         html = driver.page_source
@@ -112,11 +106,21 @@ class OperadorasLogin:
             print('Erro durante a tentativa de transformar a tabela', erro_tabela)
             return False
 
-    def criar_dataframe(self, tabela_dados):
-        '''Função para transformar a tabela coletada em um dataframe'''
-
 
 if __name__ == '__main__':
+    hoje = date.today()
+    dia_semana = hoje.isoweekday()
+    # calculo de datas completas
+    ontem_date = hoje - timedelta(days=1)
+    dias_ate_sabado = (dia_semana - 6) % 7
+    ultimo_sabado = hoje - timedelta(days=dias_ate_sabado if dias_ate_sabado != 0 else 7)
+    ultima_sexta = ultimo_sabado - timedelta(days=1)  # sexta é 1 dia antes do sábado
+    ontem = ontem_date.day  # dia do mês de ontem
+    sabado = ultimo_sabado.day  # dia do mês que foi sabado
+    dia_selecionado = ontem
+
+
+
     print('Iniciando coleta de dados da Agitel...')
     login = os.getenv('agitel_user')
     password = os.getenv('agilel_password')

@@ -1,7 +1,5 @@
 import os
-
 import psycopg2
-import dotenv
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -28,30 +26,13 @@ class CallixDB:
         if not self.cursor:
             raise RuntimeError("Cursor não inicializado (falha na conexão).")
 
-        try:
-            self.cursor.execute("SELECT token, cliente FROM callix_tokens;")
-            resultado = self.cursor.fetchall()
-            if resultado:
-                token = []
-                cliente = []
-                for row in resultado:
-                    token.append(row[0])
-                    cliente.append(row[1])
-                return token, cliente
-            else:
-                print('Sem clientes no banco')
-                return [], []
-        except Exception as e:
-            print("Erro ao buscar dados:", e)
-            return [], []
+        self.cursor.execute("SELECT cliente, token FROM callix_tokens")
+        return {cliente: token for cliente, token in self.cursor.fetchall()}
 
     def close(self):
         """Fecha cursor e conexão."""
         if self.cursor:
             self.cursor.close()
+        if self.conexao:
+            self.conexao.close()
         print("Banco de dados fechado")
-
-cd = CallixDB()
-
-token, clientes = cd.get_token_and_client_from_db()
-cd.close()

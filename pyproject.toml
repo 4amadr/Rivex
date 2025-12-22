@@ -1,4 +1,10 @@
-[tool.setuptools.packages.find]
-where = ["src"]
-include = ["rivex*"]
-namespaces = false
+[build-system]
+requires = ["setuptools", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "rivex"
+version = "0.1.0"
+
+[tool.setuptools]
+packages = ["src", "utils"] # Aqui a gente avisa que tanto a src quanto a utils importam

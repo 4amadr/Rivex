@@ -4,7 +4,7 @@ from data_processing.cleaner_api import LimpezaCallixAPI
 from database_converter.callix_converter import CallixCSVConverter
 
 
-def main():
+def main_callix():
 
     db = CallixDB()
     tokens_clientes = db.get_token_and_client_from_db()
@@ -44,4 +44,4 @@ def main():
     caminho = converter.save_csv(resultados)
     print(f'Coleta completamente acabada\n dados salvos em {caminho}')
     return resultados
-main()
+main_callix()

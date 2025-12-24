@@ -1,0 +1,6 @@
+{
+    "python.analysis.extraPaths": ["./src/automations/Callix"],
+    "terminal.integrated.env.osx": {"PYTHONPATH": "${workspaceFolder}/src/automations/Callix"},
+    "terminal.integrated.env.linux": {"PYTHONPATH": "${workspaceFolder}/src/automations/Callix"},
+    "terminal.integrated.env.windows": {"PYTHONPATH": "${workspaceFolder}/src/automations/Callix"}
+}

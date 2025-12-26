@@ -2,7 +2,7 @@ import os
 import time
 from bs4 import BeautifulSoup
 from webdriver_manager.core import driver
-from utils.fast_selenium import FastSelenium
+from src.utils.fast_selenium import FastSelenium
 from datetime import timedelta
 from datetime import date
 from dotenv import load_dotenv

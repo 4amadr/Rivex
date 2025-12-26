@@ -1,19 +1,13 @@
 import os
-from dateutil.rrule import weekday
-from selenium.common import NoSuchElementException
-from utils.fast_selenium import FastSelenium
-from selenium import webdriver
-import dotenv
+from src.utils.fast_selenium import FastSelenium
 import time
-from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
-from datetime import datetime, timedelta
+from datetime import timedelta
 from datetime import date
 from dotenv import load_dotenv
 import pandas as pd
-import re
 
 load_dotenv()
 

@@ -1,12 +1,9 @@
 from datetime import time
-from selenium import webdriver
-from utils.fast_selenium import FastSelenium
+from src.utils.fast_selenium import FastSelenium
 from dotenv import load_dotenv
 import os
 from sqlalchemy import create_engine
 import time
-from selenium.webdriver.common.keys import Keys
-import psycopg2
 import pandas as pd
 
 load_dotenv()

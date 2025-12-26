@@ -1,10 +1,5 @@
-import os
-from selenium.common import NoSuchElementException
-from utils.fast_selenium import FastSelenium
-from selenium import webdriver
-import dotenv
+from src.utils.fast_selenium import FastSelenium
 import time
-from wsproto.handshake import client_extensions_handshake
 
 
 def vonix_login(driver, user, password, number_vonix):

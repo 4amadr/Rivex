@@ -4,7 +4,7 @@ from bs4 import BeautifulSoup
 import pandas as pd
 import os
 
-from src.automations.MaximaVoip.maxima_voip import login_maxima
+from rivex.automations.MaximaVoip.maxima_voip import login_maxima
 
 
 class SipPulseConnector:

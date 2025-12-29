@@ -1,2 +1,20 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "rivex"
+version = "0.1.0"
+description = "Automação e processamento de dados Rivex"
+readme = "README.md"
+requires-python = ">=3.9"
+dependencies = [
+    "pandas",
+    "selenium",
+    # Adicione outras libs que seu projeto usa aqui se precisar
+]
+
 [tool.setuptools.packages.find]
-where = ["src"]  # Procura pacotes apenas dentro de src
+where = ["src"]  # O segredo: Isso diz "Procure pacotes dentro da pasta src"
+include = ["rivex*"] # Isso garante que ele pegue o pacote rivex e subpastas
+namespaces = true

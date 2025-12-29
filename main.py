@@ -1,7 +1,7 @@
-from src.automations.Callix.callix import CallixAPI
-from src.automations.Callix.callix_token_db import CallixDB
-from src.data_processing.cleaner_api import LimpezaCallixAPI
-from src.database_converter.callix_converter import CallixCSVConverter
+from rivex.automations.Callix.callix import CallixAPI
+from rivex.automations.Callix.callix_token_db import CallixDB
+from rivex.data_processing.cleaner_api import LimpezaCallixAPI
+from rivex.database_converter.callix_converter import CallixCSVConverter
 
 
 def main_callix():

@@ -1,4 +1,4 @@
-from src.utils.fast_selenium import FastSelenium
+from rivex.utils.fast_selenium import FastSelenium
 import time
 
 

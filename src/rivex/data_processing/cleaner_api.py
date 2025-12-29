@@ -1,5 +1,5 @@
-from src.automations.Callix.callix import CallixAPI
-from src.automations.Callix.callix_token_db import CallixDB
+from rivex.automations.Callix.callix import CallixAPI
+from rivex.automations.Callix.callix_token_db import CallixDB
 from datetime import datetime, timedelta, date
 import pandas as pd
 

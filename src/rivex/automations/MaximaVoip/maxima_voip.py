@@ -1,5 +1,5 @@
 import os
-from src.utils.fast_selenium import FastSelenium
+from rivex.utils.fast_selenium import FastSelenium
 import time
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC

@@ -1,5 +1,6 @@
 import requests
 from br4 import BeautifulSoup
+from dotenv import load_dotenv
 
 
 class VonixSip:
@@ -29,10 +30,14 @@ class VonixSip:
             print('no token')
             return False
     
-    def login_vonix(username, password, token, headers, queue_client: dict):
+    def login_vonix(username, password):
         '''login in vonix with requests'''
     
         url_login = 'http://contech6.vonixcc.com.br/login/signin'
+        
+        token = get_page(url_login)
+        
+        headers = headers_config(url_login)
         
         payload_login = {
             'authenticity_token': token,
@@ -54,7 +59,7 @@ class VonixSip:
             print('login completed in vonix')
             return session
     
-    def filter_data(client):
+    def filter_data(queue_client: dict):
         '''function to filter the data'''
     
         url_filter = 'http://contech6.vonixcc.com.br/login/set_show_queue'
@@ -77,14 +82,18 @@ class VonixSip:
             print('filter in vonix aplied')
             return filter
     
-    def get_calls():
+    def get_calls(date):
         '''function to get the calls from vonix'''
 
         calls_url = 'http://contech6.vonixcc.com.br/overview'
         
+        payload = {
+            'base_date': date
+        }
+        
         headers = headers_config(calls_url)
         
-        data = session.get(calls_url, headers=headers)
+        data = session.get(calls_url, data=payload, headers=headers)
         
         if data.status_code != 200:
             print(f'error{data.status_code} trying to get data from vonix.')
@@ -99,10 +108,46 @@ class VonixSip:
         
         headers = headers_config(url_agents)
         
-        agents = session.get(url_agents, headers=headers)
+        payload_agentes = {
+            'interval[select]': 'custom',
+            'interval[start_date]': data,
+            'interval[end_date]': data,
+        }
+        
+        agents = session.get(url_agents, data=payload_agentes, headers=headers)
         
         if agents.status_code != 200:
             print(f'Error: {agents.status_code} trying to get agent data from vonix')
         else:
             print('agents data colected from vonix')
             return agents
+    
+    def get_agressividade(cliente):
+        # pegar agressividade
+        token = get_page(url_agressividade)
+        
+        url_agressividade = f'http://contech6.vonixcc.com.br/admin/queue_edit/{cliente}?authenticity_token={token}'
+
+        payload = {
+            'authenticity_token': token
+        }
+
+        headers = headers_config(url_agressividade)
+
+        agressividade = session.get(url_agressividade, data=payload, headers=headers)
+
+        if agressividade.status_code != 200:
+            print(f'erro na coleta de agressividade {agressividade.status_code}')
+        else:
+            print('agressividade coletada no vonix')
+            return agressividade
+    
+    def execucao_geral():
+        session = login_vonix(username, password)
+        filter = filter_data(queue_client['tean'])
+        all_calls = get_calls(date)
+        agents = get_agents()
+        agressividade = get_agressividade
+        
+        return all_calls, agents, agressividade
+        

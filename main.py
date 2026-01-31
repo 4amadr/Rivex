@@ -44,4 +44,8 @@ def main_callix():
     caminho = converter.save_csv(resultados)
     print(f'Coleta completamente acabada\n dados salvos em {caminho}')
     return resultados
+
+def main_vonix():
+    
+
 main_callix()

@@ -147,7 +147,7 @@ class VonixSip:
         filter = filter_data(queue_client['tean'])
         all_calls = get_calls(date)
         agents = get_agents()
-        agressividade = get_agressividade
+        agressividade = get_agressividade()
         
         return all_calls, agents, agressividade
         

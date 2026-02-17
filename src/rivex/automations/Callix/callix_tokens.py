@@ -72,6 +72,7 @@ class TokenCallix:
         fs = FastSelenium(driver, timeout=20)
         token_callix = fs.xpath_data('//*[@id="router-view"]/clx-page/div[2]/clx-data-table/div/table/tbody/tr/td[1]/a')
         if token_callix:
+            print(token_callix)
             return token_callix
         else:
             # se não houver token vai criar uma nova
@@ -126,7 +127,7 @@ cliente_site = [
                     'connection', 'ello_consultoria',
                     'essence', 'investe_mais', 'corplar',
                     'quality', 'lunart3', 'valm',
-                    'datateck', 'rdf', 'credbi', 'money_solutions'
+                    'datateck', 'rdf', 'credbi', 'money_solutions', 'iron'
                 ]
 
 users = [
@@ -134,7 +135,7 @@ users = [
             'login_callix_essence', 'login_callix_investe_mais', 'login_callix_corplar',
             'login_callix_quality','login_callix_lunart3', 'login_callix_valm',
              'login_callix_datateck',
-            'login_callix_rdf', 'login_callix_credbi', 'login_callix_money_solutions'
+            'login_callix_rdf', 'login_callix_credbi', 'login_callix_money_solutions', 'iron_login'
          ]
 
 passwords = [
@@ -142,7 +143,7 @@ passwords = [
                 'senha_callix_essence', 'senha_callix_inteste_mais', 'senha_callix_corplar',
                 'senha_callix_quality', 'senha_callix_lunart3', 'senha_callix_valm',
                 'senha_callix_datateck',
-                'senha_callix_rdf', 'senha_callix_credbi','senha_callix_money_solutions'
+                'senha_callix_rdf', 'senha_callix_credbi','senha_callix_money_solutions', 'senha_iron' 
 
 ]
 

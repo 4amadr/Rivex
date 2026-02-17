@@ -64,4 +64,4 @@ class VonixCleaner:
         chamadas_todos = chamadas_agentes()
         dial_speed = agressividade()
     return chamadas_totais, chamadas_completas, chamadas_recusadas, chamadas_abandonadas, agentes_online, chamadas_agentes, dial_speed
-        
+    

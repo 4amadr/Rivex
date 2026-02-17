@@ -24,7 +24,7 @@ class CallixAPI:
         return link
 
     def data_selecionadas(self):
-        data_ref = date.today() - timedelta(days=1)
+        data_ref = date.today() - timedelta(days=2)
         data_formatada = data_ref.strftime("%Y-%m-%d")
         print('Dia selecionado para a coleta: ', data_formatada)
         return data_formatada

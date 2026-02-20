@@ -2,66 +2,71 @@ from bs4 import BeautifulSoup
 from rivex.automations.vonix.vonix_06 import VonixSip
 
 class VonixCleaner:
-    def gerar_soup_chamadas(dados):
-        '''Função para transformar em sopa os dados coletados com requests'''
-        # passando para o formato HTML para melhorar a conversão de dados
-        soup = BeautifulSoup(dados.text, 'html.parser')
-        # os dados estão dentro de td
-        sopa_chamadas = soup.find_all('td')
-        return sopa_chamadas
+    def transformar_resonse_em_html(resposta):
+        # função para converter em sopa o response das chamadas
+        sopa_convertida = BeautifulSoup(resposta.text, 'html.parser')
+        return sopa_convertida
     
-    def gerar_soup_agentes(dados_agentes):
-        '''Função de tratamento de dados em HTML que tem 
-        processo distinto do tratamento de chamadas'''
-        sopa_agentes = BeautifulSoup(dados_agentes.text, 'html.parser')
-        agentes_online = sopa_agentes.find_all('div', class_='box-title')
-        return agentes_online
+    def limpar_chamadas(sopa_convertida, index_de_tabela: int, index_de_linha: int, index_de_resultado: int):
     
-    def limpador_chamadas(sopa, endereco: int):
-        '''função para limpar as chamadas totais. Os dados chegam em formato html bruto
-        e serão transformados em dados tratados já prontos para analise'''
-        chamadas = sopa_chamadas[endereco]
-        chamadas_tratadas = chamadas.text.split()
+        tabelas = sopa_convertida.find_all('table', class_='grid')
         
-        # alguns dados vem em formato de lista e isso vai verificar
-        if isinstance(chamadas_tratadas, list):
-            chamadas_tratadas = chamadas_tratadas[0]
-            return chamadas_tratadas
-        else:
-            return chamadas_tratadas
+        if len(tabelas) <= index_de_tabela:
+            return 0
         
-    def tratar_agentes(sopa_agentes):
-        '''Função para gerar dados tratados dos agentes a partir do HTML coletado
-        com requests'''
-        separacao = list(sopa_agentes[1])
-        agentes_online_bruto = separacao[1]
-        return agentes_online_bruto
-    
-    def chamadas_agentes(sopa_chamadas_de_agentes):
-        '''Função para coletar quantas chamadas cada agente fez'''
-        sopa_chamadas = sopa_chamadas_de_agentes.find_all('div', class_='progress-bar')
-        chamadas_todos = [
-            int(a.text.strip())
-            for chamada in sopa_chamadas
-            for a in chamada.find_all('a', href=True)
-        ]
-        return chamadas_todos
+        tabela_chamadas = tabelas[index_de_tabela]
+        linhas = tabela_chamadas.find_all('tr')
         
-    def agressividade(agressividade_html):
-        '''Função para transformar o HTML bruto em dado limpo tratado de agressividade'''
-        agressividade = BeautifulSoup(agressividade_html.text, 'html.parser')
-        dial_speed = agressividade.find("input", id="dialer_dial_speed").get("value")
-        return dial_speed  
+        if len(linhas) <= index_de_linha:
+            return 0
+        
+        colunas = linhas[index_de_linha].find_all('td')
+        
+        if len(colunas) <= 1:
+            return 0
+        
+        valor = colunas[1].text.split()
+        
+        if len(valor) <= index_de_resultado:
+            return 0
+        
+        return valor[index_de_resultado]
+        
+    def buscar_linha_por_nome(tabela, nome_da_linha: str, ocorrencia: int = 0):
+        resultados = []
+        for linha in tabela.find_all('tr'):
+            primeira_coluna = linha.find('td')
+            if primeira_coluna and nome_da_linha in primeira_coluna.text:
+                resultados.append(linha)
+        
+        if len(resultados) <= ocorrencia:
+            return None
+        return resultados[ocorrencia]
+
     
-    def execucao_vonix():
-        chamadas = gerar_soup_chamadas()
-        sopa_agentes = gerar_soup_agentes()
-        chamadas_totais = limpador_chamadas()
-        chamadas_completas = limpador_chamadas()
-        chamadas_recusadas = limpador_chamadas()
-        chamadas_abandonadas = limpador_chamadas()
-        agentes_online = tratar_agentes()
-        chamadas_todos = chamadas_agentes()
-        dial_speed = agressividade()
-    return chamadas_totais, chamadas_completas, chamadas_recusadas, chamadas_abandonadas, agentes_online, chamadas_agentes, dial_speed
+# execução de função para coletar o html (bruto)    
+
+equipes = ['tcrepresentacao', 'tcrepresentacao01', 'tcrepresentacao02', 'tcrepresentacao03', 'tcrepresentacao04']
+vs = VonixSip
+vc = VonixCleaner
+
+for equipe in equipes:
+    all_calls, agents, agressividade = vs.execucao_geral(equipe)
+    html_chamadas = vc.transformar_resonse_em_html(all_calls)
     
+    tabela = html_chamadas.find('table', class_='grid')
+    
+    if tabela is None:
+        print(f'{equipe}: 0')
+        continue
+    
+    # ocorrencia=0 pega Discadas, ocorrencia=1 pega Automáticas
+    linha_total_automaticas = vc.buscar_linha_por_nome(tabela, 'Total', ocorrencia=1)
+    
+    if linha_total_automaticas is None:
+        print(f'{equipe}: 0')
+        continue
+    
+    colunas = linha_total_automaticas.find_all('td')
+    valor = colunas[1].text.split()[0] if len(colunas) > 1 else 0
+    print(f'{equipe}: {valor}')

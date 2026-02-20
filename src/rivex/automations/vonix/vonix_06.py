@@ -51,15 +51,12 @@ class VonixSip:
             'commit': 'Entrar'
         }
         
-        # teste para saber se a session e o token estão coerentes
-        print(f'LOGIN INFO ------> TOKEN: {token_login} SESSION: {session}')
-        
         login = session.post(url_login, data=payload_login, headers=headers)
         
         if login.status_code != 200:
-            print(f'Error {login.status_code} in vonix login')
+            print(f'Erro {login.status_code} ao logar no vonix')
         else:
-            print('login completed in vonix')
+            print('Logado no vonix!')
             return session
     
     def filter_data(session, queue_client):
@@ -82,9 +79,9 @@ class VonixSip:
         filter = session.post(url_filter, data=payload_filter, headers=headers)
         
         if filter.status_code != 200:
-            print(f'error: {filter.status_code} in the vonix filter')
+            print(f'erro: {filter.status_code} na filtragem de dados no vonix')
         else:
-            print(f'filter in vonix aplied. Tean {queue_client}')
+            print(f'filtro aplicado. Equipe: {queue_client}')
             return filter
     
     def get_calls(session, date):
@@ -103,13 +100,13 @@ class VonixSip:
         
         headers = vs.headers_config(calls_url)
         
-        data = session.get(calls_url, data=payload, headers=headers)
+        data = session.get(calls_url, params=payload, headers=headers)
         
         if data.status_code != 200:
-            print(f'error{data.status_code} trying to get data from vonix.')
+            print(f'erro {data.status_code} tentando coletar dados no vonix.')
             return False
         else:
-            print('Data colected from vonix')
+            print('Dados coletados no vonix')
             return data
         
     def get_agents(session, data):
@@ -130,9 +127,9 @@ class VonixSip:
         agents = session.get(url_agents, data=payload_agentes, headers=headers)
         
         if agents.status_code != 200:
-            print(f'Error: {agents.status_code} trying to get agent data from vonix')
+            print(f'Erro: {agents.status_code} tentando coletar agentes no vonix')
         else:
-            print('agents data colected from vonix')
+            print('quantidade de agentes colectados do vonix')
             return agents
     
     def get_agressividade(session, cliente):
@@ -164,20 +161,11 @@ class VonixSip:
     def execucao_geral(equipes):
         username = 'victor'
         password = '1801'
-        date = '10/02/2026'
+        date = '19/02/2026'
         vs = VonixSip
         login = vs.login_vonix(username, password)
         filter = vs.filter_data(login, equipes)
         all_calls = vs.get_calls(login, date)
-        agents = vs.get_agents(login)
+        agents = vs.get_agents(login, date)
         agressividade =  vs.get_agressividade(login, equipes)
-        print(all_calls.text)
-        
         return all_calls, agents, agressividade
-
-equipes = ['tcrepresentacao', 'tcrepresentacao01', 'tcrepresentacao02', 'tcrepresentacao03', 'tcrepresentacao04']
-
-vs = VonixSip
-
-for equipe in equipes:
-    vs.execucao_geral(equipe)

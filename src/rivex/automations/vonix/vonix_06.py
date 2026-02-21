@@ -169,3 +169,8 @@ class VonixSip:
         agents = vs.get_agents(login, date)
         agressividade =  vs.get_agressividade(login, equipes)
         return all_calls, agents, agressividade
+    
+'''vs = VonixSip
+equipes = ['tcrepresentacao', 'tcrepresentacao01', 'tcrepresentacao02', 'tcrepresentacao03', 'tcrepresentacao04']
+for equipe in equipes:
+    all_calls, agents, agressividade = vs.execucao_geral(equipe)'''

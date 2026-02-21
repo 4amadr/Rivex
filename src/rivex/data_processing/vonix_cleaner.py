@@ -42,10 +42,51 @@ class VonixCleaner:
         if len(resultados) <= ocorrencia:
             return None
         return resultados[ocorrencia]
+   
+    def limpeza_de_agentes(html_agentes):
+       # função para limpar os dados dos agentes que vem em formato HTML
+       # busca a tabela onde tem os agentes
+        tabela_agentes = html_agentes.find('table', class_='grid')
+        
+        lista_agentes = []
+        
+        # se a tabela estiver vazia(sem agentes) vai retornar a lista vazia
+        if tabela_agentes is None:
+            return lista_agentes
+            
+        # encontrar todos os tr que representam uma linha de agente
+        lista_agentes = []
 
+        for linha in tabela_agentes.find_all('tr'):
+            # verifica as marcações td que tem classe =item (exatamente a marcação que representa os agentes)
+            colunas = linha.find('td', class_='item')
+            # se existir coluna vai mandar todos os agentes para a lista de agentes
+            if colunas:
+                for coluna in colunas:
+                    lista_agentes.append(coluna)
+        return lista_agentes
     
-# execução de função para coletar o html (bruto)    
+    def coletar_chamadas_de_agentes(html_agentes):
+        tabela_chamadas = html_agentes.find('table', class_='grid')
+        if not tabela_chamadas:
+            return []
 
+        chamadas_auto = tabela_chamadas.find_all(
+            'td',
+            id=lambda i: i and i.startswith('call_counter_AUTO_')
+        )
+
+        valores = [
+            td.get_text(strip=True)
+            for td in chamadas_auto
+        ]
+
+        print(valores)
+        return valores
+    
+                
+       
+# execução de função para coletar o html (bruto)    
 equipes = ['tcrepresentacao', 'tcrepresentacao01', 'tcrepresentacao02', 'tcrepresentacao03', 'tcrepresentacao04']
 vs = VonixSip
 vc = VonixCleaner
@@ -53,12 +94,16 @@ vc = VonixCleaner
 for equipe in equipes:
     all_calls, agents, agressividade = vs.execucao_geral(equipe)
     html_chamadas = vc.transformar_resonse_em_html(all_calls)
+    html_agentes = vc.transformar_resonse_em_html(agents)
     
     tabela = html_chamadas.find('table', class_='grid')
     
     if tabela is None:
         print(f'{equipe}: 0')
         continue
+    lista_agentes = vc.limpeza_de_agentes(html_agentes)
+    lista_chamadas = vc.coletar_chamadas_de_agentes(html_agentes=html_agentes)
+    print(lista_agentes)
     
     # ocorrencia=0 pega Discadas, ocorrencia=1 pega Automáticas
     linha_total_automaticas = vc.buscar_linha_por_nome(tabela, 'Total', ocorrencia=1)

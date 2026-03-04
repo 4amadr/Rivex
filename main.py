@@ -1,5 +1,5 @@
 import os
-
+import time
 from src.rivex.enviroments.discadores.Callix.callix import CallixAPI
 from src.rivex.enviroments.discadores.Callix.callix_token_db import CallixDB
 from src.rivex.data_processing.Callix.cleaner_callix_api import LimpezaCallixAPI
@@ -9,6 +9,7 @@ from src.rivex.utils.infra_utils.date_config import DateConfig
 from src.rivex.enviroments.discadores.vonix.fluxo_coleta import ExecucaoVonix
 from src.rivex.enviroments.discadores.vonix.fluxo_limpeza import LimpezaVonix
 from src.rivex.enviroments.discadores.vonix.agregacao_vonix import AgregacaoVonix
+from src.rivex.database.database import DatabaseRivex
 
 
 
@@ -26,7 +27,8 @@ def main_callix():
     Dc = DateConfig()
 
     resultados = []
-    data = Dc.data_selecionadas()
+    # callix usa padrão YY/MM/DD
+    data = Dc.data_callix()
     for cliente, token in tokens_clientes.items():
         try:
             print('Coletando dados do cliente', cliente)
@@ -73,6 +75,8 @@ def main_vonix():
         print(f'Coletando dados do equipe ->', equipes_vonix)
 
         for equipe in times:
+            # timer para não quebrar o servidor
+            time.sleep(15)
             print('Executanto time ->',equipe)
             # primeiro coletamos os dados em formato HTML
 
@@ -81,15 +85,20 @@ def main_vonix():
 
             # agora a limpeza de dados para trazer apenas os dados limpos para o banco de dados
             dict_vonix_dados = lv.limpeza_de_dados_vonix(html_chamadas, html_agentes, html_agressividade, equipe, data)
-            print('Dados limpos. Coleta finalizada. Enviando dados para agregação')
+            print('Dados limpos. Coleta finalizada.')
             print(dict_vonix_dados)
-            # salvando dados para agregar
-            resultados.append(dict_vonix_dados)
-    print('iniciando aagora a agregação de dados...')
-    dados_agregados = av.agregacao_vonix(resultados)
-    print(dados_agregados)
+            
     print('Execução do vonix finalizada')
+    return dict_vonix_dados
 
 
-main_vonix()
-#main_callix()
+def main_database(dados: dict):
+    # execução e envio dos dados para o banco de dados
+    dr = DatabaseRivex
+    dr.coleta_chamadas(dados_equipe=dados)
+
+
+dados_vonix = main_vonix()
+main_database(dados_vonix)
+dados_callix = main_callix()
+main_database(dados_callix)

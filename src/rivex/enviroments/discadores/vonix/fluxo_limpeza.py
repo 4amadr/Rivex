@@ -27,7 +27,7 @@ class LimpezaVonix:
             if len(colunas) < 3:
                 return '0'
 
-            valor_texto = colunas[2].text.strip().split()
+            valor_texto = colunas[1].text.strip().split()
 
             # Coluna vazia ou sem texto
             if not valor_texto:

@@ -23,8 +23,10 @@ class CallixAPI:
         link = f'https://{cliente}/api/v1/{requisicao}'
         return link
 
-    def dados_gerais(self,  cliente, requisicao,data, token, filtro: dict | None = None):
+    def dados_gerais(self,  cliente, requisicao, data, token, filtro: dict | None = None):
         '''função para coletar os dados de chamadas'''
+        print(f'DATA DA COLETA PADRÃO {data}')
+        
         print(f'Coletando {requisicao}')
 
         link = self.requisicao_tratada(cliente, requisicao)
@@ -37,6 +39,9 @@ class CallixAPI:
             querystring = {
                 "filter[started_at]": f"{data}T00:00:00.000Z,{data}T23:59:59.999Z",
             }
+            
+        print("Querystring enviada:", querystring)
+        
         if filtro:
             querystring.update(filtro)
 

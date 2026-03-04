@@ -41,6 +41,7 @@ def main_callix():
             print(type(dados_limpos), dados_limpos)
 
             resultados.append({
+                'Discador': 'Callix',
                 'cliente': cliente,
                 "Data": data,
                 **dados_limpos

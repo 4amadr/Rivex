@@ -100,6 +100,7 @@ class LimpezaVonix:
         tabela = self.encontrar_tabela(html_chamadas)
         if not tabela:
             return {
+                'Discador': 'Vonix',
                 'Fila': equipe,
                 'Data': data,
                 'Chamadas totais': 0,

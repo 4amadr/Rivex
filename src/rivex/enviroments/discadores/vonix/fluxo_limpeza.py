@@ -3,17 +3,14 @@ from bs4 import BeautifulSoup
 
 class LimpezaVonix:
     def encontrar_tabela(self, html_selecionado):
-        # função para trazer apenas as chamadas completas
+        # função para gerar tabelas
         cs = CleaningSoup()
         html_chamadas = cs.passar_para_html(html_selecionado)
-        # chamadas seguem a hierarquia <table> -> <tr> -> <td>
         tabela_chamadas = html_chamadas.find('table')
-        # uma tabela só contém todos os dados(automáticos e manuais. Legados...)
         return tabela_chamadas
-    '''endereço chamadas -> 11 = Chamadas totais, 12 -> Chamadas completas
-    13 -> Chamadas recusadas, 14 -> Chamadas abandonadas'''
-
+    
     def nova_chamadas(self, html):
+        #limpeza de dados de chamadas
         html_convertido = BeautifulSoup(html, 'html.parser')
         div_conteudo = html_convertido.find('div', id='maincontent')
         div_chamadas = div_conteudo.find('div', class_='box-title')
@@ -27,37 +24,7 @@ class LimpezaVonix:
         fim_dados = texto_chamadas.find(fim_coleta)
         resultado = texto_chamadas[inicio_dados:fim_dados] 
 
-        print('RESULTADOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO: ',resultado)
-
         return resultado
-
-    def chamadas(self, tabela, endereco):
-        try:
-            linhas = tabela.find_all('tr')
-
-            # Tabela sem linhas (agente offline)
-            if not linhas or len(linhas) <= endereco:
-                return '0'
-
-            linha_totais = linhas[endereco]
-            colunas = linha_totais.find_all('td')
-
-            # Linha sem colunas
-            if len(colunas) < 3:
-                return '0'
-
-            valor_texto = colunas[1].text.strip().split()
-
-            # Coluna vazia ou sem texto
-            if not valor_texto:
-                print('Coluna sem valor. Retornando zero.')
-                return '0'
-
-            return valor_texto[-1]
-
-        except Exception as e:
-            print(f'Erro inesperado em chamadas(): {e}')
-            return '0'
 
     def encontrar_linha_do_agente(self, tabela):
         # função para encontrar a linha que contém o nome e as chamadas do agente
@@ -127,10 +94,7 @@ class LimpezaVonix:
                 'Agentes online': 0,
                 'Agressividade': agressividade_da_fila,
             }
-        '''caso a fila não esteja sendo usada a tabela nem é mostrada. Então vai quebrar o código.
-          Para isso vou retornar none na primeira verificação para tornar a execução mais rápida 
-          e passar logo para a próxima fila.
-          OBS: A agressividade sempre terá valor, então independente do agente fazer ligações ou não
+        '''A agressividade sempre terá valor, então independente do agente fazer ligações ou não
           sempre haverá agressividade'''
 
 

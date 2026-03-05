@@ -99,6 +99,6 @@ def main_database(dados: dict):
 
 
 dados_vonix = main_vonix()
-#main_database(dados_vonix)
-#dados_callix = main_callix()
-#main_database(dados_callix)
+main_database(dados_vonix)
+dados_callix = main_callix()
+main_database(dados_callix)

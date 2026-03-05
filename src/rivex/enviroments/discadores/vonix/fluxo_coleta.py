@@ -64,26 +64,7 @@ class ExecucaoVonix:
         payload_para_chamadas = pv.payload_de_chamadas(data, tipo_de_chamada=tipo_chamada)
         
         chamadas = hr.requisicao_get(payload_get=payload_para_chamadas, headers=headers_chamadas, url=url_chamadas)
-        print(payload_para_chamadas)
         return chamadas.text
-
-    
-    def coleta_de_chamadas_vonix(self, data, url_base, session):
-        # função para coletar todas as chamadas feitas por uma equipe
-        
-        url_chamadas = f'{url_base}/overview'
-
-        
-
-        hr = HttpRequisitions(session=session)
-        cs = ClientSimulator(session)
-        pv = PayloadsVonix()
-
-        headers_chamadas, html_chamadas, token_chamadas = cs.gerador_de_requisitos(url_chamadas)
-        payload_para_chamadas = pv.payload_de_chamadas(data, token_chamadas)
-        
-        chamadas = hr.requisicao_get(payload_get=payload_para_chamadas, headers=headers_chamadas, url=url_chamadas)
-        return chamadas
     
     def coleta_de_agentes_vonix(self, data, url_base, session):
         # função para coletar dados de agentes feitas por uma equipe

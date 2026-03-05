@@ -8,21 +8,22 @@ class DatabaseConfig:
         '''Função para realizar a conexão com o banco de dados'''
         try:
             conect = psycopg2.connect(
-                nome_banco_de_dados = os.getenv('database_tokens'),
-                usuario = os.getenv('user_database_tokens'),
-                porta = os.getenv('port_database_tokens'),
+                dbname = os.getenv('database_tokens'),
+                user = os.getenv('user_database_tokens'),
+                port = os.getenv('port_database_tokens'),
                 host = os.getenv('host_datanase_tokens'),
             )
             print('Conectado no banco de dados!')
             
             return conect
         except Exception as erro_banco:
-            print(f"Erro {e} durante a conexão com o banco de dados")
+            print(f"Erro {erro_banco} durante a conexão com o banco de dados")
             return None
     
     def inserir_dicionario_no_banco_de_dados(self, conexao, tabela: str, dados_equipe: dict):
         '''Todos os dados devem ser retornados em formato de dicionário para serem inseridos no 
         banco de dados'''
+        cursor = None
         try:
             cursor = conexao.cursor()
             
@@ -31,7 +32,7 @@ class DatabaseConfig:
             
             query = sql.SQL("""
                 INSERT INTO {} ({})
-                VALUES ({})""
+                VALUES ({})
                 """).format(
                     sql.Identifier(tabela),
                     sql.SQL(', ').join(map(sql.Identifier, coluna)),
@@ -47,12 +48,13 @@ class DatabaseConfig:
             conexao.rollback()
             print(f"Erro {e} ao inserir os dados no banco de dados")
         finally: 
-            cursor.close()
+            if cursor:
+                cursor.close()
             
-    def fechar_conexao(conexao):
+    def fechar_conexao(self, conexao):
         # fechar a conexão do banco
         
-        if conn:
-            conn.close()
+        if conexao:
+            conexao.close()
             print("Conexão fechada")   
         

@@ -8,7 +8,6 @@ from src.rivex.utils.csv_utils.callix_csv.callix_converter import CallixCSVConve
 from src.rivex.utils.infra_utils.date_config import DateConfig
 from src.rivex.enviroments.discadores.vonix.fluxo_coleta import ExecucaoVonix
 from src.rivex.enviroments.discadores.vonix.fluxo_limpeza import LimpezaVonix
-from src.rivex.enviroments.discadores.vonix.agregacao_vonix import AgregacaoVonix
 from src.rivex.database.database import DatabaseRivex
 
 
@@ -63,8 +62,7 @@ def main_vonix():
     ev = ExecucaoVonix()
     lv = LimpezaVonix()
     dc = DateConfig()
-    av = AgregacaoVonix()
-
+    
     data = dc.data_selecionadas()
     url_vonix = os.getenv('LINK_VONIX6')
 

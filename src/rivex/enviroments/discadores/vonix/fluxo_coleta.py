@@ -47,11 +47,33 @@ class ExecucaoVonix:
         filtragem = hr.requisicao_post(pv.payload_de_filtragem(token_filtragem, equipe), headers_filtragem, url_filtro)
         print(f'Equipe filtrada {equipe}')
         return filtragem, equipe
+
+    def nova_coleta_chamadas_voix(self, data, url_base, session, tipo_chamada: str | None = None):
+        # coletar as chamadas feitas por uma equipe
+
+        if tipo_chamada is None:
+            tipo_chamada = ''
+
+        url_chamadas = f'{url_base}/calls'
+
+        hr = HttpRequisitions(session=session)
+        cs = ClientSimulator(session)
+        pv = PayloadsVonix()
+
+        headers_chamadas, html_chamadas, token_chamadas = cs.gerador_de_requisitos(url_chamadas)
+        payload_para_chamadas = pv.payload_de_chamadas(data, tipo_de_chamada=tipo_chamada)
+        
+        chamadas = hr.requisicao_get(payload_get=payload_para_chamadas, headers=headers_chamadas, url=url_chamadas)
+        print(payload_para_chamadas)
+        return chamadas.text
+
     
     def coleta_de_chamadas_vonix(self, data, url_base, session):
         # função para coletar todas as chamadas feitas por uma equipe
         
         url_chamadas = f'{url_base}/overview'
+
+        
 
         hr = HttpRequisitions(session=session)
         cs = ClientSimulator(session)
@@ -96,11 +118,23 @@ class ExecucaoVonix:
 
         filtragem = self.execucao_filtragem_vonix(url, equipe, session)
 
-        chamadas = self.coleta_de_chamadas_vonix(data, url, session)
+        # tipos de chamadas
+        totais = ''
+        completas = 'completed'
+        abandonadas = 'abandon'
+        descartadas = 'discard'
+
+        # HTML de chamadas
+        chamadas_totais = self.nova_coleta_chamadas_voix(data, url, session, totais)
+        chamadas_completas = self.nova_coleta_chamadas_voix(data, url, session, completas)
+        chamadas_abandonadas = self.nova_coleta_chamadas_voix(data, url, session, abandonadas)
+        chamadas_recusadas = self.nova_coleta_chamadas_voix(data, url, session, descartadas)
+
+
         agentes = self.coleta_de_agentes_vonix(data, url, session)
         agressividade = self.coleta_de_agressividade_vonix(equipe, url, session)
 
-        return chamadas, agentes, agressividade
+        return chamadas_totais, chamadas_completas, chamadas_recusadas, chamadas_abandonadas, agentes, agressividade
         
-        
+
         

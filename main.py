@@ -80,11 +80,11 @@ def main_vonix():
             print('Executanto time ->',equipe)
             # primeiro coletamos os dados em formato HTML
 
-            html_chamadas, html_agentes, html_agressividade = ev.execucao_vonix(data, url_vonix, equipe)
+            chamadas_totais, chamadas_completas, chamadas_recusadas, chamadas_abandonadas, html_agentes, html_agressividade = ev.execucao_vonix(data, url_vonix, equipe)
             print('Dados sujos coletados. Executando agora a limpeza de dados')
 
             # agora a limpeza de dados para trazer apenas os dados limpos para o banco de dados
-            dict_vonix_dados = lv.limpeza_de_dados_vonix(html_chamadas, html_agentes, html_agressividade, equipe, data)
+            dict_vonix_dados = lv.limpeza_de_dados_vonix(chamadas_totais, chamadas_completas, chamadas_recusadas, chamadas_abandonadas, html_agentes, html_agressividade, equipe, data)
             print('Dados limpos. Coleta finalizada.')
             print(dict_vonix_dados)
             
@@ -99,6 +99,6 @@ def main_database(dados: dict):
 
 
 dados_vonix = main_vonix()
-main_database(dados_vonix)
-dados_callix = main_callix()
-main_database(dados_callix)
+#main_database(dados_vonix)
+#dados_callix = main_callix()
+#main_database(dados_callix)

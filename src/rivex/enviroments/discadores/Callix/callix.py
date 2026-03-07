@@ -9,6 +9,8 @@ import sys
 from dotenv import load_dotenv
 from datetime import datetime, timedelta, date
 from src.rivex.utils.infra_utils.date_config import DateConfig
+from src.rivex.utils.requests_utils.requests import HttpRequisitions
+from src.rivex.enviroments.discadores.Callix.payloads_callix import PayloadsCallix
 
 load_dotenv()
 
@@ -20,43 +22,57 @@ class CallixAPI:
 
     def requisicao_tratada(self, cliente, requisicao):
         '''recebe o link e trata para fazer as requisições'''
-        link = f'https://{cliente}/api/v1/{requisicao}'
+        link = f'https://{cliente}contech.callix.com.br/api/v1/{requisicao}'
         return link
+    
+            
+    def login_callix(login, password, cliente):
+        # iniciar o login no ambiente callix
+        url = f'https://{cliente}contech.callix.com.br/api/v4/auth/session'
+        hr = HttpRequisitions()
+        hc = HeadersCallix()
+        
+        payload_login = {"username": login, "password": password}
+        headers = rc.headers_callix(token)
+        login = hr.requisicao_post(payload_login, headers)
+        return login
+    
+    def get_agressividade(token, data, login, cliente):
+        '''Função para Verificar a alteração de agressividade no callix'''
+        cookies = {"token": login}
+        
+        url = f'https://{cliente}contech.callix.com.br/audit-logs'
+        
+        
+        params = {
+            "sorting": "-createdAt",
+            "createdAt": f"{data},{data}",
+            "pagination": "0,100"
+        }
+        
+        agressividade = requests.get(url, params=params, cookies=cookies)
+        if agressividade.status_code == 200:
+            return agressividade.json()
+        else: 
+            print('erro ao coletar agressividade', agressividade.status_code)
+            return None
+        
+        
 
     def dados_gerais(self,  cliente, requisicao, data, token, filtro: dict | None = None):
         '''função para coletar os dados de chamadas'''
-        print(f'DATA DA COLETA PADRÃO {data}')
-        
+        pc = PayloadsCallix()
+        hr = HttpRequisitions()
+        hc = HeadersCallix()
         print(f'Coletando {requisicao}')
 
         link = self.requisicao_tratada(cliente, requisicao)
-
-        if requisicao == "user_performance_reports":
-            querystring = {
-                "filter[date]": f"{data}T00:00:00.000Z,{data}T23:59:59.999Z"
-            }
-        else:
-            querystring = {
-                "filter[started_at]": f"{data}T00:00:00.000Z,{data}T23:59:59.999Z",
-            }
-            
-        print("Querystring enviada:", querystring)
         
-        if filtro:
-            querystring.update(filtro)
-
-        headers = {
-            "Content-Type": "application/json",
-            "Authorization": f"Bearer {token}",
-        }
-        response = requests.request("GET", link, headers=headers, params=querystring)
-        if response.status_code == 200:
-            print(f'Coleta de chamadas do tipo: {requisicao} Finalizada')
-            coleta_chamadas = response.json()
-            return coleta_chamadas
-        else:
-            raise RuntimeError(f'Erro durante as chamadas do tipo: {requisicao} Resposta do servidor {response.status_code}')
-            return False
+        querystring = pc.payload_request(requisicao)
+        headers = rc.headers_callix(token)
+        
+        response = hr.requisicao_get(querystring, headers)
+        return response.json()
 
     def execucao_por_cliente(self, cliente, data, token):
         '''Função para coletar os dados por cliente'''
@@ -73,10 +89,11 @@ class CallixAPI:
                 "completas": completas_bruto,
                 "recusadas": recusadas_bruto,
                 "abandonadas": abandonadas_bruto,
-                "performance": performace_bruta,
+                "performace": performace_bruta,
             }
         except Exception as e:
             raise RuntimeError(f'Erro: {e} na coleta de dados de {cliente}') from e
             return None
+        
 
 

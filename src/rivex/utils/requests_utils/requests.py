@@ -10,9 +10,17 @@ class HttpRequisitions:
         http.analista_de_erros(postagem.status_code)
         return postagem
     
-    def requisicao_get(self, payload_get: dict, headers: dict, url: str):
-        coleta = self.session.get(url, params=payload_get, headers=headers)
-        # verificação se há erros nos status_code
-        http = HttpResponse
-        http.analista_de_erros(coleta.status_code)
-        return coleta
+    def requisicao_get(self, payload_get: dict, headers: dict, url: str, cookies_requisicao: str | None):
+        
+        if cookies_requisicao:
+            coleta = self.session.get(url, params=payload_get, headers=headers, cookies=cookies_requisicao)
+            # verificação se há erros nos status_code
+            http = HttpResponse
+            http.analista_de_erros(coleta.status_code)
+            return coleta
+        else:
+            coleta = self.session.get(url, params=payload_get, headers=headers,)
+            # verificação se há erros nos status_code
+            http = HttpResponse
+            http.analista_de_erros(coleta.status_code)
+            return coleta

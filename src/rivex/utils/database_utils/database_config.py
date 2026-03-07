@@ -27,19 +27,14 @@ class DatabaseConfig:
         try:
             cursor = conexao.cursor()
             
-            coluna = dados_equipe.keys()
-            valores = dados_equipe.values()
-            
-            query = sql.SQL("""
-                INSERT INTO {} ({})
-                VALUES ({})
-                """).format(
-                    sql.Identifier(tabela),
-                    sql.SQL(', ').join(map(sql.Identifier, coluna)),
-                    sql.SQL(', ').join(sql.Placeholder() * len(coluna))
-                )
                 
-            cursor.execute(query, list(valores))
+            cursor.execute(
+                "INSERT INTO dados_chamadas (discador, fila, data, chamadas_totais, chamadas_completas, chamadas_recusadas, chamadas_abandonadas, agentes_online, agressividade) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)",
+                (dados_equipe['Discador'], dados_equipe['Fila'], dados_equipe['Data'], dados_equipe['Chamadas totais'],
+                 dados_equipe['Chamadas completas'], dados_equipe['Chamadas recusadas'], dados_equipe['Chamadas abandonadas'], dados_equipe['Agentes online'],
+                 dados_equipe['Agressividade'],
+                 )
+            )
             conexao.commit()
             
             print('Dados inseridos com sucesso')

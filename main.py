@@ -34,10 +34,12 @@ def main_callix():
 
             dados_brutos = api.execucao_por_cliente(cliente, data, token=token)
             dados_limpos = limpeza.execucao_limpeza(
+                discador_usado=dados_brutos["Fila"],
                 completas_bruto=dados_brutos["completas"],
                 recusadas_bruto=dados_brutos["recusadas"],
                 abandonadas_bruto=dados_brutos["abandonadas"],
-                performace_suja=dados_brutos["performance"]
+                performace_suja=dados_brutos["performance"],
+                agressividade_suja=dados_brutos["Agressividade"]
             )
             print(type(dados_limpos), dados_limpos)
 
@@ -96,7 +98,7 @@ def main_database(dados: dict):
     dr.coleta_chamadas(dados_equipe=dados)
 
 
-dados_vonix = main_vonix()
-main_database(dados_vonix)
+#dados_vonix = main_vonix()
+#main_database(dados_vonix)
 dados_callix = main_callix()
 main_database(dados_callix)

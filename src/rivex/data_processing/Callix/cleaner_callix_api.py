@@ -24,8 +24,23 @@ class LimpezaCallixAPI:
         agentes = None
         chamadas = None
         return agentes, chamadas
+    
+    def limpeza_agressividade(self, agressividade_json):
+    # limpar a agressividade se houver valor
+        if agressividade_json:
+            valor_agressividade = [
+                agressividade_json['attributes']['propertiesChanged']['$serialized']['powerAggressiveness']['value']
+                for item in agressividade_convertida['data']
+                if 'propertiesChanged' in item['attributes']
+                and '$serialized' in item['attributes']['propertiesChanged']
+                and 'powerAggressiveness' in item['attributes']['propertiesChanged']['$serialized']
+            ]
+            return valor_agressividade
+        else:
+            print('Sem agressividade alterada para ser tratada')
+            return None
 
-    def execucao_limpeza(self, completas_bruto, recusadas_bruto, abandonadas_bruto, performace_suja):
+    def execucao_limpeza(self, cliente, completas_bruto, recusadas_bruto, abandonadas_bruto, performace_suja, agressividade_json):
         '''Vai executar a limpeza de dados de forma centralizada'''
         dc = DateConfig()
         data = dc.data_selecionadas
@@ -38,6 +53,7 @@ class LimpezaCallixAPI:
         totais = self.agregar_dados(completas, recusadas_semi_bruto)
         chamadas, agente = self.limpeza_performace_json(performace_suja)
         chamadas_completas = self.logica_chamadas(chamadas)
+        agressividade = self.limpeza_agressividade(agressividade_json)
 
         return {
             "Discador": "Callix",
@@ -47,6 +63,7 @@ class LimpezaCallixAPI:
             "recusadas": recusadas,
             "abandonadas": abandonadas,
             "totais": totais,
+            "Agressividade": agressividade,
             "Agentes": agentes,
             "Chamadas": chamadas
         }

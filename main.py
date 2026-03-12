@@ -1,5 +1,7 @@
 import os
 import time
+import requests
+from dotenv import load_dotenv
 from src.rivex.enviroments.discadores.Callix.callix import CallixAPI
 from src.rivex.enviroments.discadores.Callix.callix_token_db import CallixDB
 from src.rivex.data_processing.Callix.cleaner_callix_api import LimpezaCallixAPI
@@ -13,6 +15,8 @@ from src.rivex.database.database import DatabaseRivex
 
 
 def main_callix():
+    load_dotenv()
+    
     print('Iniciando a coleta de dados no discador Callix...')
     db = CallixDB()
     tokens_clientes = db.get_token_and_client_from_db()
@@ -21,7 +25,11 @@ def main_callix():
     if not tokens_clientes:
         raise RuntimeError('Sem clientes ou tokens no banco')
 
-    api = CallixAPI()
+    password=os.getenv('senha_callix_essence')
+    login_ambiente=os.getenv('senha_callix_essence')
+    
+    
+    api = CallixAPI(password, login_ambiente)
     limpeza = LimpezaCallixAPI()
     Dc = DateConfig()
 
@@ -32,13 +40,13 @@ def main_callix():
         try:
             print('Coletando dados do cliente', cliente)
 
-            dados_brutos = api.execucao_por_cliente(cliente, data, token=token)
+            dados_brutos = api.execucao_por_cliente(login_ambiente, password, cliente, data, token=token)
             dados_limpos = limpeza.execucao_limpeza(
                 discador_usado=dados_brutos["Fila"],
                 completas_bruto=dados_brutos["completas"],
                 recusadas_bruto=dados_brutos["recusadas"],
                 abandonadas_bruto=dados_brutos["abandonadas"],
-                performace_suja=dados_brutos["performance"],
+                performace_suja=dados_brutos["performace"],
                 agressividade_suja=dados_brutos["Agressividade"]
             )
             print(type(dados_limpos), dados_limpos)

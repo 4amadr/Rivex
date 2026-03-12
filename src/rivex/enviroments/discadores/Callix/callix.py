@@ -10,59 +10,50 @@ from dotenv import load_dotenv
 from datetime import datetime, timedelta, date
 from src.rivex.utils.infra_utils.date_config import DateConfig
 from src.rivex.utils.requests_utils.requests import HttpRequisitions
-from src.rivex.enviroments.discadores.Callix.payloads_callix import PayloadsCallix
+from src.rivex.enviroments.discadores.Callix.payloads_callix import *
 
 load_dotenv()
 
 class CallixAPI:
 
     # Inicializa a classe com os valores passados como parâmetros
-    def __init__(self):
-        pass
+    def __init__(self, password, login_ambiente):
+        self.password = password
+        self.login_ambiente = login_ambiente
 
     def requisicao_tratada(self, cliente, requisicao):
         '''recebe o link e trata para fazer as requisições'''
-        link = f'https://{cliente}contech.callix.com.br/api/v1/{requisicao}'
+        link = f'https://{cliente}/api/v1/{requisicao}'
         return link
     
             
-    def login_callix(self, password, cliente):
+    def login_callix(self, login_ambiente,  password, cliente, token_callix):
+        
+        
         # iniciar o login no ambiente callix
-        url = f'https://{cliente}contech.callix.com.br/api/v4/auth/session'
-        hr = HttpRequisitions()
-        hc = HeadersCallix()
+        url = f'https://{cliente}/api/v4/auth/session'
+        session = requests.Session()
+        hr = HttpRequisitions(session)
         
-        payload_login = {"username": login, "password": password}
-        headers = rc.headers_callix(token)
-        login = hr.requisicao_post(payload_login, headers)
+        # cabeçalhos da requisição
+        headers = headers_callix(token_callix)
+        payload = payload_login_callix(login_ambiente, password)
         
-        # token para ser utilizado durante a coleta da agressividade
-        token = login.cookies.get("token")
-        return token
+        login = requests.post(url, params=payload, headers=headers)
+        
+        return token_callix
     
     def get_agressividade(self, data, cliente, token):
         '''Função para Verificar a alteração de agressividade no callix'''
         
-        print(f"Verrificando a agressividade do cliente: {cliente}")
+        url = f'https://{cliente}/audit-logs'
         
-        url = f'https://{cliente}contech.callix.com.br/audit-logs'
-        
-        
-        params = {
-            "sorting": "-createdAt",
-            "createdAt": f"{data},{data}",
-            "page[limit]": 100,
-            "page[offset]": 0
-        }
-        
-        cookies = {"token": token}
-        
+        # cabeçalhos da requisição de agressividade
+        params = params_para_agressividade(data)
+        cookies = {"token": token}      
         agressividade = requests.get(url, params=params, cookies=cookies)
         if agressividade.status_code == 200:
-            return agressividade.json()
-        elif agressividade is None:
-            print(f"A agressividade do cliente: {cliente} Não foi alterada!")
-            return None
+            return agressividade.text
         else: 
             print('Erro ao coletar agressividade', agressividade.status_code)
             return False
@@ -71,33 +62,34 @@ class CallixAPI:
 
     def dados_gerais(self,  cliente, requisicao, data, token, filtro: dict | None = None):
         '''função para coletar os dados de chamadas'''
-        pc = PayloadsCallix()
-        hr = HttpRequisitions()
-        hc = HeadersCallix()
+        session = requests.Session()
+        hr = HttpRequisitions(session)
+        
         print(f'Coletando {requisicao}')
 
         link = self.requisicao_tratada(cliente, requisicao)
         
-        querystring = pc.payload_request(requisicao)
-        headers = rc.headers_callix(token)
+        querystring = payload_request(requisicao, data, filtro)
+        headers = headers_callix(token)
         
-        response = hr.requisicao_get(querystring, headers)
+        response = hr.requisicao_get(querystring, headers, link)
         return response.json()
 
-    def execucao_por_cliente(self, cliente, data, token):
+    def execucao_por_cliente(self, login_ambiente, password, cliente, data, token):
         '''Função para coletar os dados por cliente'''
         try:
+              
             time.sleep(10)
             print(f"Logando no cliente {cliente}")
-            token_para_agressividade = self.login_callix(password, cliente)
-            agressividade_json = self.get_agressividade(data, cliente, token_para_agressividade)
             recusadas_bruto = self.dados_gerais(cliente, 'campaign_missed_calls', data, token)
             completas_bruto = self.dados_gerais(cliente, 'campaign_completed_calls', data, token)
-            print(f'Aguarde um momento, timer de requisição de 65 segundos para o pedido não ser metralhado pelo servidor kk')
+            print(f'Aguarde 65 segundos')
             time.sleep(65)
             abandonadas_bruto = self.dados_gerais(cliente, 'campaign_missed_calls', data, token, filtro={"filter[failure_cause]": "9"})
             time.sleep(20)
             performace_bruta = self.dados_gerais(cliente, 'user_performance_reports', data, token)
+            token_para_agressividade = self.login_callix(login_ambiente, password, cliente, token)
+            agressividade_json = self.get_agressividade(data, cliente, token)
             
             
             return {

@@ -82,17 +82,18 @@ class LimpezaVonix:
 
         # chamadas
         tabela = self.encontrar_tabela(html_agentes)
+        discador = "Vonix"
         if not tabela:
             return {
-                'Discador': 'Vonix',
-                'Fila': equipe,
-                'Data': data,
-                'Chamadas totais': 0,
-                'Chamadas completas': 0,
-                'Chamadas recusadas': 0,
-                'Chamadas abandonadas': 0,
-                'Agentes online': 0,
-                'Agressividade': agressividade_da_fila,
+                'discador': discador,
+                'fila': equipe,
+                'data': data,
+                'chamadas_totais': 0,
+                'chamadas_completas': 0,
+                'chamadas_recusadas': 0,
+                'chamadas_abandonadas': 0,
+                'agentes_online': 0,
+                'agressividade': agressividade_da_fila,
             }
         '''A agressividade sempre terá valor, então independente do agente fazer ligações ou não
           sempre haverá agressividade'''
@@ -112,12 +113,13 @@ class LimpezaVonix:
 
 
         return {
-            'Fila': equipe,
-            'Data': data,
-            'Chamadas totais': chamadas_totais,
-            'Chamadas completas': chamadas_aceitas,
-            'Chamadas recusadas': chamadas_recusadas,
-            'Chamadas abandonadas': chamadas_abandonadas,
+            'discador': 'Vonix',
+            'fila': equipe,
+            'data': data,
+            'chamadas_totais': chamadas_totais,
+            'chamadas_completas': chamadas_aceitas,
+            'chamadas_recusadas': chamadas_recusadas,
+            'chamadas_abandonadas': chamadas_abandonadas,
             'agentes_online': agentes_filtrados,
             'agressividade': agressividade_da_fila,
         }

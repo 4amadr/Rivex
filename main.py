@@ -12,7 +12,10 @@ from src.rivex.enviroments.discadores.vonix.fluxo_coleta import ExecucaoVonix
 from src.rivex.enviroments.discadores.vonix.fluxo_limpeza import LimpezaVonix
 from src.rivex.database.database import DatabaseRivex
 
-
+def main_database(dados: dict):
+    # execução e envio dos dados para o banco de dados
+    dr = DatabaseRivex
+    dr.coleta_chamadas(dados_equipe=dados)
 
 def main_callix():
     load_dotenv()
@@ -42,7 +45,6 @@ def main_callix():
 
             dados_brutos = api.execucao_por_cliente(login_ambiente, password, cliente, data, token=token)
             dados_limpos = limpeza.execucao_limpeza(
-                discador_usado=dados_brutos["Fila"],
                 completas_bruto=dados_brutos["completas"],
                 recusadas_bruto=dados_brutos["recusadas"],
                 abandonadas_bruto=dados_brutos["abandonadas"],
@@ -85,7 +87,7 @@ def main_vonix():
         for equipe in times:
             # timer para não quebrar o servidor
             time.sleep(15)
-            print('Executanto time ->',equipe)
+            print('Executanto a fila ->',equipe)
             # primeiro coletamos os dados em formato HTML
 
             chamadas_totais, chamadas_completas, chamadas_recusadas, chamadas_abandonadas, html_agentes, html_agressividade = ev.execucao_vonix(data, url_vonix, equipe)
@@ -93,7 +95,8 @@ def main_vonix():
 
             # agora a limpeza de dados para trazer apenas os dados limpos para o banco de dados
             dict_vonix_dados = lv.limpeza_de_dados_vonix(chamadas_totais, chamadas_completas, chamadas_recusadas, chamadas_abandonadas, html_agentes, html_agressividade, equipe, data)
-            print('Dados limpos. Coleta finalizada.')
+            print('Dados limpos. Coleta finalizada, enviando para o banco...')
+            main_database(dict_vonix_dados)
             print(dict_vonix_dados)
             
     print('Execução do vonix finalizada')
@@ -106,7 +109,7 @@ def main_database(dados: dict):
     dr.coleta_chamadas(dados_equipe=dados)
 
 
-#dados_vonix = main_vonix()
-#main_database(dados_vonix)
-dados_callix = main_callix()
-main_database(dados_callix)
+dados_vonix = main_vonix()
+main_database(dados_vonix)
+#dados_callix = main_callix()
+#main_database(dados_callix)

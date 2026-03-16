@@ -103,13 +103,8 @@ def main_vonix():
     return dict_vonix_dados
 
 
-def main_database(dados: dict):
-    # execução e envio dos dados para o banco de dados
-    dr = DatabaseRivex
-    dr.coleta_chamadas(dados_equipe=dados)
 
 
 dados_vonix = main_vonix()
-main_database(dados_vonix)
 #dados_callix = main_callix()
 #main_database(dados_callix)

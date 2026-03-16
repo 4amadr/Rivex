@@ -28,8 +28,6 @@ class CallixAPI:
     
             
     def login_callix(self, login_ambiente,  password, cliente, token_callix):
-        
-        
         # iniciar o login no ambiente callix
         url = f'https://{cliente}/api/v4/auth/session'
         session = requests.Session()
@@ -58,8 +56,26 @@ class CallixAPI:
             print('Erro ao coletar agressividade', agressividade.status_code)
             return False
         
+    def get_id_campanha(self, campanha):
+        # função para coletar o id da campanha que posteriormente vai ser utilizada para coletar a agressividade
+        lista_de_campanhas = []
+        for numero in json_campanha['data']:
+            for campanhas in numero['id']:
+                # loop de iteração pois o cliente pode ter mais de uma campanha
+                lista_de_campanhas.append(campanhas)
+        return lista_de_campanhas
         
-
+    def get_agressividade(self, cliente,  id_campanha):
+        # função para usar o id da campanha e coletar a agressividade
+        for campanha in id_campanha:
+            url_agressividade = f'https://{cliente}contech.callix.com.br/api/v4/entities/campaigns/{campanha}'
+            campanha_detalhada = requests.get(url=url_agressividade, headers=headers_callix)
+            if campanha_detalhada.status_code == 200:
+                return campanha_detalhada.json()
+            else:
+                print('Erro ao coletar campanha:', campanha_detalhada.status_code)
+                return False
+        
     def dados_gerais(self,  cliente, requisicao, data, token, filtro: dict | None = None):
         '''função para coletar os dados de chamadas'''
         session = requests.Session()
@@ -81,6 +97,7 @@ class CallixAPI:
               
             time.sleep(10)
             print(f"Logando no cliente {cliente}")
+            campanha_json = self.dados_gerais(cliente, 'campaigns', data, token)
             recusadas_bruto = self.dados_gerais(cliente, 'campaign_missed_calls', data, token)
             completas_bruto = self.dados_gerais(cliente, 'campaign_completed_calls', data, token)
             print(f'Aguarde 65 segundos')
@@ -89,7 +106,8 @@ class CallixAPI:
             time.sleep(20)
             performace_bruta = self.dados_gerais(cliente, 'user_performance_reports', data, token)
             token_para_agressividade = self.login_callix(login_ambiente, password, cliente, token)
-            agressividade_json = self.get_agressividade(data, cliente, token)
+            id_campanha = self.get_id_campanha(campanha=campanha_json)
+            agressividade_json = self.get_agressividade(data, cliente, id_campanha)
             
             
             return {

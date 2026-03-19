@@ -21,25 +21,27 @@ class LimpezaCallixAPI:
 
     def limpeza_performace_json(self, performace_suja):
         '''Função para retornar um dicionário com os agentes e quantas chamadas cada agente fez respectivamente'''
-        agentes = None
-        chamadas = None
-        return agentes, chamadas
-    
+        agentes_dados = performace_suja['data']
+        lista_agentes = []
+        for nome in agentes_dados:
+            nome_agente = nome['id']
+            # chamadas está dentro de atributes
+            atributos = nome['attributes']
+            chamadas_agente = atributos['answered_count']
+            
+            dict_agentes = {
+                'Agente': nome_agente,
+                'Chamadas': chamadas_agente
+            }
+            lista_agentes.append(dict_agentes)
+        return lista_agentes    
+        
     def limpeza_agressividade(self, agressividade_json):
     # limpar a agressividade se houver valor
-        if agressividade_json:
-            valor_agressividade = [
-                agressividade_json['attributes']['propertiesChanged']['$serialized']['powerAggressiveness']['value']
-                for item in agressividade_convertida['data']
-                if 'propertiesChanged' in item['attributes']
-                and '$serialized' in item['attributes']['propertiesChanged']
-                and 'powerAggressiveness' in item['attributes']['propertiesChanged']['$serialized']
-            ]
-            return valor_agressividade
-        else:
-            print('Sem agressividade alterada para ser tratada')
-            return None
-
+        dados = agressividade['data']
+        atributos = dados['attributes']
+        return atributos['powerAggressiveness']
+    
     def execucao_limpeza(self, cliente, completas_bruto, recusadas_bruto, abandonadas_bruto, performace_suja, agressividade_json):
         '''Vai executar a limpeza de dados de forma centralizada'''
         dc = DateConfig()
@@ -51,7 +53,7 @@ class LimpezaCallixAPI:
         abandonadas = self.tratamento_chamadas(abandonadas_bruto)
         recusadas = self.chamadas_recusadas(recusadas_semi_bruto, abandonadas)
         totais = self.agregar_dados(completas, recusadas_semi_bruto)
-        chamadas, agente = self.limpeza_performace_json(performace_suja)
+        lista_de_agentes_e_chamadas = self.limpeza_performace_json(performace_suja)
         chamadas_completas = self.logica_chamadas(chamadas)
         agressividade = self.limpeza_agressividade(agressividade_json)
 
@@ -64,6 +66,5 @@ class LimpezaCallixAPI:
             "abandonadas": abandonadas,
             "totais": totais,
             "Agressividade": agressividade,
-            "Agentes": agentes,
-            "Chamadas": chamadas
+            "Chamadas por agente": lista_de_agentes_e_chamadas
         }

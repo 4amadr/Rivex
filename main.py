@@ -49,9 +49,14 @@ def main_callix():
                 recusadas_bruto=dados_brutos["recusadas"],
                 abandonadas_bruto=dados_brutos["abandonadas"],
                 performace_suja=dados_brutos["performace"],
-                agressividade_suja=dados_brutos["Agressividade"]
+                agressividade_suja=dados_brutos["Agressividade"],
             )
-            print(type(dados_limpos), dados_limpos)
+            # os dados de performace serão inseridos em outra tabela
+            chamadas_por_clientes = limpeza.execucao_limpeza(
+                desempenho_dos_agentes=dados_brutos['performace']
+            )
+            
+            print(dados_limpos)
 
             resultados.append({
                 'Discador': 'Callix',

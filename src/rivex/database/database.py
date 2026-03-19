@@ -7,4 +7,5 @@ class DatabaseRivex:
         dc.inserir_dicionario_no_banco_de_dados(conexao=conexao, tabela='dados_chamadas', dados_equipe=dados_equipe)
         dc.fechar_conexao(conexao)
         
+        
     # abaixo devem ser inseridos as outras coletas -> Operadoras e definição de clientes

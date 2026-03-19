@@ -42,9 +42,23 @@ class DatabaseConfig:
         except Exception as e:
             conexao.rollback()
             print(f"Erro {e} ao inserir os dados no banco de dados")
-        finally: 
-            if cursor:
-                cursor.close()
+        
+                
+    def inserir_chamadas_e_agentes_db(self, conexao, dados_agente: dict):
+        cursor = None
+        try:
+            cursor = conexao.cursor()
+            
+            cursor.execute(
+                "INSERT INTO agentes_dia (data, fila, agente, chamadas) VALUES (%s, %s, %s, %s)",
+                (dados_agente['data'], dados_agente['fila'], dados_agente['agente'], dados_agente['chamadas'])
+            )
+            conexao.commit()
+            
+            print("Dados de agentes inseridos")
+        except Exception as e:
+            conexao.rollback()
+            print(f"Erro {e} ao inserir dados de agentes no banco de dados")
             
     def fechar_conexao(self, conexao):
         # fechar a conexão do banco

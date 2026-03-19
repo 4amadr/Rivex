@@ -36,10 +36,11 @@ class CallixAPI:
         # cabeçalhos da requisição
         headers = headers_callix(token_callix)
         payload = payload_login_callix(login_ambiente, password)
+        session = requests.Session()
         
-        login = requests.post(url, params=payload, headers=headers)
+        login = session.post(url, params=payload, headers=headers)
         
-        return token_callix
+        return login
     
     def get_agressividade(self, data, cliente, token):
         '''Função para Verificar a alteração de agressividade no callix'''
@@ -65,7 +66,7 @@ class CallixAPI:
                 lista_de_campanhas.append(campanhas)
         return lista_de_campanhas
         
-    def get_agressividade(self, cliente,  id_campanha):
+    def get_agressividade(self, cliente,  id_campanha, session):
         # função para usar o id da campanha e coletar a agressividade
         for campanha in id_campanha:
             url_agressividade = f'https://{cliente}contech.callix.com.br/api/v4/entities/campaigns/{campanha}'
@@ -97,17 +98,25 @@ class CallixAPI:
               
             time.sleep(10)
             print(f"Logando no cliente {cliente}")
+            
+            # Coletando a campanha
             campanha_json = self.dados_gerais(cliente, 'campaigns', data, token)
+            id_campanha = self.get_id_campanha(campanha=campanha_json)
+            
+            # chamadas
             recusadas_bruto = self.dados_gerais(cliente, 'campaign_missed_calls', data, token)
             completas_bruto = self.dados_gerais(cliente, 'campaign_completed_calls', data, token)
             print(f'Aguarde 65 segundos')
             time.sleep(65)
             abandonadas_bruto = self.dados_gerais(cliente, 'campaign_missed_calls', data, token, filtro={"filter[failure_cause]": "9"})
-            time.sleep(20)
+            
+            # agentes
             performace_bruta = self.dados_gerais(cliente, 'user_performance_reports', data, token)
-            token_para_agressividade = self.login_callix(login_ambiente, password, cliente, token)
-            id_campanha = self.get_id_campanha(campanha=campanha_json)
-            agressividade_json = self.get_agressividade(data, cliente, id_campanha)
+            login = self.login_callix(login_ambiente, password, cliente, token)
+
+            # agressividade
+            agressividade_json = self.get_agressividade(data, cliente, id_campanha, login)
+            
             
             
             return {

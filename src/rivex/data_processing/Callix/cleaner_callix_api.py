@@ -1,70 +1,47 @@
 from src.rivex.utils.infra_utils.date_config import DateConfig
 
 class LimpezaCallixAPI:
-
-    def chamadas_recusadas(self, recusadas_semi_bruto, abandonadas):
-        '''Função para calcular o valor limpo das chamadas recusadas'''
-        recusadas = max(recusadas_semi_bruto - abandonadas, 0)
-        return recusadas
-
-    def tratamento_chamadas(self, dados_chamadas):
-        '''função para pegar o arquivo e filtrar apenas os dados que
-        serão necessários'''
-        chamadas = int(dados_chamadas.get("meta", {}).get("count", 0))
-        return chamadas
-
-    def agregar_dados(self, completas, recusadas):
-        '''Função para obter o total de chamadas em um dia'''
-        chamadas_totais = completas + recusadas
-        return chamadas_totais
-
-
-    def limpeza_performace_json(self, performace_suja):
-        '''Função para retornar um dicionário com os agentes e quantas chamadas cada agente fez respectivamente'''
-        agentes_dados = performace_suja['data']
-        lista_agentes = []
-        for nome in agentes_dados:
-            nome_agente = nome['id']
-            # chamadas está dentro de atributes
-            atributos = nome['attributes']
-            chamadas_agente = atributos['answered_count']
-            
-            dict_agentes = {
-                'Agente': nome_agente,
-                'Chamadas': chamadas_agente
-            }
-            lista_agentes.append(dict_agentes)
-        return lista_agentes    
-        
-    def limpeza_agressividade(self, agressividade_json):
-    # limpar a agressividade se houver valor
-        dados = agressividade['data']
-        atributos = dados['attributes']
-        return atributos['powerAggressiveness']
+    def limpeza_contagens(self, chamadas_completas):
+        return int(raw.get("meta", {}).get("count", 0))
     
-    def execucao_limpeza(self, cliente, completas_bruto, recusadas_bruto, abandonadas_bruto, performace_suja, agressividade_json):
-        '''Vai executar a limpeza de dados de forma centralizada'''
-        dc = DateConfig()
-        data = dc.data_selecionadas
+    def calcular_recusadas(self, recusadas, abandonadas):
+        return max(recusadas - abandonadas, 0)
+    
+    def limpeza_performace(self, performace):
+        return [
+            {
+                "Id agente": performace['id'],
+                "chamadas": performace['attributes']['answered_count'],
+            }
+            for agente in performace.get("data", [])
+        ]
+        
+    def limpeza_agressividade(self, agressividade):
+        if not agressividade:
+            return None
+        ultimo = agressividade[-1]
+        return ultimo["data"]["attributes"].get("powerAggressiveness")
+    
+    def contador_chamadas_totais(self, chamadas_aceitas, chamadas_recusadas, chamadas_abandonadas, agressividade_coletada):
+        pass
+    
+    def limpar_dados_callix(self, chamadas_aceitas, chamadas_recusadas, chamadas_abandonadas, performace):
+        
+        completa = self.limpeza_contagens(chamadas_aceitas)
+        recusadas_brutas = self.limpeza_contagens(chamadas_recusadas)
+        abandonadas = self.limpeza_contagens(chamadas_abandonadas)
+        recusadas = self.calcular_recusadas(recusadas_brutas, abandonadas)
+        total = completa + recusadas_brutas
+        
+        agentes = self.limpeza_performace(performace)
+        agressividade = self.limpeza_agressividade(agressividade_coletada)
         
         
-        completas = self.tratamento_chamadas(completas_bruto)
-        recusadas_semi_bruto = self.tratamento_chamadas(recusadas_bruto)
-        abandonadas = self.tratamento_chamadas(abandonadas_bruto)
-        recusadas = self.chamadas_recusadas(recusadas_semi_bruto, abandonadas)
-        totais = self.agregar_dados(completas, recusadas_semi_bruto)
-        lista_de_agentes_e_chamadas = self.limpeza_performace_json(performace_suja)
-        chamadas_completas = self.logica_chamadas(chamadas)
-        agressividade = self.limpeza_agressividade(agressividade_json)
-
         return {
-            "Discador": "Callix",
-            "Data": data,
-            "Fila": cliente,
-            "completas": completas,
-            "recusadas": recusadas,
-            "abandonadas": abandonadas,
-            "totais": totais,
             "Agressividade": agressividade,
-            "Chamadas por agente": lista_de_agentes_e_chamadas
+            "Chamadas totais": total,
+            "Chamadas aceitas": completa,
+            "Chamadas recusadas": recusadas,
+            "Chamadas abandonadas": abandonadas,
+            "Agentes online": agentes,
         }

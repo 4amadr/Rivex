@@ -50,8 +50,8 @@ class DatabaseConfig:
             cursor = conexao.cursor()
             
             cursor.execute(
-                "INSERT INTO agentes_dia (data, fila, agente, chamadas) VALUES (%s, %s, %s, %s)",
-                (dados_agente['data'], dados_agente['fila'], dados_agente['agente'], dados_agente['chamadas'])
+                "INSERT INTO agentes_dia (cliente, data, agente, chamadas) VALUES (%s, %s, %s, %s)",
+                (dados_agente['fila'], dados_agente['data'], dados_agente['agente'], dados_agente['chamadas'])
             )
             conexao.commit()
             

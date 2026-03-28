@@ -1,4 +1,4 @@
-def payload_request(requisicao, data, filtro):
+def payload_callix(requisicao, data, filtro):
     if requisicao == "user_performance_reports":
         querystring = {
             "filter[date]": f"{data}T00:00:00.000Z,{data}T23:59:59.999Z"

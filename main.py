@@ -2,7 +2,7 @@ import os
 import time
 import requests
 from dotenv import load_dotenv
-from src.rivex.enviroments.discadores.Callix.callix import CallixAPI
+from src.rivex.enviroments.discadores.Callix.callix import CallixAPICollector
 from src.rivex.enviroments.discadores.Callix.callix_token_db import CallixDB
 from src.rivex.data_processing.Callix.cleaner_callix_api import LimpezaCallixAPI
 from src.rivex.enviroments.discadores.vonix.equipes_vonix import dict_agentes
@@ -21,8 +21,13 @@ def main_callix():
     load_dotenv()
     
     print('Iniciando a coleta de dados no discador Callix...')
+    # instância de classes
     db = CallixDB()
+    dr = DatabaseRivex()
+    limpeza = LimpezaCallixAPI()
+    Dc = DateConfig()
     tokens_clientes = db.get_token_and_client_from_db()
+    data = Dc.data_callix()
     db.close()
 
     if not tokens_clientes:
@@ -30,47 +35,29 @@ def main_callix():
 
     password=os.getenv('senha_callix_essence')
     login_ambiente=os.getenv('senha_callix_essence')
-    
-    
-    api = CallixAPI(password, login_ambiente)
-    limpeza = LimpezaCallixAPI()
-    Dc = DateConfig()
 
     resultados = []
     # callix usa padrão YY/MM/DD
-    data = Dc.data_callix()
     for cliente, token in tokens_clientes.items():
-        try:
-            print('Coletando dados do cliente', cliente)
-
-            dados_brutos = api.execucao_por_cliente(login_ambiente, password, cliente, data, token=token)
-            dados_limpos = limpeza.execucao_limpeza(
-                completas_bruto=dados_brutos["completas"],
-                recusadas_bruto=dados_brutos["recusadas"],
-                abandonadas_bruto=dados_brutos["abandonadas"],
-                performace_suja=dados_brutos["performace"],
-                agressividade_suja=dados_brutos["Agressividade"],
+        api = CallixAPICollector(cliente, token, data)
+        '''
+        1 - coleta
+        2 - limpeza
+        3 - DB'''
+        # dicionário com os dados coletados em json
+        print(f'Coletando dados do cliente {cliente}')
+        dict_dados = api.coletar_tudo(cliente, token, data)
+        
+        print('Limpando...')
+        dict_limpeza = limpeza.limpar_dados_callix(
+            dict_dados['Completas'],
+            dict_dados['Recusadas'],
+            dict_dados['Abandonadas'],
+            dict_dados['Performace de agentes']
             )
-            # os dados de performace serão inseridos em outra tabela
-            chamadas_por_clientes = limpeza.execucao_limpeza(
-                desempenho_dos_agentes=dados_brutos['performace']
-            )
-            
-            print(dados_limpos)
-
-            resultados.append({
-                'Discador': 'Callix',
-                'cliente': cliente,
-                "Data": data,
-                **dados_limpos
-            })
-
-        except Exception as e:
-            print(f'Erro na execução do cliente {cliente}: {e}')
-
-    converter = CallixCSVConverter()
-    caminho = converter.save_csv(resultados)
-    print(f'Coleta completamente acabada\n dados salvos em {caminho}')
+        print(dict_limpeza)
+        print('Enviando para o banco de dados...')
+        
     return resultados
 
 
@@ -110,6 +97,6 @@ def main_vonix():
 
 
 
-dados_vonix = main_vonix()
-#dados_callix = main_callix()
+#dados_vonix = main_vonix()
+dados_callix = main_callix()
 #main_database(dados_callix)

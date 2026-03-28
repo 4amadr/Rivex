@@ -10,7 +10,7 @@ class HttpRequisitions:
         analista_de_erros(postagem.status_code)
         return postagem
     
-    def requisicao_get(self, payload_get: dict, headers: dict, url: str, cookies_requisicao: str | None = None):
+    def requisicao_get(self, headers: dict, url: str,  payload_get: dict, cookies_requisicao: str | None = None):
         if cookies_requisicao:
             coleta = self.session.get(url, params=payload_get, headers=headers, cookies=cookies_requisicao)
             # verificação se há erros nos status_code

@@ -46,14 +46,14 @@ def main_callix():
         3 - DB'''
         # dicionário com os dados coletados em json
         print(f'Coletando dados do cliente {cliente}')
-        dict_dados = api.coletar_tudo(cliente, token, data)
+        dict_dados = api.api_callix()
         
         print('Limpando...')
         dict_limpeza = limpeza.limpar_dados_callix(
             dict_dados['Completas'],
             dict_dados['Recusadas'],
             dict_dados['Abandonadas'],
-            dict_dados['Performace de agentes']
+            dict_dados['Desempenho']
             )
         print(dict_limpeza)
         print('Enviando para o banco de dados...')

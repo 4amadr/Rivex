@@ -2,7 +2,7 @@ from src.rivex.utils.infra_utils.date_config import DateConfig
 
 class LimpezaCallixAPI:
     def limpeza_contagens(self, chamadas_completas):
-        return int(raw.get("meta", {}).get("count", 0))
+        return int(chamadas_completas.get("meta", {}).get("count", 0))
     
     def calcular_recusadas(self, recusadas, abandonadas):
         return max(recusadas - abandonadas, 0)

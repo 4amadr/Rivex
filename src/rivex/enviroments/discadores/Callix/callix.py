@@ -47,6 +47,7 @@ class CallixAPICollector:
         return self.coletar('campaigns', ativador_payload=False)
         
     def api_callix(self):
+        
         # chamadas
         chamadas_completas = self.chamadas_completas()
         chamadas_recusadas = self.chamadas_recusadas()
@@ -54,16 +55,13 @@ class CallixAPICollector:
         time.sleep(60)
         chamadas_abandonadas = self.chamadas_abandonadas()
         
-        # desempenho
-        desempenho = self.desempenho()
-        
         # campanha (agressividade)
         campanha = self.campanha()
+        
         print("Sequencia de status code das requisições:")
         print("chamadas completas: ", chamadas_completas.status_code)
         print("chamadas recusadas: ", chamadas_recusadas.status_code)
         print("chamadas abandonadas: ", chamadas_abandonadas.status_code)
-        print("chamadas desempenho: ", desempenho.status_code)
         print("chamadas campanha: ", campanha.status_code)
         
         

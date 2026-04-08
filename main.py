@@ -53,7 +53,6 @@ def main_callix():
             dict_dados['Completas'],
             dict_dados['Recusadas'],
             dict_dados['Abandonadas'],
-            dict_dados['Desempenho']
             )
         print(dict_limpeza)
         print('Enviando para o banco de dados...')

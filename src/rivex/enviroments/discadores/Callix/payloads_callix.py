@@ -1,16 +1,23 @@
-def payload_callix(requisicao, data, filtro):
-    if requisicao == "user_performance_reports":
+def payload_callix(requisicao, data, filtro=None, set=None):
+    if requisicao == "campaign":
+        querystring = None
+        
+    elif requisicao == "user_performance_reports":
         querystring = {
             "filter[date]": f"{data}T00:00:00.000Z,{data}T23:59:59.999Z"
         }
+        
     else:
         querystring = {
             "filter[started_at]": f"{data}T00:00:00.000Z,{data}T23:59:59.999Z",
         }
-    print("Querystring enviada:", querystring)
-    
+        
+    print('Querystring', querystring)
     if filtro:
-        querystring.update(filtro)
+        querystring = {
+            "filter[started_at]": f"{data}T00:00:00.000Z,{data}T23:59:59.999Z",
+            filtro: set
+        }
         
     return querystring
 

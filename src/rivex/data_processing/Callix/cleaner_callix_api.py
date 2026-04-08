@@ -36,6 +36,13 @@ class LimpezaCallixAPI:
         agentes = self.limpeza_performace(performace)
         agressividade = self.limpeza_agressividade(agressividade_coletada)
         
+        print(agressividade)
+        print(total)
+        print(completa)
+        print(recusadas)
+        print(abandonadas)
+        print(agentes)
+        
         
         return {
             "Agressividade": agressividade,

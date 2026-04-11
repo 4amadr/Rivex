@@ -1,5 +1,5 @@
 import requests
-from rivex.utils.requests_utils.requests import HttpRequisitions
+from src.rivex.utils.requests_utils.requests import HttpRequisitions
 
 
 class CAllixRequisition:
@@ -9,20 +9,20 @@ class CAllixRequisition:
     A classe vai coletar os dados com requests
     '''
     
-    def __init__(self, login, senha, cliente, data, session, hr, id_campanha):
+    def __init__(self, login, senha, cliente, data, id_campanha):
         self.login = login
         self.senha = senha
         self.cliente = cliente
         self.data = data
         self.session = requests.Session()
         self.id_campanha = id_campanha
-        self.hr = HttpRequisitions(session=session)
+        self.hr = HttpRequisitions(session=self.session)
         
-    def url_callix(self, cliente, id_campanha):
+    def url_callix(self):
         # vai tratar e gerar todas as URL de requisições limpas para serem usadas
-         url_login = f'https://{cliente}contech.callix.com.br/login'
-         url_chamadas_agentes = f'https://{cliente}contech.callix.com.br/api/v4/entities/user-performance-histories'
-         url_agressividade = f'https://{cliente}contech.callix.com.br/api/v4/entities/campaigns/{id_campanha}'
+         url_login = f'https://{self.cliente}contech.callix.com.br/login'
+         url_chamadas_agentes = f'https://{self.cliente}contech.callix.com.br/api/v4/entities/user-performance-histories'
+         url_agressividade = f'https://{self.cliente}contech.callix.com.br/api/v4/entities/campaigns/{self.id_campanha}'
          return url_login, url_chamadas_agentes, url_agressividade
     
     def login_callix(self, login, senha, url_login):
@@ -35,7 +35,7 @@ class CAllixRequisition:
         return self.hr.requisicao_get(url=url_agressividade)
     
     def requisicao_callix(self):
-        url_login, url_chamadas_agentes, url_agressividade = self.url_callix(cliente, id_campanha)
+        url_login, url_chamadas_agentes, url_agressividade = self.url_callix()
         
         login = self.login_callix(login, senha, url_login)
         chamadas_por_agentes = self.get_chamadas_agentes(data, url_chamadas_agentes)

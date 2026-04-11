@@ -11,6 +11,8 @@ from src.rivex.utils.infra_utils.date_config import DateConfig
 from src.rivex.enviroments.discadores.vonix.fluxo_coleta import ExecucaoVonix
 from src.rivex.enviroments.discadores.vonix.fluxo_limpeza import LimpezaVonix
 from src.rivex.database.database import DatabaseRivex
+from src.rivex.enviroments.discadores.Callix.callix_req import CAllixRequisition
+
 
 def main_database(dados: dict):
     # execução e envio dos dados para o banco de dados
@@ -40,22 +42,27 @@ def main_callix():
     # callix usa padrão YY/MM/DD
     for cliente, token in tokens_clientes.items():
         api = CallixAPICollector(cliente, token, data)
+        cliente_formatado = cliente.removesuffix("contech.callix.com.br")
         '''
         1 - coleta
         2 - limpeza
         3 - DB'''
         # dicionário com os dados coletados em json
-        print(f'Coletando dados do cliente {cliente}')
-        dict_dados = api.api_callix()
+        print(f'Coletando dados do cliente {cliente_formatado}')
+        
+        dict_dados_api = api.api_callix()
         
         print('Limpando...')
-        dict_limpeza = limpeza.limpar_dados_callix(
-            dict_dados['Completas'],
-            dict_dados['Recusadas'],
-            dict_dados['Abandonadas'],
+        dict_limpeza = limpeza.limpeza_callix(
+            dict_dados_api['Completas'],
+            dict_dados_api['Recusadas'],
+            dict_dados_api['Abandonadas'],
+            dict_dados_api['Campanha']
             )
         print(dict_limpeza)
-        print('Enviando para o banco de dados...')
+        req = CAllixRequisition(login=login_ambiente, senha=password, cliente=cliente_formatado, data=data, id_campanha=dict_limpeza["Campanha"])
+        chamadas_por_agentes, agressividade = req.requisicao_callix()
+        
         
     return resultados
 

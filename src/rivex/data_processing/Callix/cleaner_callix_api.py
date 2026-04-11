@@ -6,15 +6,6 @@ class LimpezaCallixAPI:
     
     def calcular_recusadas(self, recusadas, abandonadas):
         return max(recusadas - abandonadas, 0)
-    
-    def limpeza_performace(self, performace):
-        return [
-            {
-                "Id agente": performace['id'],
-                "chamadas": performace['attributes']['answered_count'],
-            }
-            for agente in performace.get("data", [])
-        ]
         
     def limpeza_agressividade(self, agressividade):
         if not agressividade:
@@ -22,33 +13,30 @@ class LimpezaCallixAPI:
         ultimo = agressividade[-1]
         return ultimo["data"]["attributes"].get("powerAggressiveness")
     
-    def contador_chamadas_totais(self, chamadas_aceitas, chamadas_recusadas, chamadas_abandonadas, agressividade_coletada):
-        pass
+    def extrair_ids(self, campanha):
+        return [item['id'] for item in campanha.get('data', [])]
     
-    def limpar_dados_callix(self, chamadas_aceitas, chamadas_recusadas, chamadas_abandonadas, performace):
+    def limpeza_callix(self, chamadas_aceitas, chamadas_recusadas, chamadas_abandonadas, campanha):
         
         completa = self.limpeza_contagens(chamadas_aceitas)
         recusadas_brutas = self.limpeza_contagens(chamadas_recusadas)
         abandonadas = self.limpeza_contagens(chamadas_abandonadas)
         recusadas = self.calcular_recusadas(recusadas_brutas, abandonadas)
         total = completa + recusadas_brutas
+        id_campanha = self.extrair_ids(campanha)
         
-        agentes = self.limpeza_performace(performace)
-        agressividade = self.limpeza_agressividade(agressividade_coletada)
-        
-        print(agressividade)
+        # Tratamento apenas das chamadas de cada cliente
         print(total)
         print(completa)
         print(recusadas)
         print(abandonadas)
-        print(agentes)
-        
+        print(id_campanha)
         
         return {
-            "Agressividade": agressividade,
             "Chamadas totais": total,
             "Chamadas aceitas": completa,
             "Chamadas recusadas": recusadas,
             "Chamadas abandonadas": abandonadas,
-            "Agentes online": agentes,
+            "Campanha": id_campanha,
         }
+        

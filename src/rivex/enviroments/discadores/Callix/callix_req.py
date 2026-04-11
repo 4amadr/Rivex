@@ -1,5 +1,6 @@
 import requests
 from src.rivex.utils.requests_utils.requests import HttpRequisitions
+from src.rivex.enviroments.discadores.Callix.payloads_callix import payload_login_callix, headers_callix
 
 
 class CAllixRequisition:
@@ -25,14 +26,14 @@ class CAllixRequisition:
          url_agressividade = f'https://{self.cliente}contech.callix.com.br/api/v4/entities/campaigns/{self.id_campanha}'
          return url_login, url_chamadas_agentes, url_agressividade
     
-    def login_callix(self, login, senha, url_login):
-        return self.hr.requisicao_post(url=url_login)
+    def login_callix(self):
+        return self.hr.requisicao_post(payload_post=payload_login_callix(login, senha), url=url_login)
     
-    def get_chamadas_agentes(self, data, url_chamadas_agentes):
-        return self.hr.requisicao_get(url_chamadas_agentes)
+    def get_chamadas_agentes(self):
+        return self.hr.requisicao_get(headers=headers_callix , url=url_chamadas_agentes)
     
-    def agressividade(self, data, url_agressividade):
-        return self.hr.requisicao_get(url=url_agressividade)
+    def agressividade(self):
+        return self.hr.requisicao_get(headers=headers_callix, url=url_agressividade)
     
     def requisicao_callix(self):
         url_login, url_chamadas_agentes, url_agressividade = self.url_callix()

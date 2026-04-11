@@ -12,7 +12,6 @@ def payload_callix(requisicao, data, filtro=None, set=None):
             "filter[started_at]": f"{data}T00:00:00.000Z,{data}T23:59:59.999Z",
         }
         
-    print('Querystring', querystring)
     if filtro:
         querystring = {
             "filter[started_at]": f"{data}T00:00:00.000Z,{data}T23:59:59.999Z",
@@ -31,12 +30,3 @@ def headers_callix(token):
         "Authorization": f"Bearer {token}",
     }
     return headers
-
-def params_para_agressividade(data):
-    params = {
-            "sorting": "-createdAt",
-            "createdAt": f"{data},{data}",
-            "page[limit]": 100,
-            "page[offset]": 0
-        }
-    return params

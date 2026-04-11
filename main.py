@@ -43,13 +43,17 @@ def main_callix():
     for cliente, token in tokens_clientes.items():
         api = CallixAPICollector(cliente, token, data)
         cliente_formatado = cliente.removesuffix("contech.callix.com.br")
+        
         '''
+        Ordem lógica de coleta que deve ser seguida
         1 - coleta
         2 - limpeza
         3 - DB'''
-        # dicionário com os dados coletados em json
+        
+        
         print(f'Coletando dados do cliente {cliente_formatado}')
         
+        # dicionário com os dados coletados em json
         dict_dados_api = api.api_callix()
         
         print('Limpando...')
@@ -60,7 +64,14 @@ def main_callix():
             dict_dados_api['Campanha']
             )
         print(dict_limpeza)
-        req = CAllixRequisition(login=login_ambiente, senha=password, cliente=cliente_formatado, data=data, id_campanha=dict_limpeza["Campanha"])
+        req = CAllixRequisition(
+                                login=login_ambiente,
+                                senha=password,
+                                cliente=cliente_formatado,
+                                data=data,
+                                id_campanha=dict_limpeza["Campanha"]
+        )
+        
         chamadas_por_agentes, agressividade = req.requisicao_callix()
         
         

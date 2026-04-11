@@ -58,14 +58,6 @@ class CallixAPICollector:
         # campanha (agressividade)
         campanha = self.campanha()
         
-        print("Sequencia de status code das requisições:")
-        print("chamadas completas: ", chamadas_completas.status_code)
-        print("chamadas recusadas: ", chamadas_recusadas.status_code)
-        print("chamadas abandonadas: ", chamadas_abandonadas.status_code)
-        print("chamadas campanha: ", campanha.status_code)
-        
-        
-        
         return {
             "Completas": chamadas_completas.json(),
             "Recusadas": chamadas_recusadas.json(),

@@ -10,6 +10,11 @@ class HttpRequisitions:
         analista_de_erros(postagem.status_code)
         return postagem
     
+    def requisicao_post_json(self, payload_post: dict, headers: dict, url):
+        postagem = self.session.post(url, json=payload_post, headers=headers)
+        analista_de_erros(postagem.status_code)
+        return postagem
+    
     def requisicao_get(self, headers: dict, url: str,  payload_get: dict, cookies_requisicao: str | None = None):
         if cookies_requisicao:
             coleta = self.session.get(url, params=payload_get, headers=headers, cookies=cookies_requisicao)

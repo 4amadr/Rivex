@@ -35,14 +35,26 @@ def main_callix():
     if not tokens_clientes:
         raise RuntimeError('Sem clientes ou tokens no banco')
 
-    password=os.getenv('senha_callix_essence')
-    login_ambiente=os.getenv('senha_callix_essence')
+    password=os.getenv('senha_callix')
+    login_ambiente=os.getenv('login_callix')
 
     resultados = []
     # callix usa padrão YY/MM/DD
     for cliente, token in tokens_clientes.items():
+        
         api = CallixAPICollector(cliente, token, data)
         cliente_formatado = cliente.removesuffix("contech.callix.com.br")
+        
+        
+        req = CAllixRequisition(
+                                login=login_ambiente,
+                                senha=password,
+                                cliente=cliente_formatado,
+                                data=data,
+                                id_campanha='1', # id de uma das campanhas que vai ser usado como teste
+                                token=token
+        )
+        chamadas_por_agentes, agressividade = req.requisicao_callix()
         
         '''
         Ordem lógica de coleta que deve ser seguida
@@ -64,15 +76,8 @@ def main_callix():
             dict_dados_api['Campanha']
             )
         print(dict_limpeza)
-        req = CAllixRequisition(
-                                login=login_ambiente,
-                                senha=password,
-                                cliente=cliente_formatado,
-                                data=data,
-                                id_campanha=dict_limpeza["Campanha"]
-        )
         
-        chamadas_por_agentes, agressividade = req.requisicao_callix()
+        
         
         
     return resultados

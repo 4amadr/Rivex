@@ -59,7 +59,7 @@ def main_callix():
         
         chamadas_limpas = limpar_chamadas_agentes(chamadas_por_agentes)
         agressividade_limpa = limpar_agressividade(agressividade)
-        print("Resultado limpeza: ", chamadas_limpas)
+        print("Resultado da limpeza das chamadas: ", chamadas_limpas)
         print("Resultado Agressividade: ", agressividade_limpa)
         
         '''

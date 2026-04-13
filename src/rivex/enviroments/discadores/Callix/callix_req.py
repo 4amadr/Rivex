@@ -33,7 +33,6 @@ class CAllixRequisition:
                                        headers=headers_login_callix(url_base),
                                        url=url_login
                                        )
-        print('Resultado da tentativa de login: ',login.status_code)
         token = login.json()["token"]
         return token
     
@@ -47,7 +46,6 @@ class CAllixRequisition:
         params = payload_de_requisicao_de_chamadas(self.data)
         query_string = urllib.parse.urlencode(params, quote_via=urllib.parse.quote)
         url_final = f"{url_chamadas_agentes}?{query_string}"
-        print(f"URL final de chamadas por agentes: {url_final}")
         return url_final
         
         

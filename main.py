@@ -61,7 +61,7 @@ def main_callix():
         agressividade_limpa = limpar_agressividade(agressividade)
         print("Resultado da limpeza das chamadas: ", chamadas_limpas)
         print("Resultado Agressividade: ", agressividade_limpa)
-        
+        print()
         '''
         Ordem lógica de coleta que deve ser seguida
         1 - coleta

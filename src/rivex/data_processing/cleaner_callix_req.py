@@ -9,5 +9,31 @@ Aqui serão limpos:
 3 - Dados que não estão contidos no resultado da API
 '''
 
-def limpeza_chamadas_por_agentes(json_de_dados_dos_agentes):
+def limpar_chamadas_agentes(response):
+    dados = response.json()
+
+    usuarios = {
+        user["id"]: user["attributes"]["name"]
+        for user in dados["included"]
+        if user["type"] == "users"
+    }
+
+    resultado = [
+        {
+            "agente": usuarios.get(item["relationships"]["user"]["data"]["id"], "Desconhecido"),
+            "chamadas_atendidas": item["attributes"]["answeredCount"]
+        }
+        for item in dados["data"]
+    ]
+
+    return resultado
+
+def limpar_agressividade(response):
+    dados = response.json()
+    atributos = dados["data"]["attributes"]
+
+    return {
+        "campanha": atributos["name"],
+        "agressividade": atributos["powerAggressiveness"]
+    }
     

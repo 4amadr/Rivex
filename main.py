@@ -12,6 +12,7 @@ from src.rivex.enviroments.discadores.vonix.fluxo_coleta import ExecucaoVonix
 from src.rivex.enviroments.discadores.vonix.fluxo_limpeza import LimpezaVonix
 from src.rivex.database.database import DatabaseRivex
 from src.rivex.enviroments.discadores.Callix.callix_req import CAllixRequisition
+from src.rivex.data_processing.cleaner_callix_req import *
 
 
 def main_database(dados: dict):
@@ -55,6 +56,11 @@ def main_callix():
                                 token=token
         )
         chamadas_por_agentes, agressividade = req.requisicao_callix()
+        
+        chamadas_limpas = limpar_chamadas_agentes(chamadas_por_agentes)
+        agressividade_limpa = limpar_agressividade(agressividade)
+        print("Resultado limpeza: ", chamadas_limpas)
+        print("Resultado Agressividade: ", agressividade_limpa)
         
         '''
         Ordem lógica de coleta que deve ser seguida

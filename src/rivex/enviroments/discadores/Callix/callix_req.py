@@ -58,8 +58,6 @@ class CAllixRequisition:
                                       url=url_final,
                                       payload_get=None
                                       )
-        print(chamadas_por_agentes.status_code)
-        print(chamadas_por_agentes.text)
         return chamadas_por_agentes
     
     def agressividade(self, url_agressividade, token):
@@ -68,7 +66,6 @@ class CAllixRequisition:
                                       url=url_agressividade,
                                       payload_get=payload_agressividade()
                                       )
-        print(agressividade.json())
         return agressividade
     
     def requisicao_callix(self):

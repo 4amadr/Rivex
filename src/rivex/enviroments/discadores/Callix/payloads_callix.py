@@ -45,13 +45,12 @@ def headers_login_callix(BASE_URL):
     return headers
 
 def payload_de_requisicao_de_chamadas(data):
-    params = {
+    return {
         "sort": "-date",
-        "filter": f":and,(date,:gte,`{self.data}`),(date,:lte,`{self.data}`)",
+        "filter": f"(:and,(date,:gte,`{data}`),(date,:lte,`{data}`))",  # parênteses externos
         "fields[userPerformanceHistories]": "user.id,user.name",
         "page[limit]": 100,
     }
-    return params
 
 def get_performance_headers(token: str, url) -> dict:
     return {
@@ -61,4 +60,55 @@ def get_performance_headers(token: str, url) -> dict:
         "x-api": "1, 1",
         "x-timezone": "America/Sao_Paulo",
         "cookie": f"token={token}",
+    }
+    
+def payload_agressividade():
+    return {
+        "include": (
+            "teams,agentGroups,campaignModel,campaignModel.fields,customerForm,"
+            "customerSegmentation,successQualificationGroup,discardQualificationGroup,"
+            "timeZone,survey,outboundBlacklists,workingHours,nationalTenantRoute,"
+            "nationalOutboundRouteType,nationalInboundNumberAsCallerId,goals.qualifications,"
+            "supervisionGroup,nonWorkingDaysCalendars,voiceMessageExternalSipServer,"
+            "aiAgentAssistant,ivrOptions.qualification,ivrOptions.chatOutboundTemplate,"
+            "ivrOptions.workflow,ivrOptions.chatInteractionQueue,ivrOptions.chatInboundNumber,"
+            "ivrOptions.externalSipServer,ivrSound,ivrQueueSound,ivrQueueEndSound,"
+            "callNotificationSound,transferTeams,transferIvrs,transferCallQueues,"
+            "workingHourExceptions,onHoldSound,transferSuccessQualificationGroup,"
+            "transferDiscardQualificationGroup"
+        ),
+        "fields[nationalTenantRoute]": "name,requiresCallerId",
+        "fields[nationalOutboundRouteType]": "name,type",
+        "fields[teams]": "name",
+        "fields[agentGroups]": "name",
+        "fields[campaignModel]": "name",
+        "fields[campaignModel.fields]": "name",
+        "fields[customerForm]": "name",
+        "fields[successQualificationGroup]": "name",
+        "fields[discardQualificationGroup]": "name",
+        "fields[timeZone]": "name",
+        "fields[survey]": "name",
+        "fields[outboundBlacklists]": "name",
+        "fields[nationalInboundNumberAsCallerId]": "phone",
+        "fields[goals.qualifications]": "name",
+        "fields[supervisionGroup]": "name",
+        "fields[nonWorkingDaysCalendars]": "name",
+        "fields[voiceMessageExternalSipServer]": "name",
+        "fields[aiAgentAssistant]": "name",
+        "fields[ivrOptions.qualification]": "name",
+        "fields[ivrOptions.chatOutboundTemplate]": "name,status",
+        "fields[ivrOptions.workflow]": "name",
+        "fields[ivrOptions.chatInteractionQueue]": "name",
+        "fields[ivrOptions.chatInboundNumber]": "phone",
+        "fields[ivrOptions.externalSipServer]": "name",
+        "fields[ivrSound]": "name",
+        "fields[ivrQueueSound]": "name",
+        "fields[ivrQueueEndSound]": "name",
+        "fields[transferTeams]": "name",
+        "fields[transferIvrs]": "name",
+        "fields[transferCallQueues]": "name",
+        "fields[onHoldSound]": "name",
+        "fields[customerSegmentation]": "name",
+        "fields[transferSuccessQualificationGroup]": "name",
+        "fields[transferDiscardQualificationGroup]": "name",
     }

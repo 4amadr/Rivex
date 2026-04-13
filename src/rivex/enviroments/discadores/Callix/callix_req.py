@@ -36,33 +36,48 @@ class CAllixRequisition:
         print('Resultado da tentativa de login: ',login.status_code)
         token = login.json()["token"]
         return token
+    
+    
+    def conversor_de_url(self, url_chamadas_agentes):
+        '''
+        Tratamento para a requisição de chamadas dos agentes
+        pede um tratamento mais complexo pois o payload pede conversão manual
+        '''
+        
+        params = payload_de_requisicao_de_chamadas(self.data)
+        query_string = urllib.parse.urlencode(params, quote_via=urllib.parse.quote)
+        url_final = f"{url_chamadas_agentes}?{query_string}"
+        print(f"URL final de chamadas por agentes: {url_final}")
+        return url_final
         
         
     
-    def get_chamadas_agentes(self, url_chamadas_agentes, token_login):
+    def get_chamadas_agentes(self, url_final, url_chamadas_agentes, token_login):
         print('chegando nas chamadas')
-        
-        print(f"Token recebido: {token_login[:50]}...")  # mostra só o início
-        print(f"Headers montados: {get_performance_headers(token=token_login, url=url_chamadas_agentes)}")
         chamadas_por_agentes = self.hr.requisicao_get(headers=get_performance_headers(token=token_login, url=url_chamadas_agentes),
-                                      url=url_chamadas_agentes,
-                                      payload_get=payload_de_requisicao_de_chamadas(self.data)
+                                      url=url_final,
+                                      payload_get=None
                                       )
         print(chamadas_por_agentes.status_code)
         print(chamadas_por_agentes.text)
         return chamadas_por_agentes
     
-    def agressividade(self, url_agressividade):
-        return self.hr.requisicao_get(headers=headers_callix(),
-                                      url=url_agressividade
+    def agressividade(self, url_agressividade, token):
+        print("Coletando a agressividade")
+        agressividade = self.hr.requisicao_get(headers=headers_callix(token),
+                                      url=url_agressividade,
+                                      payload_get=payload_agressividade()
                                       )
+        print(agressividade.json())
+        return agressividade
     
     def requisicao_callix(self):
         url_login, url_chamadas_agentes, url_agressividade, url_base = self.url_callix()
         
         print('Logando...')
         login = self.login_callix(url_login, url_base)
-        chamadas_por_agentes = self.get_chamadas_agentes(url_chamadas_agentes, login)
-        agressividade = self.agressividade(url_agressividade)
+        url_final = self.conversor_de_url(url_chamadas_agentes)
+        chamadas_por_agentes = self.get_chamadas_agentes(url_final, url_chamadas_agentes, login)
+        agressividade = self.agressividade(url_agressividade, login)
         
         return chamadas_por_agentes, agressividade

@@ -25,8 +25,12 @@ class CAllixRequisition:
         url_base = f'https://{self.cliente}contech.callix.com.br/login'
         url_login = f'https://{self.cliente}contech.callix.com.br/api/v4/auth/session'
         url_chamadas_agentes = f'https://{self.cliente}contech.callix.com.br/api/v4/entities/user-performance-histories'
-        url_agressividade = f'https://{self.cliente}contech.callix.com.br/api/v4/entities/campaigns/{self.id_campanha}'
-        return url_login, url_chamadas_agentes, url_agressividade, url_base
+        
+        lista_de_urls_de_agressividade = []
+        for campanha in self.id_campanha:
+            url_agressividade = f'https://{self.cliente}contech.callix.com.br/api/v4/entities/campaigns/{campanha}'
+            lista_de_urls_de_agressividade.append(url_agressividade)
+        return url_login, url_chamadas_agentes, lista_de_urls_de_agressividade, url_base
     
     def login_callix(self, url_login, url_base):
         login = self.hr.requisicao_post_json(payload_post=payload_login_callix(self.login, self.senha),
@@ -60,11 +64,17 @@ class CAllixRequisition:
     
     def agressividade(self, url_agressividade, token):
         print("Coletando a agressividade")
-        agressividade = self.hr.requisicao_get(headers=headers_callix(token),
-                                      url=url_agressividade,
-                                      payload_get=payload_agressividade()
-                                      )
-        return agressividade
+        # pode haver mais de uma campanha o que gera mais de uma agressividade
+        
+        lista_json_agressividade = []
+        
+        for url_unico_de_agressividade in url_agressividade:
+            agressividade = self.hr.requisicao_get(headers=headers_callix(token),
+                                        url=url_unico_de_agressividade,
+                                        payload_get=payload_agressividade()
+                                        )
+            lista_json_agressividade.append(agressividade)
+        return lista_json_agressividade
     
     def requisicao_callix(self):
         url_login, url_chamadas_agentes, url_agressividade, url_base = self.url_callix()
@@ -73,6 +83,6 @@ class CAllixRequisition:
         login = self.login_callix(url_login, url_base)
         url_final = self.conversor_de_url(url_chamadas_agentes)
         chamadas_por_agentes = self.get_chamadas_agentes(url_final, url_chamadas_agentes, login)
-        agressividade = self.agressividade(url_agressividade, login)
+        agressividade = self.agressividade(url_agressividade, login) # lista
         
         return chamadas_por_agentes, agressividade

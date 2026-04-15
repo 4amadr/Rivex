@@ -15,10 +15,14 @@ from src.rivex.enviroments.discadores.Callix.callix_req import CAllixRequisition
 from src.rivex.data_processing.cleaner_callix_req import *
 
 
-def main_database(dados: dict):
+def main_database(dados_chamadas: dict, dados_agentes: dict):
     # execução e envio dos dados para o banco de dados
-    dr = DatabaseRivex
-    dr.coleta_chamadas(dados_equipe=dados)
+    dr = DatabaseRivex()
+    dr.coleta_chamadas(dados_equipe=dados_chamadas, dados_agentes=dados_agentes)
+    
+def main_database_callix(data, cliente, chamadas, agressividade, dados_agentes):
+    dr = DatabaseRivex()
+    dr.coleta_callix(data, cliente, chamadas, agressividade, dados_agentes)
 
 def main_callix():
     load_dotenv()
@@ -46,31 +50,13 @@ def main_callix():
         api = CallixAPICollector(cliente, token, data)
         cliente_formatado = cliente.removesuffix("contech.callix.com.br")
         
-        
-        req = CAllixRequisition(
-                                login=login_ambiente,
-                                senha=password,
-                                cliente=cliente_formatado,
-                                data=data,
-                                id_campanha='1', # id de uma das campanhas que vai ser usado como teste
-                                token=token
-        )
-        chamadas_por_agentes, agressividade = req.requisicao_callix()
-        
-        chamadas_limpas = limpar_chamadas_agentes(chamadas_por_agentes)
-        agressividade_limpa = limpar_agressividade(agressividade)
-        print("Resultado da limpeza das chamadas: ", chamadas_limpas)
-        print("Resultado Agressividade: ", agressividade_limpa)
-        print()
         '''
         Ordem lógica de coleta que deve ser seguida
         1 - coleta
         2 - limpeza
         3 - DB'''
         
-        
         print(f'Coletando dados do cliente {cliente_formatado}')
-        
         # dicionário com os dados coletados em json
         dict_dados_api = api.api_callix()
         
@@ -83,9 +69,24 @@ def main_callix():
             )
         print(dict_limpeza)
         
+        # inicio da coleta por requisições
+        req = CAllixRequisition(
+                                login=login_ambiente,
+                                senha=password,
+                                cliente=cliente_formatado,
+                                data=data,
+                                id_campanha=dict_limpeza['Campanha'], 
+                                token=token
+        )
+        print(f"Iniciando coleta de dados via requisição no cliente: {cliente_formatado}")
         
+        chamadas_por_agentes, agressividade = req.requisicao_callix()
+        agressividade_limpa, chamadas_limpas = agressividade_e_agentes(json_agentes=chamadas_por_agentes,
+                                                                     json_agressividade=agressividade
+                                                                     )
         
-        
+        print("Enviando todos os dados para o banco de dados")
+        main_database_callix(data, cliente_formatado, dict_limpeza, agressividade_limpa, chamadas_limpas)    
     return resultados
 
 

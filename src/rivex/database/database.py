@@ -19,15 +19,15 @@ class DatabaseRivex:
             dc.fechar_conexao(conexao)
         
     @staticmethod  
-    def coleta_callix(self, data, cliente, chamadas: dict, agressividade: dict, dados_agentes: dict):
+    def coleta_callix(data, cliente, chamadas: dict, agressividade: dict, dados_agentes: dict):
         dc = DatabaseConfig()
         conexao = dc.conect_database()
         
         if conexao is None:
             return
         try:
-            dc.chamadas_callix(cliente, conexao, chamadas, agressividade)
-            dc.dados_agentes_callix(data, conexao, dados_agentes)
+            dc.chamadas_callix(data, cliente, conexao, chamadas, agressividade)
+            dc.dados_agentes_callix(cliente, data, conexao, dados_agentes)
         finally:
             dc.fechar_conexao(conexao)
             

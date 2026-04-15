@@ -15,15 +15,7 @@ from src.rivex.enviroments.discadores.Callix.callix_req import CAllixRequisition
 from src.rivex.data_processing.cleaner_callix_req import *
 
 
-def main_database(dados_chamadas: dict, dados_agentes: dict):
-    # execução e envio dos dados para o banco de dados
-    dr = DatabaseRivex()
-    dr.coleta_chamadas(dados_equipe=dados_chamadas, dados_agentes=dados_agentes)
     
-def main_database_callix(data, cliente, chamadas, agressividade, dados_agentes):
-    dr = DatabaseRivex()
-    dr.coleta_callix(data, cliente, chamadas, agressividade, dados_agentes)
-
 def main_callix():
     load_dotenv()
     
@@ -86,7 +78,8 @@ def main_callix():
                                                                      )
         
         print("Enviando todos os dados para o banco de dados")
-        main_database_callix(data, cliente_formatado, dict_limpeza, agressividade_limpa, chamadas_limpas)    
+        cliente_para_o_banco = {"Cliente": cliente_formatado}
+        DatabaseRivex.coleta_callix(data, cliente_para_o_banco, dict_limpeza, agressividade_limpa, chamadas_limpas)    
     return resultados
 
 
@@ -117,8 +110,7 @@ def main_vonix():
             # agora a limpeza de dados para trazer apenas os dados limpos para o banco de dados
             dict_vonix_dados = lv.limpeza_de_dados_vonix(chamadas_totais, chamadas_completas, chamadas_recusadas, chamadas_abandonadas, html_agentes, html_agressividade, equipe, data)
             print('Dados limpos. Coleta finalizada, enviando para o banco...')
-            main_database(dict_vonix_dados)
-            print(dict_vonix_dados)
+            DatabaseRivex.coleta_chamadas(dict_vonix_dados)
             
     print('Execução do vonix finalizada')
     return dict_vonix_dados

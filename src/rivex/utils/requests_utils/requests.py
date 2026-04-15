@@ -18,7 +18,6 @@ class HttpRequisitions:
     def requisicao_get(self, headers: dict, url: str,  payload_get: dict, cookies_requisicao: str | None = None):
         if cookies_requisicao:
             coleta = self.session.get(url, params=payload_get, headers=headers, cookies=cookies_requisicao)
-            print(coleta.status_code)
             # verificação se há erros nos status_code
             analista_de_erros(coleta.status_code)
             return coleta

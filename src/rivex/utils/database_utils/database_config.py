@@ -71,7 +71,7 @@ class DatabaseConfig:
             
                 
             cursor.execute(
-                "INSERT INTO dados_chamadas (discador, fila, data, chamadas_totais, chamadas_completas, chamadas_recusadas, chamadas_abandonadas, agressividade) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)",
+                "INSERT INTO dados_chamadas (discador, fila, data, chamadas_totais, chamadas_completas, chamadas_recusadas, chamadas_abandonadas, agressividade) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)",
                 (
                  'Callix',
                  cliente["Cliente"],

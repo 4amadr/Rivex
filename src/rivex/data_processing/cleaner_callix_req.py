@@ -12,14 +12,20 @@ Aqui serão limpos:
 def limpar_chamadas_agentes(json_agentes):
     dados = json_agentes.json()
 
+    # se não houver "included", não há agentes para processar
+    if "included" not in dados:
+        print("Sem dados de agentes na resposta da API")
+        return []
+
     usuarios = {
         user["id"]: user["attributes"]["name"]
         for user in dados["included"]
         if user["type"] == "users"
     }
+
     if not usuarios:
         print("Sem dados")
-        return None
+        return []
 
     resultado = [
         {
@@ -31,7 +37,7 @@ def limpar_chamadas_agentes(json_agentes):
 
     return resultado
 
-def limpar_agressividade(json_agressividade): # json_agressividade é uma lista
+def limpar_agressividade(json_agressividade): # por enquanto vai retornar a media de agressividade 
     lista_agressividade = []
     
     for agressividade in json_agressividade:
@@ -39,10 +45,11 @@ def limpar_agressividade(json_agressividade): # json_agressividade é uma lista
         atributos = dados["data"]["attributes"]
         lista_agressividade.append(atributos["powerAggressiveness"])
 
-    return {
-        "agressividade": lista_agressividade
-    }
-    
+    media = round(sum(lista_agressividade) / len(lista_agressividade), 2) if lista_agressividade else 0.0
+
+    return {"agressividade": media}
+
+
 def agressividade_e_agentes(json_agressividade, json_agentes):
-    return limpar_chamadas_agentes(json_agentes), limpar_agressividade(json_agressividade)
+    return limpar_agressividade(json_agressividade), limpar_chamadas_agentes(json_agentes)
     

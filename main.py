@@ -76,7 +76,9 @@ def main_callix():
         agressividade_limpa, chamadas_limpas = agressividade_e_agentes(json_agentes=chamadas_por_agentes,
                                                                      json_agressividade=agressividade
                                                                      )
-        
+        print(type(dict_limpeza), dict_limpeza)
+        print(type(agressividade_limpa), agressividade_limpa)
+        print(type(chamadas_limpas), chamadas_limpas)
         print("Enviando todos os dados para o banco de dados")
         cliente_para_o_banco = {"Cliente": cliente_formatado}
         DatabaseRivex.coleta_callix(data, cliente_para_o_banco, dict_limpeza, agressividade_limpa, chamadas_limpas)    

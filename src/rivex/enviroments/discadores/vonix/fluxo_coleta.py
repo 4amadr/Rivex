@@ -75,9 +75,11 @@ class ExecucaoVonix:
         pv = PayloadsVonix()
 
         headers_agentes, html_agentes, token_agentes = cs.gerador_de_requisitos(url_agentes)
-        parload_para_agentes = pv.payload_de_agentes(data)
+        payload_para_agentes = pv.payload_de_agentes(data)
         
-        agentes = hr.requisicao_get(parload_para_agentes, headers_agentes, url_agentes)
+        agentes = hr.requisicao_get(payload_get=payload_para_agentes,
+                                    headers=headers_agentes,
+                                    url=url_agentes)
         return agentes
     
     def coleta_de_agressividade_vonix(self, cliente, url_base, session):
@@ -91,7 +93,9 @@ class ExecucaoVonix:
         headers_agressividade, html_agressividade, token_agressividade = cs.gerador_de_requisitos(url_agressividade)
         payload_para_agressividade = pv.payload_de_agressividade(token_agressividade)
         
-        agressividade = hr.requisicao_get(payload_para_agressividade, headers_agressividade, url_agressividade)
+        agressividade = hr.requisicao_get(payload_get=payload_para_agressividade,
+                                          headers=headers_agressividade, 
+                                          url=url_agressividade)
         return agressividade
 
     def execucao_vonix(self, data, url, equipe):

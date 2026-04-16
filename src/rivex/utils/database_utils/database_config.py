@@ -36,7 +36,7 @@ class DatabaseConfig:
             
                 
             cursor.execute(
-                "INSERT INTO dados_chamadas (discador, fila, data, chamadas_totais, chamadas_completas, chamadas_recusadas, chamadas_abandonadas, agentes_online, agressividade) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)",
+                "INSERT INTO dados_chamadas (discador, fila, data, chamadas_totais, chamadas_completas, chamadas_recusadas, chamadas_abandonadas, agressividade) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)",
                 (dados_equipe['discador'],
                  dados_equipe['fila'], 
                  dados_equipe['data'], 
@@ -44,7 +44,6 @@ class DatabaseConfig:
                  dados_equipe['chamadas_completas'],
                  dados_equipe['chamadas_recusadas'], 
                  dados_equipe['chamadas_abandonadas'],
-                 dados_equipe['agentes_online'],
                  dados_equipe['agressividade'],
                  )
             )
@@ -122,7 +121,7 @@ class DatabaseConfig:
             if cursor is not None:
                 cursor.close()
                 
-    def inserir_chamadas_e_agentes_db(self, conexao, dados_agente: dict):
+    def inserir_chamadas_e_agentes_db(self, cliente, data, conexao, dados: dict):
         if conexao is None:
             print("Conexão inválida. Inserção cancelada.")
             return
@@ -130,16 +129,16 @@ class DatabaseConfig:
         cursor = None
         try:
             cursor = conexao.cursor()
-            
-            cursor.execute(
-                "INSERT INTO agentes_dia (cliente, data, agente, chamadas) VALUES (%s, %s, %s, %s)",
-                (
-                 dados_agente['fila'],
-                 dados_agente['data'],
-                 dados_agente['agente'],
-                 dados_agente['chamadas']
-                 )
-            )
+            for agente in dados["agentes"]:
+                cursor.execute(
+                    "INSERT INTO agentes_dia (cliente, data, agente, chamadas) VALUES (%s, %s, %s, %s)",
+                    (
+                    cliente,
+                    data,
+                    agente['agente'],
+                    agente['chamadas']
+                    )
+                )
             
             conexao.commit()
             print("Dados de agentes inseridos")
@@ -152,6 +151,7 @@ class DatabaseConfig:
             if cursor is not None:
                 cursor.close()
                 
+ 
     def fechar_conexao(self, conexao):
         # fechar a conexão do banco
         if conexao:

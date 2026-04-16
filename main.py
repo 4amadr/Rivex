@@ -13,6 +13,7 @@ from src.rivex.enviroments.discadores.vonix.fluxo_limpeza import LimpezaVonix
 from src.rivex.database.database import DatabaseRivex
 from src.rivex.enviroments.discadores.Callix.callix_req import CAllixRequisition
 from src.rivex.data_processing.cleaner_callix_req import *
+from src.rivex.utils.database_utils.database_config import DatabaseConfig
 
 
     
@@ -76,9 +77,6 @@ def main_callix():
         agressividade_limpa, chamadas_limpas = agressividade_e_agentes(json_agentes=chamadas_por_agentes,
                                                                      json_agressividade=agressividade
                                                                      )
-        print(type(dict_limpeza), dict_limpeza)
-        print(type(agressividade_limpa), agressividade_limpa)
-        print(type(chamadas_limpas), chamadas_limpas)
         print("Enviando todos os dados para o banco de dados")
         cliente_para_o_banco = {"Cliente": cliente_formatado}
         DatabaseRivex.coleta_callix(data, cliente_para_o_banco, dict_limpeza, agressividade_limpa, chamadas_limpas)    
@@ -90,6 +88,8 @@ def main_vonix():
     ev = ExecucaoVonix()
     lv = LimpezaVonix()
     dc = DateConfig()
+    database_conf = DatabaseConfig()
+    conexao = database_conf.conect_database()
     
     data = dc.data_selecionadas()
     url_vonix = os.getenv('LINK_VONIX6')
@@ -106,20 +106,29 @@ def main_vonix():
             print('Executanto a fila ->',equipe)
             # primeiro coletamos os dados em formato HTML
 
-            chamadas_totais, chamadas_completas, chamadas_recusadas, chamadas_abandonadas, html_agentes, html_agressividade = ev.execucao_vonix(data, url_vonix, equipe)
+            chamadas_totais, chamadas_completas, chamadas_recusadas, chamadas_abandonadas, html_agentes, html_agressividade = ev.execucao_vonix(data=data,
+                                                                                                                                                url=url_vonix, 
+                                                                                                                                                equipe=equipe)
             print('Dados sujos coletados. Executando agora a limpeza de dados')
 
             # agora a limpeza de dados para trazer apenas os dados limpos para o banco de dados
             dict_vonix_dados = lv.limpeza_de_dados_vonix(chamadas_totais, chamadas_completas, chamadas_recusadas, chamadas_abandonadas, html_agentes, html_agressividade, equipe, data)
-            print('Dados limpos. Coleta finalizada, enviando para o banco...')
-            DatabaseRivex.coleta_chamadas(dict_vonix_dados)
+           
+            # inserir os dados de agentes e suas chamadas no banco
+            DatabaseRivex.coleta_agentes(conexao, equipe, data, dict_vonix_dados)
+                
+            # inserir dados de chamadas no banco
+            DatabaseRivex.coleta_chamadas(conexao, dict_vonix_dados)
             
+            resultados.append(dict_vonix_dados)
+    
+    # fechar o banco com os agentes após a execução do loop
+    DatabaseRivex.fechar_conexao_vonix(conexao)            
     print('Execução do vonix finalizada')
-    return dict_vonix_dados
+    return resultados
 
 
 
 
-#dados_vonix = main_vonix()
+dados_vonix = main_vonix()
 dados_callix = main_callix()
-#main_database(dados_callix)

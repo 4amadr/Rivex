@@ -1,26 +1,40 @@
 import requests
-from bs4 import BeautifulSoup
-import os
-from dateutil.utils import today
 from dotenv import load_dotenv
-from datetime import timedelta, datetime, date
+from src.rivex.utils.requests_utils.requests import HttpRequisitions
+import urllib3
 
 load_dotenv()
 class SipClient:
-    def __init__(self, usuario, password, url, operadora):
+    def __init__(self, usuario, password, url, operadora, data):
         self.usuario = usuario
         self.password = password
         self.url = url
+        self.hr = HttpRequisitions(session=requests.Session())
+        self.operadora = operadora
+        self.data = data
 
-    def login(self, url, usuario, password, operadora):
-        url = f'{self.url}/painel/index.php'
-        print(f'login: {operadora}')
-        req = requests.Session()
+    def gerar_url(self):
+        url_base = self.url
+        url_login = f'{url_base}/painel/index.php'
+        url_filtragem = f'{url_base}/painel/relatorio_minutos_revenda.php'
+        url_get_id = f'{url_base}/painel/cliente_lista.php?cliente=&email=&cpf=&cnpj=&action=Filtrar'
+        url_chamadas_tarifadas = f'{url_base}/painel/call_history.php?retorno=listacliente&v='
+        url_lista_de_clientes = f'{url_base}/painel/cliente_lista.php'
+        url_id_do_cliente = f'{url_base}/painel/buscaDadosClientecomId.php'
 
 
-        credenciais = {
+        return url_login, url_filtragem, url_get_id, url_chamadas_tarifadas, url_lista_de_clientes, url_id_do_cliente
+
+
+    def login(self, url_de_login):
+        print(f'login: {self.operadora}')
+        print(f'url: {url_de_login}')
+
+
+        payload = {
             'login': self.usuario,
             'senha': self.password,
+            'Submit': "Entrar"
         }
 
         headers = {
@@ -28,62 +42,93 @@ class SipClient:
             'Accept': 'application/json, text/javascript, */*; q=0.01',
         }
 
-        response = req.post(url, headers=headers, data=credenciais, verify=False)
+        urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+        
+        login = self.hr.requisicao_post_com_certificado(payload_post=payload,
+                                        headers=headers,
+                                        url=url_de_login,
+                                        verificacao=False
+                                        )
+        return login
 
-        if response.status_code == 200:
-            print(f'Logado em: {operadora}')
-            return req
-        else:
-            raise RuntimeError(f'Erro: {response.status_code} ao logar')
-
-    def filtrar_dados(self, data_selecionada, operadora, url):
+    def filtrar_dados(self):
         url = f'{self.url}/painel/relatorio_minutos_revenda.php'
-        login_feito = self.login(url, self.usuario, self.password, operadora)
-
-        filtragem = {
+        payload = {
             'filtro': 1, # seleção personalizada
             'periodopre': 0,
-            'data_inicio': data_selecionada, # formato AAAA-MM-DD
+            'data_inicio': self.data, # formato AAAA-MM-DD
             'horario_inicio': 00,
-            'data_fim': data_selecionada, # formato AAAA-MM-DD
+            'data_fim': self.data, # formato AAAA-MM-DD
             'horario_fim': 23,
             'cliente_filtro': '',
             'tipochamadas': 'todas',
             'action': 'Filtrar'
         }
-        requests = login_feito.post(url, headers=login_feito.headers, data=filtragem, verify=False)
         
-        if requests.status_code == 200:
-            print(f'filtro aplicado para: {operadora}')
-            return requests
-        else:
-            raise RuntimeError(f'Erro: {requests.status_code} ao filtrar')
+        headers = {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'Accept': 'application/json, text/javascript, */*; q=0.01',
+        }
+        filtro = self.hr.requisicao_post_com_certificado(payload_post=payload,
+                                         headers=headers,
+                                         url=url,
+                                        verificacao=False)
+        return filtro
 
-    def soup_data(self, data_selecionada, operadora):
-        '''function to get soup data from url'''
-        requisicao = self.filtrar_dados(data_selecionada, operadora, self.url).text
-        soup = BeautifulSoup(requisicao, 'html.parser')
-        if soup:
-            print(f'Sopa coletada: {operadora}')
-            return soup
-        else:
-            print(f'Sem sopa em {operadora}!')
-            return False
+    def get_id_do_cliente(self, url_id_do_cliente):
+        '''Retornar a lista de ids dos clientes presentes na operadora'''
+        headers = {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'Accept': 'application/json, text/javascript, */*; q=0.01',
+        }
 
-    def execucao_pipeline_sip(self, url, usuario, password, operadora, data):
-        login_sip = self.login(url, usuario, password, operadora)
-        filtro_aplicado = self.filtrar_dados(data, operadora, url)
-        sopa = self.soup_data(data, operadora)
-        return sopa
+        payload = {
+            'nome_cliente ': ""
+        }
+
+        id_do_cliente = self.hr.requisicao_post_com_certificado(url=url_id_do_cliente,
+                                                                payload_post=payload,
+                                                                headers=headers,
+                                                                verificacao=False)
+        return id_do_cliente
+
+    def get_chamadas_tarifadas(self, data, url_chamadas_tarifadas, id_cliente):
+        headers = {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'Accept': 'application/json, text/javascript, */*; q=0.01',
+        }
+
+        payload = {
+            'customer_id': f'{id_cliente}',
+            'startDate': f'{data}',
+            'finalDate': f'{data}',
+            'sipcode': 200,
+            'tipo_exibicao': 'tela',
+            'checkbox_columns': '1',
+            'exibir_totais': '1',
+            'action': 'buscar'
+        }
+
+        chamadas_tarifadas = self.hr.requisicao_get_com_verificado(headers=headers,
+                                                                   payload_get=payload,
+                                                                   url=url_chamadas_tarifadas,
+                                                                   verificacao=False)
+        return chamadas_tarifadas
+
+    def execucao_pipeline_sip(self):
+        url_de_login, url_filtragem, url_get_id, url_chamadas_tarifadas, url_a_toa, url_id_do_cliente = self.gerar_url()
+        login_sip = self.login(url_de_login=url_de_login)
+        custo_minutagem = self.filtrar_dados()
+        id_clientes = self.get_id_do_cliente(url_id_do_cliente)
+        print(id_clientes.json())
+        return custo_minutagem, id_clientes
         
-    
+sc = SipClient(usuario='fbm.revenda',
+               password='Bill23ADM$',
+               url='https://sip3.solutionsvoip.com.br',
+               operadora='Gsolutions',
+               data='2026-04-15')
 
-class CallsSipClient:
-    def road_calls(self):
-        '''function to get road calls from url'''
-        client = SipClient()
-        login = client.login()
-
-        #now the road to the calls
+custo_minutagem = sc.execucao_pipeline_sip()
 
 

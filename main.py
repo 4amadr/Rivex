@@ -14,9 +14,21 @@ from src.rivex.database.database import DatabaseRivex
 from src.rivex.enviroments.discadores.Callix.callix_req import CAllixRequisition
 from src.rivex.data_processing.cleaner_callix_req import *
 from src.rivex.utils.database_utils.database_config import DatabaseConfig
+from src.rivex.enviroments.operadoras.gsolutions.sip_client_scrap import SipClient
 
 
-    
+def main_gs():
+    sc = SipClient(usuario='fbm.revenda',
+                   password='Bill23ADM$',
+                   url='https://sip3.solutionsvoip.com.br',
+                   operadora='Gsolutions',
+                   data='2026-04-15')
+
+    custo_minutagem, id_clientes = sc.execucao_pipeline_sip()
+    print(custo_minutagem.text)
+    print(id_clientes.json())
+
+
 def main_callix():
     load_dotenv()
     
@@ -82,7 +94,6 @@ def main_callix():
         DatabaseRivex.coleta_callix(data, cliente_para_o_banco, dict_limpeza, agressividade_limpa, chamadas_limpas)    
     return resultados
 
-
 def main_vonix():
     print('Iniciando a coleta de dados no discador Vonix...')
     ev = ExecucaoVonix()
@@ -129,6 +140,6 @@ def main_vonix():
 
 
 
-
-dados_vonix = main_vonix()
-dados_callix = main_callix()
+exec_gs = main_gs()
+#dados_vonix = main_vonix()
+#dados_callix = main_callix()

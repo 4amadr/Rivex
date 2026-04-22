@@ -1,6 +1,7 @@
 import requests
 from dotenv import load_dotenv
 from src.rivex.utils.requests_utils.requests import HttpRequisitions
+from src.rivex.enviroments.operadoras.gsolutions.headers_payload import *
 import urllib3
 
 load_dotenv()
@@ -27,108 +28,46 @@ class SipClient:
 
 
     def login(self, url_de_login):
-        print(f'login: {self.operadora}')
-        print(f'url: {url_de_login}')
-
-
-        payload = {
-            'login': self.usuario,
-            'senha': self.password,
-            'Submit': "Entrar"
-        }
-
-        headers = {
-            'Content-Type': 'application/x-www-form-urlencoded',
-            'Accept': 'application/json, text/javascript, */*; q=0.01',
-        }
-
         urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
         
-        login = self.hr.requisicao_post_com_certificado(payload_post=payload,
-                                        headers=headers,
+        login = self.hr.requisicao_post_com_certificado(payload_post=payload_de_login(self.usuario, self.password),
+                                        headers=header_geral(),
                                         url=url_de_login,
                                         verificacao=False
                                         )
         return login
 
-    def filtrar_dados(self):
-        url = f'{self.url}/painel/relatorio_minutos_revenda.php'
-        payload = {
-            'filtro': 1, # seleção personalizada
-            'periodopre': 0,
-            'data_inicio': self.data, # formato AAAA-MM-DD
-            'horario_inicio': 00,
-            'data_fim': self.data, # formato AAAA-MM-DD
-            'horario_fim': 23,
-            'cliente_filtro': '',
-            'tipochamadas': 'todas',
-            'action': 'Filtrar'
-        }
-        
-        headers = {
-            'Content-Type': 'application/x-www-form-urlencoded',
-            'Accept': 'application/json, text/javascript, */*; q=0.01',
-        }
-        filtro = self.hr.requisicao_post_com_certificado(payload_post=payload,
-                                         headers=headers,
-                                         url=url,
+    def filtrar_dados(self, url_filtragem):
+
+        filtro = self.hr.requisicao_post_com_certificado(payload_post=payload_filtragem_custos(self.data),
+                                         headers=header_geral(),
+                                         url=url_filtragem,
                                         verificacao=False)
         return filtro
 
     def get_id_do_cliente(self, url_id_do_cliente):
         '''Retornar a lista de ids dos clientes presentes na operadora'''
-        headers = {
-            'Content-Type': 'application/x-www-form-urlencoded',
-            'Accept': 'application/json, text/javascript, */*; q=0.01',
-        }
-
-        payload = {
-            'nome_cliente ': ""
-        }
 
         id_do_cliente = self.hr.requisicao_post_com_certificado(url=url_id_do_cliente,
-                                                                payload_post=payload,
-                                                                headers=headers,
+                                                                payload_post=payload_get_id_cliente(),
+                                                                headers=header_geral(),
                                                                 verificacao=False)
         return id_do_cliente
 
     def get_chamadas_tarifadas(self, data, url_chamadas_tarifadas, id_cliente):
-        headers = {
-            'Content-Type': 'application/x-www-form-urlencoded',
-            'Accept': 'application/json, text/javascript, */*; q=0.01',
-        }
-
-        payload = {
-            'customer_id': f'{id_cliente}',
-            'startDate': f'{data}',
-            'finalDate': f'{data}',
-            'sipcode': 200,
-            'tipo_exibicao': 'tela',
-            'checkbox_columns': '1',
-            'exibir_totais': '1',
-            'action': 'buscar'
-        }
-
-        chamadas_tarifadas = self.hr.requisicao_get_com_verificado(headers=headers,
-                                                                   payload_get=payload,
+        chamadas_tarifadas = self.hr.requisicao_get_com_verificado(headers=header_geral(),
+                                                                   payload_get=payload_chamadas_tarifadas(id_cliente, data),
                                                                    url=url_chamadas_tarifadas,
                                                                    verificacao=False)
         return chamadas_tarifadas
 
     def execucao_pipeline_sip(self):
         url_de_login, url_filtragem, url_get_id, url_chamadas_tarifadas, url_a_toa, url_id_do_cliente = self.gerar_url()
-        login_sip = self.login(url_de_login=url_de_login)
-        custo_minutagem = self.filtrar_dados()
+        self.login(url_de_login=url_de_login)
+        custo_minutagem = self.filtrar_dados(url_filtragem)
         id_clientes = self.get_id_do_cliente(url_id_do_cliente)
+        print(custo_minutagem.text)
         print(id_clientes.json())
         return custo_minutagem, id_clientes
-        
-sc = SipClient(usuario='fbm.revenda',
-               password='Bill23ADM$',
-               url='https://sip3.solutionsvoip.com.br',
-               operadora='Gsolutions',
-               data='2026-04-15')
-
-custo_minutagem = sc.execucao_pipeline_sip()
 
 

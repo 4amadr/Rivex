@@ -17,9 +17,9 @@ def payload_filtragem_custos(data):
     filtragem = {
         'filtro': 1,  # seleção personalizada
         'periodopre': 0,
-        'data_inicio': f'{data}',  # formato AAAA-MM-DD
-        'horario_inicio': 59,
-        'data_fim': f'{data}',  # formato AAAA-MM-DD
+        'data_inicio': f'{data}',  # formato DD-MM-AAAA
+        'horario_inicio': 00,
+        'data_fim': f'{data}',  # formato DD-MM-AAAA
         'horario_fim': 23,
         'cliente_filtro': '',
         'tipochamadas': 'todas',

@@ -12,22 +12,25 @@ from src.rivex.enviroments.discadores.vonix.fluxo_coleta import ExecucaoVonix
 from src.rivex.enviroments.discadores.vonix.fluxo_limpeza import LimpezaVonix
 from src.rivex.database.database import DatabaseRivex
 from src.rivex.enviroments.discadores.Callix.callix_req import CAllixRequisition
-from src.rivex.data_processing.cleaner_callix_req import *
+from src.rivex.data_processing.Callix.cleaner_callix_req import *
 from src.rivex.utils.database_utils.database_config import DatabaseConfig
 from src.rivex.enviroments.operadoras.gsolutions.sip_client_scrap import SipClient
+from src.rivex.data_processing.gsolutions.cleaner_sip import *
 
 
 def main_gs():
+    dc = DateConfig()
+    data = dc.data_selecionadas()
+    print(f"Coleta do dia {data} na Gsolutions")
     sc = SipClient(usuario='fbm.revenda',
                    password='Bill23ADM$',
                    url='https://sip3.solutionsvoip.com.br',
                    operadora='Gsolutions',
-                   data='2026-04-15')
+                   data=data)
 
     custo_minutagem, id_clientes = sc.execucao_pipeline_sip()
-    print(custo_minutagem.text)
-    print(id_clientes.json())
-
+    #clientes_mapeados = mapeamento_clientes(id_clientes.json())
+    limpeza_custo(custo_minutagem.text)
 
 def main_callix():
     load_dotenv()

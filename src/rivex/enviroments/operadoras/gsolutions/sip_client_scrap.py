@@ -66,8 +66,6 @@ class SipClient:
         self.login(url_de_login=url_de_login)
         custo_minutagem = self.filtrar_dados(url_filtragem)
         id_clientes = self.get_id_do_cliente(url_id_do_cliente)
-        print(custo_minutagem.text)
-        print(id_clientes.json())
         return custo_minutagem, id_clientes
 
 

@@ -26,7 +26,6 @@ class SipClient:
 
         return url_login, url_filtragem, url_get_id, url_chamadas_tarifadas, url_lista_de_clientes, url_id_do_cliente
 
-
     def login(self, url_de_login):
         urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
         
@@ -54,18 +53,66 @@ class SipClient:
                                                                 verificacao=False)
         return id_do_cliente
 
-    def get_chamadas_tarifadas(self, data, url_chamadas_tarifadas, id_cliente):
-        chamadas_tarifadas = self.hr.requisicao_get_com_verificado(headers=header_geral(),
-                                                                   payload_get=payload_chamadas_tarifadas(id_cliente, data),
-                                                                   url=url_chamadas_tarifadas,
-                                                                   verificacao=False)
-        return chamadas_tarifadas
-
     def execucao_pipeline_sip(self):
-        url_de_login, url_filtragem, url_get_id, url_chamadas_tarifadas, url_a_toa, url_id_do_cliente = self.gerar_url()
+        url_de_login, url_filtragem, url_get_id,url_chamadas_tarifadas, url_a_toa, url_id_do_cliente = self.gerar_url()
         self.login(url_de_login=url_de_login)
         custo_minutagem = self.filtrar_dados(url_filtragem)
         id_clientes = self.get_id_do_cliente(url_id_do_cliente)
         return custo_minutagem, id_clientes
 
-
+class SipCharged:
+    def __init__(self, data, url_base, usuario, password):
+        self.data = data
+        self.url_base = url_base
+        self.url_login = f'{url_base}/painel/index.php'
+        self.url_tarifadas = f'{url_base}/painel/call_history.php'
+        self.hr = HttpRequisitions(session=requests.Session())
+        self.usuario = usuario
+        self.password = password
+        
+        
+    def login(self):
+        urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+        
+        login = self.hr.requisicao_post_com_certificado(payload_post=payload_de_login(self.usuario, self.password),
+                                        headers=header_geral(),
+                                        url=self.url_login,
+                                        verificacao=False
+                                        )
+        return login
+    
+    def clientes_online(self, cliente_online: list, id_clients: dict):
+        '''
+        Função para verificar os clientes que tiveram consumo na operadora
+        ela vai comparar os dados gerais com os nomes dos clientes online e retornar
+        uma lista com os ids dos clientes que tiveram consumo
+        OBS: cliente_online é uma lista de dicionários e id_clientes é um dicionário
+        '''
+        print(cliente_online)
+        lista_ids_online = []
+        for cliente in cliente_online:
+            for id_usuario in id_clients:                
+                if cliente["Cliente"] == id_usuario["Cliente"]:
+                    lista_ids_online.append(id_usuario["id"])
+        return lista_ids_online
+        
+        
+        
+    
+    def get_chamadas_tarifadas(self, id_cliente):
+        lista_chamadas_tarifadas = []
+        for cliente in id_cliente:
+            chamadas_tarifadas = self.hr.requisicao_get_com_verificado(headers=header_geral(),
+                                                                        payload_get=payload_chamadas_tarifadas(cliente, self.data),
+                                                                        url=self.url_tarifadas,
+                                                                        verificacao=False)
+            convertidas = chamadas_tarifadas.text
+            lista_chamadas_tarifadas.append(convertidas)      
+        return lista_chamadas_tarifadas
+    
+    def execucao_sip_tarifas(self, cliente_online, id_cliente: dict):
+        self.login()
+        lista_ids_online = self.clientes_online(cliente_online, id_cliente)
+        chamadas_tarifadas = self.get_chamadas_tarifadas(lista_ids_online)
+        return chamadas_tarifadas
+        

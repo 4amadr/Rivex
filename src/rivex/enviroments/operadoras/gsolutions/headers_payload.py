@@ -42,6 +42,6 @@ def payload_chamadas_tarifadas(id_cliente, data):
         'tipo_exibicao': 'tela',
         'checkbox_columns': '1',
         'exibir_totais': '1',
-        'action': 'buscar'
+        'action': 'Buscar'
     }
     return payload

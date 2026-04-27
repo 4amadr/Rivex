@@ -14,23 +14,85 @@ from src.rivex.database.database import DatabaseRivex
 from src.rivex.enviroments.discadores.Callix.callix_req import CAllixRequisition
 from src.rivex.data_processing.Callix.cleaner_callix_req import *
 from src.rivex.utils.database_utils.database_config import DatabaseConfig
-from src.rivex.enviroments.operadoras.gsolutions.sip_client_scrap import SipClient
+from src.rivex.enviroments.operadoras.gsolutions.sip_client_scrap import SipClient, SipCharged
 from src.rivex.data_processing.gsolutions.cleaner_sip import *
+from dotenv import load_dotenv
+
+load_dotenv()
 
 
 def main_gs():
     dc = DateConfig()
     data = dc.data_selecionadas()
     print(f"Coleta do dia {data} na Gsolutions")
-    sc = SipClient(usuario='fbm.revenda',
-                   password='Bill23ADM$',
-                   url='https://sip3.solutionsvoip.com.br',
+    sc = SipClient(usuario=os.getenv('GSOLUTIONS_LOGIN'),
+                   password=os.getenv('GSOLUTIONS_PASSWORD'),
+                   url=os.getenv('GSOLUTIONS_URL'),
                    operadora='Gsolutions',
                    data=data)
-
-    custo_minutagem, id_clientes = sc.execucao_pipeline_sip()
-    #clientes_mapeados = mapeamento_clientes(id_clientes.json())
-    limpeza_custo(custo_minutagem.text)
+    sch = SipCharged(
+        data=data,
+        url_base=os.getenv('GSOLUTIONS_URL'),
+        usuario=os.getenv('GSOLUTIONS_LOGIN'),
+        password=os.getenv('GSOLUTIONS_PASSWORD'),
+        
+    )
+    ''' coleta que retorna:
+    consumo_cliente -> Clientes online, Minutagem e custo.
+    id_clientes -> Id de cada cliente, nome do cliente
+    '''
+    custo_minutagem_por_cliente, id_clientes = sc.execucao_pipeline_sip()
+    clientes_mapeados = mapeamento_clientes(id_clientes.json())
+    
+    #Limpeza de dados
+    clientes_mapeados, resultado_custos = limpeza_de_dados_base(id_clientes.json(),
+                                                                custo_minutagem_por_cliente.text
+                                                                            )
+    
+    '''
+    Desempacotando dicionários para usar na próxima função que retorna as chamadas tarifadas
+    ids_online é a lista de ids referente aos clientes que tiveram consumo no dia selecionado
+    '''
+    chamadas_tarifadas = sch.execucao_sip_tarifas(resultado_custos, clientes_mapeados)
+    lista_dados = limpeza_de_dados_final(chamadas_tarifadas, resultado_custos)
+    print(lista_dados)
+    
+def main_agitel():
+        dc = DateConfig()
+        data = dc.data_selecionadas()
+        print(f"Coleta do dia {data} na agitel")
+        sc = SipClient(usuario=os.getenv('AGITEL_USER'),
+                    password=os.getenv('AGITEL_PASSWORD'),
+                    url=os.getenv('AGITEL_URL'),
+                    operadora='Agitel',
+                    data=data)
+        sch = SipCharged(
+            data=data,
+            url_base=os.getenv('AGITEL_URL'),
+            usuario=os.getenv('AGITEL_USER'),
+            password=os.getenv('AGITEL_PASSWORD'),
+            
+        )
+        ''' coleta que retorna:
+        consumo_cliente -> Clientes online, Minutagem e custo.
+        id_clientes -> Id de cada cliente, nome do cliente
+        '''
+        custo_minutagem_por_cliente, id_clientes = sc.execucao_pipeline_sip()
+        print(id_clientes.text)
+        clientes_mapeados = mapeamento_clientes(id_clientes.json())
+        
+        #Limpeza de dados
+        clientes_mapeados, resultado_custos = limpeza_de_dados_base(id_clientes.json(),
+                                                                    custo_minutagem_por_cliente.text
+                                                                                )
+        
+        '''
+        Desempacotando dicionários para usar na próxima função que retorna as chamadas tarifadas
+        ids_online é a lista de ids referente aos clientes que tiveram consumo no dia selecionado
+        '''
+        chamadas_tarifadas = sch.execucao_sip_tarifas(resultado_custos, clientes_mapeados)
+        lista_dados = limpeza_de_dados_final(chamadas_tarifadas, resultado_custos)
+        print(lista_dados)
 
 def main_callix():
     load_dotenv()
@@ -142,7 +204,7 @@ def main_vonix():
     return resultados
 
 
-
-exec_gs = main_gs()
+exec_agitel = main_agitel()
+#exec_gs = main_gs()
 #dados_vonix = main_vonix()
 #dados_callix = main_callix()

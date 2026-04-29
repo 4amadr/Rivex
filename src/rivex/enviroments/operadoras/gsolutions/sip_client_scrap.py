@@ -14,17 +14,23 @@ class SipClient:
         self.operadora = operadora
         self.data = data
 
-    def gerar_url(self):
+    def gerar_url(self, ):
         url_base = self.url
-        url_login = f'{url_base}/painel/index.php'
-        url_filtragem = f'{url_base}/painel/relatorio_minutos_revenda.php'
-        url_get_id = f'{url_base}/painel/cliente_lista.php?cliente=&email=&cpf=&cnpj=&action=Filtrar'
-        url_chamadas_tarifadas = f'{url_base}/painel/call_history.php?retorno=listacliente&v='
-        url_lista_de_clientes = f'{url_base}/painel/cliente_lista.php'
-        url_id_do_cliente = f'{url_base}/painel/buscaDadosClientecomId.php'
+        url_login = f"{url_base}/painel/index.php"
+        url_filtragem = f"{url_base}/painel/relatorio_minutos_revenda.php"
+        url_get_id = f"{url_base}/painel/cliente_lista.php?cliente=&email=&cpf=&cnpj=&action=Filtrar"
+        url_chamadas_tarifadas = f"{url_base}/painel/call_history.php?retorno=listacliente&v="
+        url_lista_de_clientes = f"{url_base}/painel/cliente_lista.php"
+        url_id_do_cliente = f"{url_base}/painel/buscaDadosClientecomId.php"
 
-
-        return url_login, url_filtragem, url_get_id, url_chamadas_tarifadas, url_lista_de_clientes, url_id_do_cliente
+        return (
+            url_login,
+            url_filtragem,
+            url_get_id,
+            url_chamadas_tarifadas,
+            url_lista_de_clientes,
+            url_id_do_cliente,
+        )
 
     def login(self, url_de_login):
         urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
@@ -88,7 +94,6 @@ class SipCharged:
         uma lista com os ids dos clientes que tiveram consumo
         OBS: cliente_online é uma lista de dicionários e id_clientes é um dicionário
         '''
-        print(cliente_online)
         lista_ids_online = []
         for cliente in cliente_online:
             for id_usuario in id_clients:                

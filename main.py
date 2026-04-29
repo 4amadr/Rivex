@@ -78,7 +78,6 @@ def main_agitel():
         id_clientes -> Id de cada cliente, nome do cliente
         '''
         custo_minutagem_por_cliente, id_clientes = sc.execucao_pipeline_sip()
-        print(id_clientes.text)
         clientes_mapeados = mapeamento_clientes(id_clientes.json())
         
         #Limpeza de dados

@@ -1,6 +1,7 @@
 from src.rivex.utils.requests_utils.requests import HttpRequisitions
+from src.rivex.enviroments.discadores.IPBox.payloads_ipbox import *
 from dotenv import load_dotenv
-import os
+import requests
 
 class IpboxApi:
     def __init__(self, url, token, site_base, data):

@@ -16,7 +16,9 @@ from src.rivex.data_processing.Callix.cleaner_callix_req import *
 from src.rivex.utils.database_utils.database_config import DatabaseConfig
 from src.rivex.enviroments.operadoras.gsolutions.sip_client_scrap import SipClient, SipCharged
 from src.rivex.data_processing.gsolutions.cleaner_sip import *
+from src.rivex.enviroments.operadoras.pentagono.pentagono_scrap import pentagonoScrap
 from dotenv import load_dotenv
+from src.rivex.data_processing.pentagono.pentagono_cleaning import *
 
 load_dotenv()
 
@@ -92,6 +94,25 @@ def main_agitel():
         chamadas_tarifadas = sch.execucao_sip_tarifas(resultado_custos, clientes_mapeados)
         lista_dados = limpeza_de_dados_final(chamadas_tarifadas, resultado_custos)
         print(lista_dados)
+
+def main_pentagono():
+    dc = DateConfig()
+    data = dc.data_selecionadas()
+    
+    ps = pentagonoScrap(
+    usuario=os.getenv('PENTAGONO_LOGIN'),
+    senha=os.getenv('PENTAGONO_PASSWORD'),
+    data=data
+    )
+    
+    # execução e coleta de dados sujos em formato HTML
+    login, pagina_inicial, relatorio_html = ps.execucao_pentagono()
+    
+    # limpeza de dados
+    dados = execucao_limpeza(relatorio_html)
+    print(dados)
+    
+    
 
 def main_callix():
     load_dotenv()
@@ -202,8 +223,8 @@ def main_vonix():
     print('Execução do vonix finalizada')
     return resultados
 
-
-exec_agitel = main_agitel()
+exec_pentagono = main_pentagono()
+#exec_agitel = main_agitel()
 #exec_gs = main_gs()
 #dados_vonix = main_vonix()
 #dados_callix = main_callix()

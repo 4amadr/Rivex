@@ -6,9 +6,6 @@ import requests
 import dotenv
 import os
 
-
-load_dotenv()
-
 class pentagonoScrap:
     
     def __init__(self, usuario, senha, data):
@@ -61,14 +58,5 @@ class pentagonoScrap:
         relatorio_html = self.get_cdr(url_cdr)
 
         return login, pagina_inicial, relatorio_html
-
-ps = pentagonoScrap(
-    usuario=os.getenv('PENTAGONO_LOGIN'),
-    senha=os.getenv('PENTAGONO_PASSWORD'),
-    data='04/05/2026'
-)
-
-login, pagina_inicial, relatorio_html = ps.execucao_pentagono()
-print(relatorio_html.text)
         
         

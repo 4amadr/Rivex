@@ -19,6 +19,9 @@ from src.rivex.data_processing.gsolutions.cleaner_sip import *
 from src.rivex.enviroments.operadoras.pentagono.pentagono_scrap import pentagonoScrap
 from dotenv import load_dotenv
 from src.rivex.data_processing.pentagono.pentagono_cleaning import *
+from src.rivex.enviroments.discadores.IPBox.colect_ipbox import *
+from src.rivex.enviroments.discadores.IPBox.payloads_ipbox import *
+
 
 load_dotenv()
 
@@ -112,7 +115,32 @@ def main_pentagono():
     dados = execucao_limpeza(relatorio_html)
     print(dados)
     
-    
+def main_ipbox():
+    dc = DateConfig()
+    data = dc.data_selecionadas()
+    ii = IpboxInit(url='https://contech1.ipboxcloud.com.br:8624/',
+                   login=os.getenv('IPBOX_LOGIN'),
+                   senha=os.getenv('IPBOX_PASSWORD'),
+                   data=data
+    )
+    print("Iniciando a configuração do servidor")
+    lista_clientes = ii.execucao_base_ipbox() # lista de dicionários
+    for cliente in lista_clientes:
+
+        print("Iniciando a coleta de dados do servidor IPBOX")
+
+        ic = IpboxClientConfig(url='https://contech1.ipboxcloud.com.br:8624/',
+                               login=os.getenv('IPBOX_LOGIN'),
+                               senha=os.getenv('IPBOX_PASSWORD'),
+                               data=data,
+                               id_cliente=cliente['ID Cliente'],
+                               nome_cliente=cliente['Cliente'],
+                               token=os.getenv('IPBOX_TOKEN'),
+                               )
+        agressividade, chamadas, agentes = ic.execucao_ipbox()
+
+
+
 
 def main_callix():
     load_dotenv()

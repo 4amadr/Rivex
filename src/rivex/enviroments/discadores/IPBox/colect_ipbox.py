@@ -1,38 +1,98 @@
 from src.rivex.utils.requests_utils.requests import HttpRequisitions
 from src.rivex.enviroments.discadores.IPBox.payloads_ipbox import *
-from dotenv import load_dotenv
+from src.rivex.data_processing.IPBox.limpeza_ipbox import *
 import requests
 
-class IpboxApi:
-    def __init__(self, url, token, site_base, data):
+class IpboxInit:
+    def __init__(self, url, login, senha, data):
         self.url = url
-        self.token = token
+        self.login = login
         self.senha = senha
-        self.site_base = site_base
+        self.data = data
         self.hr = HttpRequisitions(session=requests.session())
         
-    def gerador_de_requisicao(self):
-        url_base = f"{self.site_base}"
-        url_produtividade_agentes = f"{url_base}ipbox/api/getPA1"
-        url_desempenho_telefonia = f"{url_base}ipbox/api/getTA1"
-        url_chamadas_abandonadas = f"{url_base}ipbox/api/getHC1?de={self.data}000000&ate={self.data}"
-        return url_produtividade_agentes, url_desempenho_telefonia, url_chamadas_abandonadas
-    
-    def requisicao_ipbox(self, url):
-        dados = self.hr.requisicao_get(headers,
-                                       url,
-                                       payload) # precisa elaborar o payload antes de executar
-        '''
-        Talvez alguns dados de payload precisem entrar nos argumentos da
-        função
-        '''
+    def gerar_url(self):
+        url_login = f'{self.url}/contech/autenticacao.php'
+        url_relatorio_chamadas = f'{self.url}/contech/viewRelatTelefoniaAtivo.php'
 
-        return dados
-    
-    def execucao_ipbox():
-        url_produtividade_agentes, url_desempenho_telefonia, url_chamadas_abandonadas = self.gerador_de_requisicao()
-        produtividade = self.requisicao_ipbox(url_produtividade_agentes)
-        desempenho_telefonia = self.requisicao_ipbox(url_desempenho_telefonia)
-        chamadas_abandonadas = self.requisicao_ipbox(url_chamadas_abandonadas)
+        return url_login, url_relatorio_chamadas
         
-        return produtividade, desempenho_telefonia, chamadas_abandonadas # dados retornados em formato .json
+    def login_ipbox(self, url_login):
+        login = self.hr.requisicao_post(payload_post=payload_login_ipbox(self.login, self.senha),
+                                        headers=headers_ipbox(),
+                                        url=url_login)
+        
+        return login
+    
+    def get_clientes(self):
+        '''Requisição para coletar os clientes presentes no discador'''
+        url_get_clientes = f'{self.url}/contech/listFila.php?tipo=A&selectActive=Y'
+
+        cliente_ipbox = self.hr.requisicao_get(payload_get=payload_get_clientes,
+                                            headers=headers_ipbox(),
+                                            url=url_get_clientes)
+        id_clientes = filtragem_lista(cliente_ipbox)
+        return id_clientes
+    
+    def execucao_base_ipbox(self):
+        url_login, url_relatorio_chamadas = self.gerar_url()
+        login = self.login_ipbox(url_login)
+        cliente_ipbox = self.get_clientes()
+        
+        return cliente_ipbox
+
+
+class IpboxClientConfig:
+
+    def __init__(self, url, login, senha, data, id_cliente, nome_cliente, token):
+        self.url = url
+        self.login = login
+        self.senha = senha
+        self.data = data
+        self.id_cliente = id_cliente # para não ter a necessidade de repetir o login
+        self.nome_cliente = nome_cliente # nome do cliente para buscar os valores
+        self.hr = HttpRequisitions(session=requests.session())
+        self.token = token
+
+    def gerador_de_url_configs(self):
+        url_agressividade = f'{self.url}/contech/contech/editFila.php'
+        url_relatorio_chamadas = f'{self.url}ipbox/api/getTA1'
+        url_relatorio_agentes = f'{self.url}ipbox/api/getPA1'
+
+        return url_agressividade, url_relatorio_chamadas, url_relatorio_agentes
+
+    def get_agressividade(self, url_agressividade):
+        '''
+        Vai ser executado em loop de iteração para retornar um cliente de cada vez
+        o retorno esperado é o HTML da página de configuração de clientes onde o valor desejado
+        é o valor de overdial
+        '''
+        agressividade = self.hr.requisicao_get(headers=headers_ipbox(),
+                                               url=url_agressividade,
+                                               payload_get=payload_filtragem_clientes(self.id_cliente))
+        print("Resposta da agressividade", agressividade.status_code)
+        return agressividade
+
+    def get_relatorio_chamadas(self, url_relatorio_chamadas): # coleta feita com API disponibilizada na documentação do ambiente
+        chamadas = self.hr.requisicao_get(headers=headers_api_telefonia(self.token),
+                                          payload_get=payload_api_telefonia(self.data, self.nome_cliente),
+                                          url=url_relatorio_chamadas)
+
+        print("RESPOSTA DAS CHAMADAS: ",chamadas.status_code)
+        return chamadas
+
+    def get_relatorio_agente(self, url_relatorio_agentes):
+        agentes = self.hr.requisicao_get(headers=headers_api_telefonia(self.token),
+                                         payload_get=payload_api_agentes(self.data),
+                                         url=url_relatorio_agentes)
+        print("RESPOSTA DAS AGENTE: ",agentes.status_code)
+        return agentes
+
+    def execucao_ipbox(self):
+        url_agressividade, url_relatorio_chamadas, url_relatorio_agentes = self.gerador_de_url_configs()
+        agressividade = self.get_agressividade(url_agressividade)
+        chamadas = self.get_relatorio_chamadas(url_relatorio_chamadas)
+        agentes = self.get_relatorio_agente(url_relatorio_agentes)
+
+        return agressividade, chamadas, agentes
+

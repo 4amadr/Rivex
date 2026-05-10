@@ -1,35 +1,70 @@
-def payload_produtividade_agentes(data): # relatórios de PA1
-    payload = f'de={data}000000&ate={data}235959'
+def payload_login_ipbox(login, senha):
+    payload_login = {
+        'doLogin': '1',
+        'login': f'{login}',
+        'senha': f'{senha}',
+        'Login': 'Entrar'
+    }
+    return payload_login
 
-    return payload
-
-def headers_produtividade_agentes(token):
-    headers = {
-    'Authorization': f'{{token}}',
-    'Content-Type': 'application/x-www-form-urlencoded'
+payload_get_clientes = {
+    'tipo': 'A',
+    'selectActive': 'Y'
 }
-    
-    return headers
 
-def payload_desempenho_telefonia(data): # relatórios de TA1
-    payload=f'de={data}000000&ate={data}235959&operacao=Opera%C3%A7%C3%A3o%201'
-    return payload
+def payload_config_cliente(id_cliente):
+    payload_cliente = {
+        'act': 'alter',
+        'obj_fila_id': f'{id_cliente}'
+    }
+    return payload_cliente
 
-def headers_desempenho_telefonia(token):
-    headers = {
-  'Authorization': f'{{token}}',
+def headers_ipbox():
+    return {
+        'User-Agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36'
+    }
+
+def payload_filtragem_clientes(cliente_id):
+    payload_filtragem = {
+        'act': 'alter',
+        'obj_fila_id': f'{cliente_id}'
+    }
+    return payload_filtragem
+
+def payload_telefonia_ipbox(cliente_id, data):
+    return {
+        'ipoperid': f'{cliente_id}',
+        'filaid': '0',
+        'loteid': '0',
+        'de': f'{data}',
+        'ate': f'{data}',
+    }
+
+def payload_relatorio_agentes(cliente_id):
+    return {
+        "relatid": cliente_id
+    }
+
+def headers_api_telefonia(token):
+    return {
+  'Authorization': f'{token}',
   'Content-Type': 'application/x-www-form-urlencoded'
 }
-    return headers
 
-def payload_chamadas_abandonadas(data):
-    payload='de={{de}}&ate={{ate}}&fila={{fila}}&status={{status}}&rna={{rna}}&desligada={{desligada}}&durde={{durde}}&durate={{durate}}&filade={{filade}}&filaate={{filaate}}'
+def payload_api_telefonia(data, cliente):
+    de = f'{data}000000'
+    ate = f'{data}235959'
+    return {
+        'de': de,
+        'ate': ate,
+        'operacao': cliente
+    }
+
+def payload_api_agentes(data):
+
+    de = f'{data}000000'
+    ate = f'{data}235959'
+
+    payload = f'de={de}&ate={ate}'
+
     return payload
-
-def headers_chamadas_abandonadas(token):
-    headers = {
-  'Authorization': f'{{token}}',
-  'Content-Type': 'application/json'
-}
-    
-    return headers

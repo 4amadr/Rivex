@@ -21,24 +21,27 @@ class IpboxInit:
         login = self.hr.requisicao_post(payload_post=payload_login_ipbox(self.login, self.senha),
                                         headers=headers_ipbox(),
                                         url=url_login)
+        print('Login finalizado')
         
         return login
     
     def get_clientes(self):
         '''Requisição para coletar os clientes presentes no discador'''
         url_get_clientes = f'{self.url}/contech/listFila.php?tipo=A&selectActive=Y'
-
+        print('Coletando clientes')
         cliente_ipbox = self.hr.requisicao_get(payload_get=payload_get_clientes,
                                             headers=headers_ipbox(),
                                             url=url_get_clientes)
-        id_clientes = filtragem_lista(cliente_ipbox)
+        print('Clientes coletados')
+        id_clientes = filtragem_lista(cliente_ipbox) # ERRO NESSA FUNÇÃO!!!!!!
+        print('Clientes coletados e limpos em uma lista de dicionários')
         return id_clientes
     
     def execucao_base_ipbox(self):
         url_login, url_relatorio_chamadas = self.gerar_url()
         login = self.login_ipbox(url_login)
         cliente_ipbox = self.get_clientes()
-        
+        print('Base ipbox finalizada')
         return cliente_ipbox
 
 
@@ -94,5 +97,5 @@ class IpboxClientConfig:
         chamadas = self.get_relatorio_chamadas(url_relatorio_chamadas)
         agentes = self.get_relatorio_agente(url_relatorio_agentes)
 
-        return agressividade, chamadas, agentes
+        return agressividade.text, chamadas.text, agentes.text
 

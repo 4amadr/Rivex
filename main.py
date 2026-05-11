@@ -117,7 +117,7 @@ def main_pentagono():
     
 def main_ipbox():
     dc = DateConfig()
-    data = dc.data_selecionadas()
+    data = dc.data_ipbox()
     ii = IpboxInit(url='https://contech1.ipboxcloud.com.br:8624/',
                    login=os.getenv('IPBOX_LOGIN'),
                    senha=os.getenv('IPBOX_PASSWORD'),
@@ -138,6 +138,9 @@ def main_ipbox():
                                token=os.getenv('IPBOX_TOKEN'),
                                )
         agressividade, chamadas, agentes = ic.execucao_ipbox()
+        print(agressividade)
+        print(chamadas)
+        print(agentes)
 
 
 
@@ -251,7 +254,9 @@ def main_vonix():
     print('Execução do vonix finalizada')
     return resultados
 
-exec_pentagono = main_pentagono()
+
+exec_ipbox = main_ipbox()
+#exec_pentagono = main_pentagono()
 #exec_agitel = main_agitel()
 #exec_gs = main_gs()
 #dados_vonix = main_vonix()

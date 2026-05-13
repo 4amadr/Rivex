@@ -139,7 +139,9 @@ def main_ipbox():
                                token=os.getenv('IPBOX_TOKEN'),
                                )
         agressividade, chamadas, agentes = ic.execucao_ipbox()
-        print("HTML DE AGRESSIVIDADE",agressividade)
+        agressividade_limpa = limpeza_agressividade(agressividade_html=agressividade)
+        print("HTML DE AGRESSIVIDADE",agressividade_limpa)
+
         #print(chamadas)
         #print(agentes)
 

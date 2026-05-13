@@ -65,3 +65,13 @@ def filtragem_lista(clientes):
     lista_final = dicionario_clientes(lista_pronta, lista_de_ids)
     print("FIIIIM", lista_final)
     return lista_final
+
+def limpeza_agressividade(agressividade_html):
+    html = BeautifulSoup(agressividade_html, "html.parser")
+
+    select_tag = html.find('select', attrs={'id': 'obj_fila_valor_overdial'})
+    opcao = select_tag.find('option', selected=True)
+    valor = opcao['value']
+    print(valor)  # Saída: 7
+
+    return valor

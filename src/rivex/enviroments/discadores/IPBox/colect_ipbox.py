@@ -18,13 +18,16 @@ class IpboxInit:
         return url_login, url_relatorio_chamadas
         
     def login_ipbox(self, url_login):
+        print("logando...")
         login = self.hr.requisicao_post(payload_post=payload_login_ipbox(self.login, self.senha),
                                         headers=headers_ipbox(),
                                         url=url_login)
         print('Login finalizado', login.status_code)
         print("Credenciais usadas: ", url_login, payload_login_ipbox(self.login, self.senha))
-        
-        return self.hr.session
+
+        estado_login = self.hr.session
+        print(type(estado_login))
+        return estado_login
     
     def get_clientes(self):
         '''Requisição para coletar os clientes presentes no discador'''
@@ -56,7 +59,7 @@ class IpboxClientConfig:
         self.id_cliente = id_cliente # para não ter a necessidade de repetir o login
         self.nome_cliente = nome_cliente # nome do cliente para buscar os valores
         self.session = sessao_anterior
-        self.hr = HttpRequisitions(session=requests.session())
+        self.hr = HttpRequisitions(session=sessao_anterior)
         self.token = token
 
     def gerador_de_url_configs(self):

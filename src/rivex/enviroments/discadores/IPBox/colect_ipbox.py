@@ -24,7 +24,7 @@ class IpboxInit:
         print('Login finalizado', login.status_code)
         print("Credenciais usadas: ", url_login, payload_login_ipbox(self.login, self.senha))
         
-        return login
+        return self.hr.session
     
     def get_clientes(self):
         '''Requisição para coletar os clientes presentes no discador'''
@@ -43,23 +43,24 @@ class IpboxInit:
         login = self.login_ipbox(url_login)
         cliente_ipbox = self.get_clientes()
         print('Base ipbox finalizada')
-        return cliente_ipbox
+        return login, cliente_ipbox
 
 
 class IpboxClientConfig:
 
-    def __init__(self, url, login, senha, data, id_cliente, nome_cliente, token):
+    def __init__(self, url, login, senha, data, id_cliente, nome_cliente, sessao_anterior, token):
         self.url = url
         self.login = login
         self.senha = senha
         self.data = data
         self.id_cliente = id_cliente # para não ter a necessidade de repetir o login
         self.nome_cliente = nome_cliente # nome do cliente para buscar os valores
+        self.session = sessao_anterior
         self.hr = HttpRequisitions(session=requests.session())
         self.token = token
 
     def gerador_de_url_configs(self):
-        url_agressividade = f'{self.url}/contech/contech/editFila.php'
+        url_agressividade = f'{self.url}/contech/editFila.php?act=alter&obj_fila_id={self.id_cliente}'
         url_relatorio_chamadas = f'{self.url}ipbox/api/getTA1'
         url_relatorio_agentes = f'{self.url}ipbox/api/getPA1'
 
@@ -73,9 +74,11 @@ class IpboxClientConfig:
         '''
         agressividade = self.hr.requisicao_get(headers=headers_ipbox(),
                                                url=url_agressividade,
-                                               payload_get=payload_filtragem_clientes(self.id_cliente)) # ID DA TAMIRES LEONCIO É 63 AQUI, NO GET_CLIENTES ELE É 31
+                                               payload_get={}) # ID corrigido, o erro 404 é outro
         print("Cliente buscado", self.nome_cliente)
         print("ID usado na verificação", self.id_cliente)
+        print("url usada na agressividade", url_agressividade)
+        print("Histórico: ", agressividade.history)
         print("Resposta da agressividade", agressividade.status_code)
         return agressividade
 

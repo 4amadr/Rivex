@@ -124,7 +124,7 @@ def main_ipbox():
                    data=data
     )
     print("Iniciando a configuração do servidor")
-    lista_clientes = ii.execucao_base_ipbox() # lista de dicionários
+    sessao_logada, lista_clientes = ii.execucao_base_ipbox() # lista de dicionários
     for cliente in lista_clientes:
 
         print("Iniciando a coleta de dados do servidor IPBOX")
@@ -135,6 +135,7 @@ def main_ipbox():
                                data=data,
                                id_cliente=cliente['ID Cliente'],
                                nome_cliente=cliente['Cliente'],
+                               sessao_anterior=sessao_logada,
                                token=os.getenv('IPBOX_TOKEN'),
                                )
         agressividade, chamadas, agentes = ic.execucao_ipbox()

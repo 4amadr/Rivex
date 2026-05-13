@@ -78,6 +78,7 @@ class IpboxClientConfig:
         chamadas = self.hr.requisicao_get(headers=headers_api_telefonia(self.token),
                                           payload_get=payload_api_telefonia(self.data, self.nome_cliente),
                                           url=url_relatorio_chamadas)
+        print(payload_api_telefonia(self.data, self.nome_cliente))
 
         print("RESPOSTA DAS CHAMADAS: ",chamadas.status_code) # MANTER POIS ESTÁ RETORNANDO 409 PROBLEMA NA HORA E DATA DO PAYLOAD !!!!
         return chamadas

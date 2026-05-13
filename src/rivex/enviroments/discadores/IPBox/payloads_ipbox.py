@@ -57,7 +57,7 @@ def payload_api_telefonia(data, cliente):
     return {
         'de': de,
         'ate': ate,
-        'operacao': cliente
+        'operacao': cliente.strip()
     }
 
 def payload_api_agentes(data):

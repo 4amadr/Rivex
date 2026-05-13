@@ -140,7 +140,8 @@ def main_ipbox():
                                )
         agressividade, chamadas, agentes = ic.execucao_ipbox()
         agressividade_limpa = limpeza_agressividade(agressividade_html=agressividade)
-        print("HTML DE AGRESSIVIDADE",agressividade_limpa)
+        print("Agressividade", agressividade_limpa)
+        print("HTML CHAMADAS: ", chamadas)
 
         #print(chamadas)
         #print(agentes)

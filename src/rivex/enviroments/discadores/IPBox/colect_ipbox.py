@@ -22,23 +22,17 @@ class IpboxInit:
         login = self.hr.requisicao_post(payload_post=payload_login_ipbox(self.login, self.senha),
                                         headers=headers_ipbox(),
                                         url=url_login)
-        print('Login finalizado', login.status_code)
-        print("Credenciais usadas: ", url_login, payload_login_ipbox(self.login, self.senha))
-
         estado_login = self.hr.session
-        print(type(estado_login))
         return estado_login
     
     def get_clientes(self):
         '''Requisição para coletar os clientes presentes no discador'''
         url_get_clientes = f'{self.url}/contech/listFila.php'
-        print('Coletando clientes')
+
         cliente_ipbox = self.hr.requisicao_get(payload_get=payload_get_clientes,
                                             headers=headers_ipbox(),
                                             url=url_get_clientes)
-        print('Clientes coletados')
-        id_clientes = filtragem_lista(cliente_ipbox) # FUNÇÃO RETORNANDO OS IDS ERRADOS !!!!
-        print('Clientes coletados e limpos em uma lista de dicionários')
+        id_clientes = filtragem_lista(cliente_ipbox) 
         return id_clientes
     
     def execucao_base_ipbox(self):
@@ -78,11 +72,6 @@ class IpboxClientConfig:
         agressividade = self.hr.requisicao_get(headers=headers_ipbox(),
                                                url=url_agressividade,
                                                payload_get={}) # ID corrigido, o erro 404 é outro
-        print("Cliente buscado", self.nome_cliente)
-        print("ID usado na verificação", self.id_cliente)
-        print("url usada na agressividade", url_agressividade)
-        print("Histórico: ", agressividade.history)
-        print("Resposta da agressividade", agressividade.status_code)
         return agressividade
 
     def get_relatorio_chamadas(self, url_relatorio_chamadas): # coleta feita com API disponibilizada na documentação do ambiente
@@ -90,14 +79,14 @@ class IpboxClientConfig:
                                           payload_get=payload_api_telefonia(self.data, self.nome_cliente),
                                           url=url_relatorio_chamadas)
 
-        print("RESPOSTA DAS CHAMADAS: ",chamadas.status_code)
+        print("RESPOSTA DAS CHAMADAS: ",chamadas.status_code) # MANTER POIS ESTÁ RETORNANDO 409 PROBLEMA NA HORA E DATA DO PAYLOAD !!!!
         return chamadas
 
     def get_relatorio_agente(self, url_relatorio_agentes):
         agentes = self.hr.requisicao_get(headers=headers_api_telefonia(self.token),
                                          payload_get=payload_api_agentes(self.data),
                                          url=url_relatorio_agentes)
-        print("RESPOSTA DAS AGENTE: ",agentes.status_code)
+        print("RESPOSTA DAS AGENTE: ",agentes.status_code) # MANTER POIS ESTÁ RETORNANDO 409!!!
         return agentes
 
     def execucao_ipbox(self):

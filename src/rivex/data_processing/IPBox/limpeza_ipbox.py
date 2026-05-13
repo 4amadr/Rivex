@@ -63,7 +63,6 @@ def filtragem_lista(clientes):
     lista_pronta = limpeza_lista_clientes(lista_suja_clientes)
     lista_de_ids = extrair_ids_filas(clientes)
     lista_final = dicionario_clientes(lista_pronta, lista_de_ids)
-    print("FIIIIM", lista_final)
     return lista_final
 
 def limpeza_agressividade(agressividade_html):
@@ -72,6 +71,5 @@ def limpeza_agressividade(agressividade_html):
     select_tag = html.find('select', attrs={'id': 'obj_fila_valor_overdial'})
     opcao = select_tag.find('option', selected=True)
     valor = opcao['value']
-    print(valor)  # Saída: 7
 
     return valor

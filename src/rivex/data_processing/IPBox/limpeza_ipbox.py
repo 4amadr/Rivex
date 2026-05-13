@@ -4,7 +4,6 @@ import re
 
 def get_clientes(clientes):
     clientes_html = BeautifulSoup(clientes.text, 'html.parser')
-    print(clientes_html)
 
     lista_clientes = []
     clientes = clientes_html.find_all('td', nowrap="")
@@ -20,21 +19,32 @@ def limpeza_lista_clientes(lista_clientes):
 def extrair_ids_filas(html: str) -> list[int]:
     """
     Extrai todos os IDs únicos de filas presentes nos hrefs das tags <a>.
-    Captura tanto 'obj_fila_id' quanto 'filaId' como parâmetros de query.
     """
+
+    lista_ids = []
+
     soup = BeautifulSoup(html.text, "html.parser")
 
-    parametros_alvo = {"obj_fila_id", "filaid"}  # lowercase para comparação case-insensitive
-    ids_encontrados = set()
+    td_tags = soup.find_all("td", class_="botao")
 
-    for tag in soup.find_all("a", href=True):
-        query = parse_qs(urlparse(tag["href"]).query)
+    for td in td_tags:
 
-        for chave, valores in query.items():
-            if chave.lower() in parametros_alvo:
-                ids_encontrados.update(int(v) for v in valores if v.isdigit())
+        link = td.find("a", href=True)
 
-    return sorted(ids_encontrados)
+        if not link:
+            continue
+
+        href = link["href"]
+
+        query = urlparse(href).query
+        params = parse_qs(query)
+
+        fila_id = params.get("obj_fila_id", [None])[0]
+
+        if fila_id:
+            lista_ids.append(int(fila_id))
+
+    return lista_ids
 
 def dicionario_clientes(lista_clientes, lista_ids):
     lista_info_cliente = []

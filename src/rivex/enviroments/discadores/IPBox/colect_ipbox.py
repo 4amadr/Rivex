@@ -21,19 +21,20 @@ class IpboxInit:
         login = self.hr.requisicao_post(payload_post=payload_login_ipbox(self.login, self.senha),
                                         headers=headers_ipbox(),
                                         url=url_login)
-        print('Login finalizado')
+        print('Login finalizado', login.status_code)
+        print("Credenciais usadas: ", url_login, payload_login_ipbox(self.login, self.senha))
         
         return login
     
     def get_clientes(self):
         '''Requisição para coletar os clientes presentes no discador'''
-        url_get_clientes = f'{self.url}/contech/listFila.php?tipo=A&selectActive=Y'
+        url_get_clientes = f'{self.url}/contech/listFila.php'
         print('Coletando clientes')
         cliente_ipbox = self.hr.requisicao_get(payload_get=payload_get_clientes,
                                             headers=headers_ipbox(),
                                             url=url_get_clientes)
         print('Clientes coletados')
-        id_clientes = filtragem_lista(cliente_ipbox) # ERRO NESSA FUNÇÃO!!!!!!
+        id_clientes = filtragem_lista(cliente_ipbox) # FUNÇÃO RETORNANDO OS IDS ERRADOS !!!!
         print('Clientes coletados e limpos em uma lista de dicionários')
         return id_clientes
     
@@ -72,7 +73,9 @@ class IpboxClientConfig:
         '''
         agressividade = self.hr.requisicao_get(headers=headers_ipbox(),
                                                url=url_agressividade,
-                                               payload_get=payload_filtragem_clientes(self.id_cliente))
+                                               payload_get=payload_filtragem_clientes(self.id_cliente)) # ID DA TAMIRES LEONCIO É 63 AQUI, NO GET_CLIENTES ELE É 31
+        print("Cliente buscado", self.nome_cliente)
+        print("ID usado na verificação", self.id_cliente)
         print("Resposta da agressividade", agressividade.status_code)
         return agressividade
 

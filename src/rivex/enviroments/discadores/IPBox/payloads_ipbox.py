@@ -1,4 +1,5 @@
 from urllib.parse import urlencode, quote_plus, unquote_plus, quote
+import re
 
 def payload_login_ipbox(login, senha):
     payload_login = {
@@ -33,14 +34,6 @@ def payload_filtragem_clientes(cliente_id):
     }
     return payload_filtragem
 
-def payload_telefonia_ipbox(cliente_id, data):
-    return {
-        'ipoperid': f'{cliente_id}',
-        'filaid': '0',
-        'loteid': '0',
-        'de': f'{data}',
-        'ate': f'{data}',
-    }
 
 def payload_relatorio_agentes(cliente_id):
     return {
@@ -52,8 +45,17 @@ def headers_api_telefonia(token):
   'Authorization': f'{token}',
   'Content-Type': 'application/x-www-form-urlencoded'
 }
+    
+def limpeza_sufixo_cliente(cliente):
+    '''
+    Remove sufixos numéricos de clientes do IPBox
+    '''
+    return re.sub(r'\s+\d+$', '', cliente).strip()
 
 def payload_api_telefonia(data, cliente):
+    cliente = limpeza_sufixo_cliente(cliente.strip())
+    
+    print('Cliente buscado: ', cliente)
     operacao = quote(cliente.strip(), safe='#')
     
     payload = (

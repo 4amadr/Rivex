@@ -125,6 +125,7 @@ def main_ipbox():
     )
     print("Iniciando a configuração do servidor")
     sessao_logada, lista_clientes = ii.execucao_base_ipbox() # lista de dicionários
+    
     for cliente in lista_clientes:
 
         print("Iniciando a coleta de dados do servidor IPBOX")
@@ -141,8 +142,8 @@ def main_ipbox():
         agressividade, chamadas, agentes = ic.execucao_ipbox()
         agressividade_limpa = limpeza_agressividade(agressividade_html=agressividade)
         
-        print("Agressividade", agressividade_limpa)
-        print("HTML CHAMADAS: ", chamadas)
+        print("Resposta da requisição de CHAMADAS: ", chamadas.json())
+        time.sleep(5)
 
         #print(chamadas)
         #print(agentes)

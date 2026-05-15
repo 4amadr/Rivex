@@ -75,12 +75,12 @@ class IpboxClientConfig:
         return agressividade
 
     def get_relatorio_chamadas(self, url_relatorio_chamadas): # coleta feita com API disponibilizada na documentação do ambiente
-        chamadas = self.hr.requisicao_get(headers=headers_api_telefonia(self.token),
-                                          payload_get=payload_api_telefonia(self.data, self.nome_cliente),
+        chamadas = self.hr.requisicao_post(headers=headers_api_telefonia(self.token),
+                                          payload_post=payload_api_telefonia(self.data, self.nome_cliente),
                                           url=url_relatorio_chamadas)
         print(payload_api_telefonia(self.data, self.nome_cliente))
 
-        print("RESPOSTA DAS CHAMADAS: ",chamadas.status_code) # MANTER POIS ESTÁ RETORNANDO 409 PROBLEMA NA HORA E DATA DO PAYLOAD !!!!
+        print("RESPOSTA DAS CHAMADAS: ",chamadas.status_code) # RETORNANDO ERRO 409 EM ALGUNS CLIENTES !!!!
         return chamadas
 
     def get_relatorio_agente(self, url_relatorio_agentes):
@@ -96,5 +96,5 @@ class IpboxClientConfig:
         chamadas = self.get_relatorio_chamadas(url_relatorio_chamadas)
         agentes = self.get_relatorio_agente(url_relatorio_agentes)
 
-        return agressividade.text, chamadas.text, agentes.text
+        return agressividade.text, chamadas, agentes.text
 

@@ -1,3 +1,5 @@
+from urllib.parse import urlencode, quote_plus, unquote_plus, quote
+
 def payload_login_ipbox(login, senha):
     payload_login = {
         'doLogin': '1',
@@ -52,13 +54,16 @@ def headers_api_telefonia(token):
 }
 
 def payload_api_telefonia(data, cliente):
-    de = f'{data}000000'
-    ate = f'{data}235959'
-    return {
-        'de': de,
-        'ate': ate,
-        'operacao': cliente.strip()
-    }
+    operacao = quote(cliente.strip(), safe='#')
+    
+    payload = (
+        f'de={data}000000'
+        f'&ate={data}235959'
+        f'&operacao={operacao}'
+    )
+    
+    return payload
+
 
 def payload_api_agentes(data):
 

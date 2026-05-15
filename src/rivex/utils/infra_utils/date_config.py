@@ -15,7 +15,7 @@ class DateConfig:
         print('Dia selecionado: ', data_formatada)
         return data_formatada
 
-    def data_ipbox(self, dias_atras=2):
+    def data_ipbox(self, dias_atras=1):
         data_ref = date.today() - timedelta(days=dias_atras)
 
         print(

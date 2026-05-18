@@ -73,3 +73,13 @@ def limpeza_agressividade(agressividade_html):
     valor = opcao['value']
 
     return valor
+
+def limpeza_chamadas_ipbox(chamadas_json):
+    resultados_chamadas = chamadas_json['data']['resultado']
+    chamadas_aceitas = resultados_chamadas['ATENDIDO']
+    chamadas_totais = resultados_chamadas['total']
+    
+    return chamadas_aceitas['qtd'], chamadas_totais['qtd']
+
+def limpeza_agentes_ipbox(agentes_json):
+    agentes_json

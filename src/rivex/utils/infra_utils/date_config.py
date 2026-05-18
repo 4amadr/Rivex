@@ -25,4 +25,31 @@ class DateConfig:
 
         return data_ref.strftime('%Y%m%d')
     
+    def data_callix_payload(self, dias_atras=1):
+        """
+        Gera o payload no formato:
+        de=YYYYMMDD000000&ate=YYYYMMDD235959
+
+        O horário permanece fixo:
+        - início do dia -> 000000
+        - fim do dia -> 235959
+        """
+
+        # Define a data base
+        data_ref = date.today() - timedelta(days=dias_atras)
+
+        # Formata apenas a parte da data
+        data_formatada = data_ref.strftime("%Y%m%d")
+
+        # Monta o payload usando a MESMA variável de data
+        payload = {
+            "de": f"{data_formatada}000000",
+            "ate": f"{data_formatada}235959"
+            
+        }
+
+        print("Payload gerado:", payload)
+
+        return payload
+    
     

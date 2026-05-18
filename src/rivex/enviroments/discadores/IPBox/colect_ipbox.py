@@ -45,11 +45,12 @@ class IpboxInit:
 
 class IpboxClientConfig:
 
-    def __init__(self, url, login, senha, data, id_cliente, nome_cliente, sessao_anterior, token):
+    def __init__(self, url, login, senha, data, data_agentes, id_cliente, nome_cliente, sessao_anterior, token):
         self.url = url
         self.login = login
         self.senha = senha
         self.data = data
+        self.data_agentes = data_agentes
         self.id_cliente = id_cliente # para não ter a necessidade de repetir o login
         self.nome_cliente = nome_cliente # nome do cliente para buscar os valores
         self.session = sessao_anterior
@@ -84,9 +85,10 @@ class IpboxClientConfig:
         return chamadas
 
     def get_relatorio_agente(self, url_relatorio_agentes):
-        agentes = self.hr.requisicao_get(headers=headers_api_telefonia(self.token),
-                                         payload_get=payload_api_agentes(self.data),
+        agentes = self.hr.requisicao_post(headers=headers_api_telefonia(self.token),
+                                         payload_post=self.data_agentes,
                                          url=url_relatorio_agentes)
+        print("RESPOSTA DA REQUISIÇÃO DE DATA DOS AGENTES",payload_api_agentes(self.data_agentes))
         print("RESPOSTA DAS AGENTE: ",agentes.status_code) # MANTER POIS ESTÁ RETORNANDO 409!!!
         return agentes
 
@@ -96,5 +98,5 @@ class IpboxClientConfig:
         chamadas = self.get_relatorio_chamadas(url_relatorio_chamadas)
         agentes = self.get_relatorio_agente(url_relatorio_agentes)
 
-        return agressividade.text, chamadas, agentes.text
+        return agressividade.text, chamadas, agentes
 

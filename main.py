@@ -118,10 +118,11 @@ def main_pentagono():
 def main_ipbox():
     dc = DateConfig()
     data = dc.data_ipbox()
+    data_agentes = dc.data_callix_payload()
     ii = IpboxInit(url='https://contech1.ipboxcloud.com.br:8624/',
                    login=os.getenv('IPBOX_LOGIN'),
                    senha=os.getenv('IPBOX_PASSWORD'),
-                   data=data
+                   data=data,
     )
     print("Iniciando a configuração do servidor")
     sessao_logada, lista_clientes = ii.execucao_base_ipbox() # lista de dicionários
@@ -134,6 +135,7 @@ def main_ipbox():
                                login=os.getenv('IPBOX_LOGIN'),
                                senha=os.getenv('IPBOX_PASSWORD'),
                                data=data,
+                               data_agentes=data_agentes,
                                id_cliente=cliente['ID Cliente'],
                                nome_cliente=cliente['Cliente'],
                                sessao_anterior=sessao_logada,
@@ -142,7 +144,9 @@ def main_ipbox():
         agressividade, chamadas, agentes = ic.execucao_ipbox()
         agressividade_limpa = limpeza_agressividade(agressividade_html=agressividade)
         
-        print("Resposta da requisição de CHAMADAS: ", chamadas.json())
+        print("Resposta da requisição de AGENTES: ", agentes.json())
+        chamadas_aceitas_ipbox, chamadas_totais_ipbox = limpeza_chamadas_ipbox(chamadas.json())
+        
         time.sleep(5)
 
         #print(chamadas)

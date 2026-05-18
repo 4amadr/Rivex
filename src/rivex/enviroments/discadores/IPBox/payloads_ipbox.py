@@ -65,13 +65,3 @@ def payload_api_telefonia(data, cliente):
     )
     
     return payload
-
-
-def payload_api_agentes(data):
-
-    de = f'{data}000000'
-    ate = f'{data}235959'
-
-    payload = f'de={de}&ate={ate}'
-
-    return payload

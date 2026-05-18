@@ -143,8 +143,10 @@ def main_ipbox():
                                )
         agressividade, chamadas, agentes = ic.execucao_ipbox()
         agressividade_limpa = limpeza_agressividade(agressividade_html=agressividade)
+        agentes_limpos = limpeza_agentes_ipbox(agentes.json())
+        print(agentes_limpos)
         
-        print("Resposta da requisição de AGENTES: ", agentes.json())
+        #print("Resposta da requisição de AGENTES: ", agentes.json())
         chamadas_aceitas_ipbox, chamadas_totais_ipbox = limpeza_chamadas_ipbox(chamadas.json())
         
         time.sleep(5)

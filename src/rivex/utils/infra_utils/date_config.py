@@ -10,7 +10,7 @@ class DateConfig:
         return data_formatada
     
     def data_callix(self):
-        data_ref = date.today() - timedelta(days=1)
+        data_ref = date.today() - timedelta(days=3)
         data_formatada = data_ref.strftime("%Y-%m-%d")
         print('Dia selecionado: ', data_formatada)
         return data_formatada
@@ -25,7 +25,7 @@ class DateConfig:
 
         return data_ref.strftime('%Y%m%d')
     
-    def data_callix_payload(self, dias_atras=1):
+    def data_callix_payload(self, dias_atras=3):
         """
         Gera o payload no formato:
         de=YYYYMMDD000000&ate=YYYYMMDD235959

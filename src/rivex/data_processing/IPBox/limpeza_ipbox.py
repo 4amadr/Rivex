@@ -82,4 +82,17 @@ def limpeza_chamadas_ipbox(chamadas_json):
     return chamadas_aceitas['qtd'], chamadas_totais['qtd']
 
 def limpeza_agentes_ipbox(agentes_json):
-    agentes_json
+    dados_json = agentes_json['data']
+    
+    lista_de_dicionarios_agentes = []
+    
+    for dados in dados_json:
+        dict_agentes_ipbox = {
+        "Cliente": dados["times"],
+        "Chamadas completas": dados["atendimentos"]
+        }
+        print(dict_agentes_ipbox)
+        lista_de_dicionarios_agentes.append(dict_agentes_ipbox)
+        
+    #print(lista_de_dicionarios_agentes)
+    return lista_de_dicionarios_agentes

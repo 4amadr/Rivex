@@ -88,7 +88,6 @@ class IpboxClientConfig:
         agentes = self.hr.requisicao_post(headers=headers_api_telefonia(self.token),
                                          payload_post=self.data_agentes,
                                          url=url_relatorio_agentes)
-        print("RESPOSTA DA REQUISIÇÃO DE DATA DOS AGENTES",payload_api_agentes(self.data_agentes))
         print("RESPOSTA DAS AGENTE: ",agentes.status_code) # MANTER POIS ESTÁ RETORNANDO 409!!!
         return agentes
 

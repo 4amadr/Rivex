@@ -57,14 +57,6 @@ def dicionario_clientes(lista_clientes, lista_ids):
         lista_info_cliente.append(dict_cliente)
     return lista_info_cliente
 
-
-def filtragem_lista(clientes):
-    lista_suja_clientes = get_clientes(clientes)
-    lista_pronta = limpeza_lista_clientes(lista_suja_clientes)
-    lista_de_ids = extrair_ids_filas(clientes)
-    lista_final = dicionario_clientes(lista_pronta, lista_de_ids)
-    return lista_final
-
 def limpeza_agressividade(agressividade_html):
     html = BeautifulSoup(agressividade_html, "html.parser")
 
@@ -94,5 +86,50 @@ def limpeza_agentes_ipbox(agentes_json):
         print(dict_agentes_ipbox)
         lista_de_dicionarios_agentes.append(dict_agentes_ipbox)
         
-    #print(lista_de_dicionarios_agentes)
     return lista_de_dicionarios_agentes
+
+def relatorio_completo_agente(id_time_ipbox,
+                              fila_ipbox,
+                              chamada,
+                              chamadas_aceitas,
+                              chamadas_recusadas,
+                              chamadas_abandonadas,
+                              agressividade
+                              ):
+    dict_agentes = {
+        "ID": id_time_ipbox,
+        "Equipe": fila_ipbox,
+        "Chamadas totais": chamadas,
+        "Chamadas aceitas": chamadas_aceitas,
+        "Chamadas recusadas": chamadas_recusadas,
+        "Chamadas abandonadas": chamadas_abandonadas,
+        "Agressividade": agressividade
+    }
+    return dict_agentes
+
+def limpeza_clientes_ipbox(dict_cliente):
+    '''
+    função para retornar o id do cliente separado da fila
+    Como os ambientes geram 1234#01
+    como deve ficar -> id = 1234; fila = 01
+    '''
+    id_geral = dict_cliente["ID Cliente"] # id antes da separação
+    
+    for identificador in id_geral:
+        dict_id_clientes = {
+            "ID Clientes": identificador[:4],
+            "Fila": identificador[5:]
+        }
+        lista_id_clientes.append(dict_cliente)
+    return lista_id_clientes
+        
+
+def filtragem_lista(clientes):
+    agressividade = limpeza_agressividade(agressividade_html)
+    lista_suja_clientes = get_clientes(clientes)
+    lista_pronta = limpeza_lista_clientes(lista_suja_clientes)
+    lista_de_ids = extrair_ids_filas(clientes)
+    lista_clientes = dicionario_clientes(lista_pronta, lista_de_ids)
+    dict_agentes = relatorio_completo_agente()
+    lista_id_clientes = limpeza_clientes_ipbox(lista_clientes) 
+    return lista_final

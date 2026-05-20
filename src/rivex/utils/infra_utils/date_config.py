@@ -25,7 +25,7 @@ class DateConfig:
 
         return data_ref.strftime('%Y%m%d')
     
-    def data_callix_payload(self, dias_atras=3):
+    def data_ipbox_payload(self, dias_atras=1):
         """
         Gera o payload no formato:
         de=YYYYMMDD000000&ate=YYYYMMDD235959

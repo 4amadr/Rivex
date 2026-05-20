@@ -70,10 +70,16 @@ def limpeza_chamadas_ipbox(chamadas_json):
     resultados_chamadas = chamadas_json['data']['resultado']
     chamadas_aceitas = resultados_chamadas['ATENDIDO']
     chamadas_totais = resultados_chamadas['total']
+    chamadas_recusadas = chamadas_totais - chamadas_aceitas
+    print(chamadas_recusadas)
     
-    return chamadas_aceitas['qtd'], chamadas_totais['qtd']
+    return chamadas_aceitas['qtd'], chamadas_totais['qtd'], chamadas_recusadas
 
 def limpeza_agentes_ipbox(agentes_json):
+    """
+    Retorna uma lista de dicionários com o desempenho de cada agente 
+    e as chamadas completas de cada agente 
+    """
     dados_json = agentes_json['data']
     
     lista_de_dicionarios_agentes = []
@@ -81,9 +87,10 @@ def limpeza_agentes_ipbox(agentes_json):
     for dados in dados_json:
         dict_agentes_ipbox = {
         "Cliente": dados["times"],
-        "Chamadas completas": dados["atendimentos"]
+        "Chamadas completas": dados["atendimentos"],
+
         }
-        print(dict_agentes_ipbox)
+        print("Dicionário de agentes: ",dict_agentes_ipbox)
         lista_de_dicionarios_agentes.append(dict_agentes_ipbox)
         
     return lista_de_dicionarios_agentes
@@ -124,12 +131,14 @@ def limpeza_clientes_ipbox(dict_cliente):
     return lista_id_clientes
         
 
-def filtragem_lista(clientes):
-    agressividade = limpeza_agressividade(agressividade_html)
-    lista_suja_clientes = get_clientes(clientes)
-    lista_pronta = limpeza_lista_clientes(lista_suja_clientes)
-    lista_de_ids = extrair_ids_filas(clientes)
-    lista_clientes = dicionario_clientes(lista_pronta, lista_de_ids)
-    dict_agentes = relatorio_completo_agente()
-    lista_id_clientes = limpeza_clientes_ipbox(lista_clientes) 
-    return lista_final
+def telefonia_ipbox(agressividade, chamadas_ipbox_json, html):
+    agressividade_ipbox = limpeza_agressividade(agressividade)
+    chamadas_aceitas_ipbox, chamadas_totais_ipbox, chamadas_resusadas = limpeza_chamadas_ipbox(chamadas_ipbox_json)
+    lista_ids = extrair_ids_filas(html)
+    lista_clientes_ipbox = get_clientes(clientes)
+    dict_clientes_ipbox = dicionario_clientes(lista_clientes, lista_ids)
+    lista_clientes = limpeza_clientes_ipbox(dict_clientes_ipbox)
+    
+    return {
+        "ID": lista_clientes_ipbox
+    }

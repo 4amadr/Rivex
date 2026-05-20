@@ -1,0 +1,135 @@
+PLANO DE PUBLICACOES LINKEDIN - RIVEX
+Periodo: 4 semanas | Frequencia: 2 postagens por semana
+
+SEMANA 1
+
+[Post 1]
+Dia e horario: Terca-feira, 08:30
+Titulo: Rivex: de 4 horas para 25 minutos na coleta operacional
+Texto:
+No Rivex, nosso foco e simples: transformar um processo operacional lento e manual em uma rotina automatizada, confiavel e escalavel.
+
+Antes, a coleta de dados em discadores telefonicos levava aproximadamente 4 horas por ciclo e dependia de atividades manuais em planilhas. Com a automacao, esse mesmo fluxo passou para cerca de 25 minutos, com dados estruturados e envio direto para PostgreSQL.
+
+O ganho nao e apenas velocidade. E consistencia, rastreabilidade e capacidade de crescer sem aumentar o esforco operacional.
+
+#Automacao #Python #Dados #Operacoes #Rivex
+
+Prompt de imagem/animacao:
+Animacao corporativa em estilo dashboard mostrando um cronometro reduzindo de 4h para 25min, com fluxos de dados saindo de discadores para banco PostgreSQL, paleta azul e cinza, visual limpo, movimento suave de linhas e icones.
+
+[Post 2]
+Dia e horario: Quinta-feira, 12:15
+Titulo: Arquitetura atual do Rivex: Vonix e Callix em producao tecnica
+Texto:
+O Rivex ja opera com dois fluxos principais de coleta:
+- Vonix: autenticacao HTTP, parsing HTML com BeautifulSoup e persistencia em banco.
+- Callix: Selenium para obtencao de tokens/enderecos e API para coleta operacional por cliente.
+
+Esse desenho permite separar aquisicao, tratamento e persistencia de dados com mais controle e menor acoplamento.
+
+Nosso objetivo e continuar evoluindo o projeto com padronizacao entre conectores e aumento de cobertura de cenarios de telefonia.
+
+#ArquiteturaDeSoftware #Python #EngenhariaDeDados #Rivex
+
+Prompt de imagem/animacao:
+Animacao 2D de arquitetura de software com dois blocos principais (Vonix e Callix) convergindo para um pipeline unico de tratamento e PostgreSQL, setas animadas, estilo profissional minimalista.
+
+SEMANA 2
+
+[Post 3]
+Dia e horario: Terca-feira, 08:45
+Titulo: Avanco IPBox: execucao parcial da coleta de chamadas
+Texto:
+Nesta etapa do Rivex, iniciamos a integracao com IPBox e colocamos em funcionamento a execucao parcial da coleta de chamadas.
+
+Esse marco valida a base de payloads, datas e estrutura de chamada necessaria para estabilizar a coleta completa nas proximas iteracoes.
+
+Cada entrega dessa fase reduz risco tecnico do roadmap e acelera a entrada de novos dados no ecossistema.
+
+#IPBox #Integracao #Automacao #Rivex
+
+Prompt de imagem/animacao:
+Animacao de progresso tecnico com barra de integracao IPBox preenchendo parcialmente, eventos de chamadas surgindo em timeline, tema escuro profissional com detalhes em ciano.
+
+[Post 4]
+Dia e horario: Quinta-feira, 17:30
+Titulo: Ajustes de payload no IPBox para melhorar confiabilidade de coleta
+Texto:
+Realizamos ajustes de payload na integracao IPBox para aumentar consistencia nas requisicoes e reduzir variacoes indesejadas nas respostas.
+
+Esse tipo de melhoria e menos visivel para quem olha de fora, mas e decisivo para manter estabilidade em automacoes que rodam com frequencia.
+
+No Rivex, confiabilidade operacional e prioridade tecnica constante.
+
+#QualidadeDeSoftware #Backend #IPBox #Rivex
+
+Prompt de imagem/animacao:
+Animacao clean de pacotes de dados sendo validados antes do envio, checkpoints verdes aparecendo em sequencia, interface tecnica moderna, transicoes suaves.
+
+SEMANA 3
+
+[Post 5]
+Dia e horario: Terca-feira, 09:00
+Titulo: Coleta de agentes IPBox funcional: novo passo na leitura operacional
+Texto:
+Concluimos uma entrega importante: coleta funcional de dados de agentes no IPBox.
+
+Com isso, o Rivex amplia a visibilidade operacional para alem de chamadas, permitindo uma leitura mais completa da operacao em andamento.
+
+Seguimos agora com foco em qualidade de tratamento e refinamento das estruturas de dados coletadas.
+
+#Operacoes #Dados #IPBox #Rivex
+
+Prompt de imagem/animacao:
+Animacao de painel de operacao com cards de agentes ficando ativos em tempo real, graficos simples de status, estilo SaaS corporativo, movimento discreto.
+
+[Post 6]
+Dia e horario: Quinta-feira, 12:00
+Titulo: Limpeza de dados de agentes no IPBox: mais qualidade para analise
+Texto:
+Depois de tornar a coleta de agentes funcional, avancamos na limpeza e padronizacao desses dados no IPBox.
+
+Essa etapa garante que o dado chegue mais pronto para consumo analitico, reduzindo retrabalho e facilitando comparacoes entre ciclos de coleta.
+
+Automacao so entrega valor real quando qualidade de dado acompanha desempenho.
+
+#DataQuality #EngenhariaDeDados #Automacao #Rivex
+
+Prompt de imagem/animacao:
+Animacao de dados brutos sendo transformados em dados limpos em um pipeline visual, particulas organizando-se em tabelas, fundo claro, look profissional.
+
+SEMANA 4
+
+[Post 7]
+Dia e horario: Terca-feira, 08:30
+Titulo: Separacao de IDs e filas no IPBox: base para relatorios mais precisos
+Texto:
+Implementamos a separacao de IDs e filas dos clientes IPBox no processamento de dados do Rivex.
+
+Na pratica, isso melhora granularidade, rastreabilidade e confiabilidade para analises operacionais e futuras automatizacoes de monitoramento.
+
+Esse tipo de evolucao estrutural fortalece o projeto para crescimento sustentavel.
+
+#DataEngineering #Rastreabilidade #IPBox #Rivex
+
+Prompt de imagem/animacao:
+Animacao de entidades de dados sendo separadas em trilhas distintas (IDs e filas), com conexoes organizadas e visual de engenharia de dados, estilo corporativo.
+
+[Post 8]
+Dia e horario: Quinta-feira, 17:45
+Titulo: Intencao do projeto Rivex: automacao confiavel para escalar operacoes
+Texto:
+O Rivex nasceu para resolver um problema pratico: reduzir tempo operacional e eliminar fragilidade de processos manuais na coleta de dados de discadores.
+
+A intencao do projeto permanece a mesma em cada release:
+- automatizar com confiabilidade
+- estruturar dados com qualidade
+- gerar base tecnica para decisoes mais rapidas
+
+Seguimos em desenvolvimento ativo, com foco na expansao de integracoes e aumento de robustez fim a fim.
+
+#TransformacaoDigital #Automacao #EngenhariaDeSoftware #Rivex
+
+Prompt de imagem/animacao:
+Animacao institucional de roadmap tecnologico mostrando evolucao por etapas (coleta, tratamento, banco, escala), linguagem visual profissional, transicoes fluidas, encerramento com nome Rivex.

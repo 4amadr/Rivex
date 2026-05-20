@@ -118,7 +118,7 @@ def main_pentagono():
 def main_ipbox():
     dc = DateConfig()
     data = dc.data_ipbox()
-    data_agentes = dc.data_callix_payload()
+    data_agentes = dc.data_ipbox_payload()
     ii = IpboxInit(url='https://contech1.ipboxcloud.com.br:8624/',
                    login=os.getenv('IPBOX_LOGIN'),
                    senha=os.getenv('IPBOX_PASSWORD'),

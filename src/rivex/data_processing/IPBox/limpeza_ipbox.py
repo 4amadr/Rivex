@@ -120,25 +120,18 @@ def limpeza_clientes_ipbox(dict_cliente):
     Como os ambientes geram 1234#01
     como deve ficar -> id = 1234; fila = 01
     '''
-    id_geral = dict_cliente["ID Cliente"] # id antes da separação
     
-    for identificador in id_geral:
-        dict_id_clientes = {
-            "ID Clientes": identificador[:4],
-            "Fila": identificador[5:]
-        }
-        lista_id_clientes.append(dict_cliente)
+    # execução de um loop pois a intenção é desempacotar uma lista
+    lista_id_clientes = []
+    
+    identificador_de_clientes = dict_cliente["ID Cliente"]
+    
+    for cliente in identificador_de_clientes:    
+        dict_cliente_com_id = {
+        "ID Cliente": cliente["ID Cliente"][:4],
+        "Fila": cliente["ID Cliente"][5:]
+    } 
+        lista_id_clientes.append(dict_cliente_com_id)
+    
     return lista_id_clientes
-        
-
-def telefonia_ipbox(agressividade, chamadas_ipbox_json, html):
-    agressividade_ipbox = limpeza_agressividade(agressividade)
-    chamadas_aceitas_ipbox, chamadas_totais_ipbox, chamadas_resusadas = limpeza_chamadas_ipbox(chamadas_ipbox_json)
-    lista_ids = extrair_ids_filas(html)
-    lista_clientes_ipbox = get_clientes(clientes)
-    dict_clientes_ipbox = dicionario_clientes(lista_clientes, lista_ids)
-    lista_clientes = limpeza_clientes_ipbox(dict_clientes_ipbox)
     
-    return {
-        "ID": lista_clientes_ipbox
-    }

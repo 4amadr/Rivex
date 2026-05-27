@@ -127,21 +127,22 @@ def main_ipbox():
     print("Iniciando a configuração do servidor")
     sessao_logada, lista_clientes = ii.execucao_base_ipbox() # lista de dicionários
     
+    
+    
+    print("Iniciando a coleta de dados do servidor IPBOX")
+
+    ic = IpboxClientConfig(url='https://contech1.ipboxcloud.com.br:8624/',
+                            login=os.getenv('IPBOX_LOGIN'),
+                            senha=os.getenv('IPBOX_PASSWORD'),
+                            data=data,
+                            data_agentes=data_agentes,
+                            sessao_anterior=sessao_logada,
+                            token=os.getenv('IPBOX_TOKEN'),
+                            )
+    
     for cliente in lista_clientes:
 
-        print("Iniciando a coleta de dados do servidor IPBOX")
-
-        ic = IpboxClientConfig(url='https://contech1.ipboxcloud.com.br:8624/',
-                               login=os.getenv('IPBOX_LOGIN'),
-                               senha=os.getenv('IPBOX_PASSWORD'),
-                               data=data,
-                               data_agentes=data_agentes,
-                               id_cliente=cliente['ID Cliente'],
-                               nome_cliente=cliente['Cliente'],
-                               sessao_anterior=sessao_logada,
-                               token=os.getenv('IPBOX_TOKEN'),
-                               )
-        agressividade, chamadas, agentes = ic.execucao_ipbox()
+        agressividade, chamadas, agentes = ic.execucao_ipbox(nome_cliente=cliente['Cliente'])
         agressividade_limpa = limpeza_agressividade(agressividade_html=agressividade)
         agentes_limpos = limpeza_agentes_ipbox(agentes.json())
         print(agentes_limpos)

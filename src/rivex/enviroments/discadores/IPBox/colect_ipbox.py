@@ -32,7 +32,7 @@ class IpboxInit:
         cliente_ipbox = self.hr.requisicao_get(payload_get=payload_get_clientes,
                                             headers=headers_ipbox(),
                                             url=url_get_clientes)
-        id_clientes = filtragem_lista(cliente_ipbox) 
+        id_clientes = get_clientes(cliente_ipbox) 
         return id_clientes
     
     def execucao_base_ipbox(self):
@@ -45,14 +45,12 @@ class IpboxInit:
 
 class IpboxClientConfig:
 
-    def __init__(self, url, login, senha, data, data_agentes, id_cliente, nome_cliente, sessao_anterior, token):
+    def __init__(self, url, login, senha, data, data_agentes, sessao_anterior, token):
         self.url = url
         self.login = login
         self.senha = senha
         self.data = data
         self.data_agentes = data_agentes
-        self.id_cliente = id_cliente # para não ter a necessidade de repetir o login
-        self.nome_cliente = nome_cliente # nome do cliente para buscar os valores
         self.session = sessao_anterior
         self.hr = HttpRequisitions(session=sessao_anterior)
         self.token = token
@@ -75,11 +73,11 @@ class IpboxClientConfig:
                                                payload_get={}) # ID corrigido, o erro 404 é outro
         return agressividade
 
-    def get_relatorio_chamadas(self, url_relatorio_chamadas): # coleta feita com API disponibilizada na documentação do ambiente
+    def get_relatorio_chamadas(self, url_relatorio_chamadas, nome_cliente): # coleta feita com API disponibilizada na documentação do ambiente
         chamadas = self.hr.requisicao_post(headers=headers_api_telefonia(self.token),
-                                          payload_post=payload_api_telefonia(self.data, self.nome_cliente),
+                                          payload_post=payload_api_telefonia(self.data, nome_cliente),
                                           url=url_relatorio_chamadas)
-        print(payload_api_telefonia(self.data, self.nome_cliente))
+        print(payload_api_telefonia(self.data, nome_cliente))
 
         print("RESPOSTA DAS CHAMADAS: ",chamadas.status_code) # RETORNANDO ERRO 409 EM ALGUNS CLIENTES !!!!
         return chamadas
@@ -91,10 +89,10 @@ class IpboxClientConfig:
         print("RESPOSTA DAS AGENTE: ",agentes.status_code) # MANTER POIS ESTÁ RETORNANDO 409!!!
         return agentes
 
-    def execucao_ipbox(self):
+    def execucao_ipbox(self, nome_cliente):
         url_agressividade, url_relatorio_chamadas, url_relatorio_agentes = self.gerador_de_url_configs()
         agressividade = self.get_agressividade(url_agressividade)
-        chamadas = self.get_relatorio_chamadas(url_relatorio_chamadas)
+        chamadas = self.get_relatorio_chamadas(nome_cliente, url_relatorio_chamadas)
         agentes = self.get_relatorio_agente(url_relatorio_agentes)
 
         return agressividade.text, chamadas, agentes

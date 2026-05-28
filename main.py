@@ -21,9 +21,11 @@ from dotenv import load_dotenv
 from src.rivex.data_processing.pentagono.pentagono_cleaning import *
 from src.rivex.enviroments.discadores.IPBox.colect_ipbox import *
 from src.rivex.enviroments.discadores.IPBox.payloads_ipbox import *
+import logging
 
 
 load_dotenv()
+logger = logging.getLogger(__name__)
 
 
 def main_gs():
@@ -116,44 +118,71 @@ def main_pentagono():
     print(dados)
     
 def main_ipbox():
-    dc = DateConfig()
-    data = dc.data_ipbox()
-    data_agentes = dc.data_ipbox_payload()
-    ii = IpboxInit(url='https://contech1.ipboxcloud.com.br:8624/',
-                   login=os.getenv('IPBOX_LOGIN'),
-                   senha=os.getenv('IPBOX_PASSWORD'),
-                   data=data,
-    )
-    print("Iniciando a configuração do servidor")
-    sessao_logada, lista_clientes = ii.execucao_base_ipbox() # lista de dicionários
-    
-    
-    
-    print("Iniciando a coleta de dados do servidor IPBOX")
-
-    ic = IpboxClientConfig(url='https://contech1.ipboxcloud.com.br:8624/',
-                            login=os.getenv('IPBOX_LOGIN'),
-                            senha=os.getenv('IPBOX_PASSWORD'),
-                            data=data,
-                            data_agentes=data_agentes,
-                            sessao_anterior=sessao_logada,
-                            token=os.getenv('IPBOX_TOKEN'),
-                            )
-    
-    for cliente in lista_clientes:
-
-        agressividade, chamadas, agentes = ic.execucao_ipbox(nome_cliente=cliente['Cliente'])
-        agressividade_limpa = limpeza_agressividade(agressividade_html=agressividade)
-        agentes_limpos = limpeza_agentes_ipbox(agentes.json())
-        print(agentes_limpos)
+    class PipelineIpbox:
+        """
+        Classe que vai realizar a extração, limpeza e processamento de dados
+        do servidor ipbox
+        """
         
-        #print("Resposta da requisição de AGENTES: ", agentes.json())
-        chamadas_aceitas_ipbox, chamadas_totais_ipbox = limpeza_chamadas_ipbox(chamadas.json())
+        def __int__(self):
+            date_config = DateConfig()
+            self.data_ipbox = date_config.data_ipbox()
+            self.data_agentes = date_config.data_ipbox_payload() 
+            self.url = os.getenv('URL_IPBOX')
+            self.login = os.getenv('IPBOX_LOGIN')
+            self.senha = os.getenv('IPBOX_PASSWORD')
+            self.token = os.getenv('IPBOX_TOKEN')
+            
+            
+        def autenticar_e_listar_clientes(self):
+            '''
+            Inicializa a sessão no servidor e retorna a lista dos clientes
+            '''
+            
+            IpboxInit = IpboxInit(
+                url=self.url,
+                login=self.login,
+                senha=self.senha,
+                data=self.data_ipbox
+            )
+            
+            return IpboxInit.execucao_base_ipbox()
         
-        time.sleep(5)
+        def processar_cliente(self, cliente, ipbox_client):
+            '''Processa a extração e limpeza de dados em um clietne'''
+            try:
+                nome_cliente = cliente['Cliente']
+                agressividade, chamadas, agentes = ipbox_client.execucao_ipbox(nome_cliente=nome_cliente)
+                
+                agressividade_limpa = limpeza_agressividade(agressividade_html=agressividade)
+                agentes_limpos = limpeza_agentes_ipbox(agentes.json())
+                chamadas_aceitas, chamadas_totais = limpeza_chamadas_ipbox(chamadas.json())
+                
+                print(f"Dados processados para {nome_cliente}")
+                
+            except Exception as e:
+                logger.error(f'Erro ao procesar o cliente {cliente.get('Cliente')}: {e}', exc_info=True)
+                
+        def executar(self):
+            print('Iniciando a configuração do servidor IPBOX.....')
+            sessao_logada, lista_clientes = self.autenticar_e_listar_clientes()
+            
+            print('Iniciando a coleta de dados dos clietnes...')
+            ipbox_client = IpboxClientConfig(
+                url=self.url,
+                login=self.login,
+                senha=self.senha,
+                data=self.data_ipbox,
+                data_agentes=self.data_agentes,
+                sessao_anterior=sessao_logada,
+                token=self.token
+            )
+            
+            for cliente in lista_clientes:
+                self.processar_cliente(cliente, ipbox_client)
+                time.sleep(5)
+                
 
-        #print(chamadas)
-        #print(agentes)
 
 
 

@@ -2,7 +2,7 @@ from bs4 import BeautifulSoup
 from urllib.parse import urlparse, parse_qs
 import re
 
-def get_clientes(clientes):
+def parse_id_clientes(clientes):
     clientes_html = BeautifulSoup(clientes.text, 'html.parser')
 
     lista_clientes = []

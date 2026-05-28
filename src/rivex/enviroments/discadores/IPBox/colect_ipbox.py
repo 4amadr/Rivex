@@ -2,6 +2,13 @@ from src.rivex.utils.requests_utils.requests import HttpRequisitions
 from src.rivex.enviroments.discadores.IPBox.payloads_ipbox import *
 from src.rivex.data_processing.IPBox.limpeza_ipbox import *
 import requests
+import logging
+from typing import Dict, Any, Tuple
+from collections import namedtuple
+from requests.models import Response
+
+# Configuração de log
+logger = logging.getLogger(__name__)
 
 class IpboxInit:
     def __init__(self, url, login, senha, data):
@@ -9,50 +16,74 @@ class IpboxInit:
         self.login = login
         self.senha = senha
         self.data = data
-        self.hr = HttpRequisitions(session=requests.session())
+        self.http_client = HttpRequisitions(session=requests.session())
         
-    def gerar_url(self):
-        url_login = f'{self.url}/contech/autenticacao.php'
-        url_relatorio_chamadas = f'{self.url}/contech/viewRelatTelefoniaAtivo.php'
+    def _gerar_url_login(self):
+        return f'{self.url}/contech/autenticacao.php'
 
-        return url_login, url_relatorio_chamadas
+    def _gerar_url_clientes(self):
+        return f'{self.url}/contech/viewRelatTelefoniaAtivo.php'
         
-    def login_ipbox(self, url_login):
-        print("logando...")
-        login = self.hr.requisicao_post(payload_post=payload_login_ipbox(self.login, self.senha),
-                                        headers=headers_ipbox(),
-                                        url=url_login)
-        estado_login = self.hr.session
-        return estado_login
-    
-    def get_clientes(self):
-        '''Requisição para coletar os clientes presentes no discador'''
-        url_get_clientes = f'{self.url}/contech/listFila.php'
-
-        cliente_ipbox = self.hr.requisicao_get(payload_get=payload_get_clientes,
+    def login_ipbox(self) -> requests.Session:
+        '''
+        Autenticação e retorna a sessão logada
+        '''
+        logger.info("Iniciando login no ipbox...")
+        url_login = self._gerar_url_login()
+        try:
+            self.http_client.requisicao_post(payload_post=payload_login_ipbox(self.login, self.senha),
                                             headers=headers_ipbox(),
-                                            url=url_get_clientes)
-        id_clientes = get_clientes(cliente_ipbox) 
-        return id_clientes
+                                            url=url_login)
+            logger.info("Autenticação no ipbox feita com sucesso")
+
+            return self.http_client.session
+        except Exception as e:
+            logger.error("Falha no login no ipbox", exc_info=True)
+            raise ConnectionError(f"Erro de conexão no login: {e}")
+    
+    def buscar_lista_clientes(self) -> Dict[str, Any]:
+        '''
+        Faz a coleta e o parse da lista de clientes
+        presente no discador
+        '''
+        url_get_clientes = self._gerar_url_clientes()
+        try:
+            cliente_ipbox = self.http_client.requisicao_get(payload_get=payload_get_clientes,
+                                                headers=headers_ipbox(),
+                                                url=url_get_clientes)
+            return parse_id_clientes(cliente_ipbox) 
+        except Exception as e:
+            logger.error("Falha ao tentar coletar clientes do IPBOX", exc_info=True)
+            raise ConnectionError(f"Erro ao buscar clientes: {e}")
     
     def execucao_base_ipbox(self):
-        url_login, url_relatorio_chamadas = self.gerar_url()
-        login = self.login_ipbox(url_login)
-        cliente_ipbox = self.get_clientes()
-        print('Base ipbox finalizada')
-        return login, cliente_ipbox
+        """
+        Orquestrador publico da classe
+        """
+        sessao_logada = self.login()
+        clientes_ativos = self.buscar_lista_clientes()
+        
+        logger.info("Base IPBOX finalizada e pronta para uso.")
+        
+        # Retorna os dados agrupados de forma segura e limpa
+        return sessao_logada, clientes_ativos
 
 
 class IpboxClientConfig:
+    IpboxColectData = namedtuple("IpboxColectData", [
+        ("agressividade_html", str),
+        ("chamadas", Response),
+        ("agentes", Response)
+    ])
 
     def __init__(self, url, login, senha, data, data_agentes, sessao_anterior, token):
-        self.url = url
+        self.url = url.rstrip('/')
         self.login = login
         self.senha = senha
         self.data = data
         self.data_agentes = data_agentes
         self.session = sessao_anterior
-        self.hr = HttpRequisitions(session=sessao_anterior)
+        self.http_client = HttpRequisitions(session=sessao_anterior)
         self.token = token
 
     def gerador_de_url_configs(self):
@@ -68,32 +99,31 @@ class IpboxClientConfig:
         o retorno esperado é o HTML da página de configuração de clientes onde o valor desejado
         é o valor de overdial
         '''
-        agressividade = self.hr.requisicao_get(headers=headers_ipbox(),
+        return self.http_client.requisicao_get(headers=headers_ipbox(),
                                                url=url_agressividade,
-                                               payload_get={}) # ID corrigido, o erro 404 é outro
-        return agressividade
+                                               payload_get={})
 
     def get_relatorio_chamadas(self, url_relatorio_chamadas, nome_cliente): # coleta feita com API disponibilizada na documentação do ambiente
-        chamadas = self.hr.requisicao_post(headers=headers_api_telefonia(self.token),
+        return self.hr.requisicao_post(headers=headers_api_telefonia(self.token),
                                           payload_post=payload_api_telefonia(self.data, nome_cliente),
                                           url=url_relatorio_chamadas)
-        print(payload_api_telefonia(self.data, nome_cliente))
-
-        print("RESPOSTA DAS CHAMADAS: ",chamadas.status_code) # RETORNANDO ERRO 409 EM ALGUNS CLIENTES !!!!
-        return chamadas
 
     def get_relatorio_agente(self, url_relatorio_agentes):
-        agentes = self.hr.requisicao_post(headers=headers_api_telefonia(self.token),
+        return self.hr.requisicao_post(headers=headers_api_telefonia(self.token),
                                          payload_post=self.data_agentes,
                                          url=url_relatorio_agentes)
-        print("RESPOSTA DAS AGENTE: ",agentes.status_code) # MANTER POIS ESTÁ RETORNANDO 409!!!
-        return agentes
 
     def execucao_ipbox(self, nome_cliente):
         url_agressividade, url_relatorio_chamadas, url_relatorio_agentes = self.gerador_de_url_configs()
+
+
         agressividade = self.get_agressividade(url_agressividade)
         chamadas = self.get_relatorio_chamadas(nome_cliente, url_relatorio_chamadas)
         agentes = self.get_relatorio_agente(url_relatorio_agentes)
 
-        return agressividade.text, chamadas, agentes
+        return IpboxColectData(
+            agressividade_html=agressividade.text,
+            chamadas=chamadas,
+            agentes=agentes
+        )
 

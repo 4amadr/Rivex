@@ -181,11 +181,6 @@ def main_ipbox():
             for cliente in lista_clientes:
                 self.processar_cliente(cliente, ipbox_client)
                 time.sleep(5)
-                
-
-
-
-
 
 def main_callix():
     load_dotenv()

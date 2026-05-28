@@ -1,9 +1,10 @@
 from src.rivex.utils.requests_utils.requests import HttpRequisitions
 from src.rivex.enviroments.discadores.IPBox.payloads_ipbox import *
 from src.rivex.data_processing.IPBox.limpeza_ipbox import *
+from src.rivex.utils.utils_system.server_retry import *
 import requests
 import logging
-from typing import Dict, Any, Tuple
+from typing import Dict, Any, NamedTuple
 from collections import namedtuple
 from requests.models import Response
 
@@ -41,6 +42,7 @@ class IpboxInit:
             logger.error("Falha no login no ipbox", exc_info=True)
             raise ConnectionError(f"Erro de conexão no login: {e}")
     
+    @tentar_novamente()
     def buscar_lista_clientes(self) -> Dict[str, Any]:
         '''
         Faz a coleta e o parse da lista de clientes
@@ -60,17 +62,18 @@ class IpboxInit:
         """
         Orquestrador publico da classe
         """
-        sessao_logada = self.login()
+        sessao_logada = self.login_ipbox()
         clientes_ativos = self.buscar_lista_clientes()
         
         logger.info("Base IPBOX finalizada e pronta para uso.")
+        print(type(clientes_ativos))
         
         # Retorna os dados agrupados de forma segura e limpa
         return sessao_logada, clientes_ativos
 
 
 class IpboxClientConfig:
-    IpboxColectData = namedtuple("IpboxColectData", [
+    IpboxColectData = NamedTuple("IpboxColectData", [
         ("agressividade_html", str),
         ("chamadas", Response),
         ("agentes", Response)

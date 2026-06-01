@@ -23,7 +23,7 @@ from src.rivex.enviroments.discadores.IPBox.colect_ipbox import *
 from src.rivex.enviroments.discadores.IPBox.payloads_ipbox import *
 import logging
 from src.rivex.pipeline.pipeline_ipbox import *
-
+from src.rivex.pipeline.pipeline_callix import *
 
 load_dotenv()
 logger = logging.getLogger(__name__)
@@ -122,7 +122,7 @@ def main_ipbox():
    pipeline = PipelineIpbox()
    pipeline.executar()
 
-def main_callix():
+def main_callixx():
     load_dotenv()
     
     print('Iniciando a coleta de dados no discador Callix...')
@@ -231,10 +231,13 @@ def main_vonix():
     print('Execução do vonix finalizada')
     return resultados
 
+def main_callix():
+    pipeline_callix = PipelineCallix()
+    pipeline_callix.executar()
 
-exec_ipbox = main_ipbox()
+#exec_ipbox = main_ipbox()
 #exec_pentagono = main_pentagono()
 #exec_agitel = main_agitel()
 #exec_gs = main_gs()
 #dados_vonix = main_vonix()
-#dados_callix = main_callix()
+dados_callix = main_callix()

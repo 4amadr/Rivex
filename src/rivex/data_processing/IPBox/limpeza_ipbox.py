@@ -21,6 +21,7 @@ def parse_id_clientes(clientes_http: Any) -> List[str]:
 
     return [td.get_text() for td in tds_clientes]
 
+
 def limpeza_lista_clientes(lista_clientes: List[str]) -> List[str]:
     '''
     Filtra e remove termos indesejados da lista de clientes
@@ -41,28 +42,40 @@ def extrair_ids_filas(html: Any) -> list[int]:
         if link:
             href = link['href']
             params = parse_qs(urlparse(href).query)
-            fila_id = params.get("obj_fila_id", [None])
-
+            fila_id = params.get("obj_fila_id", [None])[0]
             if fila_id:
                 lista_ids.append(int(fila_id))
     return lista_ids
 
 def dicionario_clientes(lista_clientes: List[str], lista_ids: List[int]) -> List[ClienteInfo]:
+    
+    if len(lista_clientes) != len(lista_ids):
+        logger.warning("Atenção: Quantidade de clientes e ids distinta")
     return [
         ClienteInfo(nome_cliente=cliente, id_cliente=identificador)
         for cliente, identificador in zip(lista_clientes, lista_ids)
     ]
+    
+def lista_de_clientes_para_filtragem(clientes_http: Any):
+    clientes_sem_html = parse_id_clientes(clientes_http)
+    lista_de_clientes = limpeza_lista_clientes(clientes_sem_html)
+    ids_de_clientes_limpos = extrair_ids_filas(clientes_http)
+    return dicionario_clientes(lista_clientes=lista_de_clientes, lista_ids=ids_de_clientes_limpos)
+
 
 def limpeza_agressividade(agressividade_html: str) -> str:
     html = BeautifulSoup(agressividade_html, "html.parser")
 
     select_tag = html.find('select', attrs={'id': 'obj_fila_valor_overdial'})
-    if select_tag:
-        opcao = select_tag.find('option', selected=True)
+    if not select_tag:
+        logger.warning("Agressividade não encotnrada")
+        return "0"
+    opcao = select_tag.find('option', selected=True)
     if opcao:
-        opcao.get('value', '0')
+        return opcao.get('value', '0')
     
     logger.warning("Tag de agressividade não encontrada")
+    return '0'
 
 def limpeza_chamadas_ipbox(chamadas_json):
     try:
@@ -88,7 +101,7 @@ def limpeza_agentes_ipbox(agentes_json: Dict[str, Any]) -> List[DesempenhoAgente
     return [
         DesempenhoAgente(
             cliente=dados.get("times", ""),
-            chamadas_completas=dados.get("atemdimentos", 0)
+            chamadas_completas=dados.get("atendimentos", 0)
         )
         for dados in dados_json
     ]

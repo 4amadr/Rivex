@@ -20,7 +20,7 @@ class PipelineIpbox:
         date_config = DateConfig()
         self.data_ipbox = date_config.data_ipbox()
         self.data_agentes = date_config.data_ipbox_payload() 
-        self.url = os.getenv('URL_IPBOX', 'https://contech1.ipboxcloud.com.br:8624/')
+        self.url = os.getenv('URL_IPBOX')
         self.login = os.getenv('IPBOX_LOGIN')
         self.senha = os.getenv('IPBOX_PASSWORD')
         self.token = os.getenv('IPBOX_TOKEN')
@@ -39,27 +39,27 @@ class PipelineIpbox:
         
         return ipbox_init.execucao_base_ipbox()
     
-    def processar_cliente(self, cliente, ipbox_client):
-        '''Processa a extração e limpeza de dados em um clietne'''
+    def processar_cliente(self, cliente, ipbox_client, id_cliente):
+        '''Processa a extração e limpeza de dados em um cliente'''
         try:
-            nome_cliente = cliente['Cliente']
-            agressividade, chamadas, agentes = ipbox_client.execucao_ipbox(nome_cliente=nome_cliente)
+            nome_cliente = cliente
+            agressividade, chamadas, agentes = ipbox_client.execucao_ipbox(nome_cliente=nome_cliente, id_cliente=id_cliente)
             
             agressividade_limpa = limpeza_agressividade(agressividade_html=agressividade)
             agentes_limpos = limpeza_agentes_ipbox(agentes.json())
-            chamadas_aceitas, chamadas_totais = limpeza_chamadas_ipbox(chamadas.json())
+            chamadas_aceitas, chamadas_totais, chamadas_recusadas = limpeza_chamadas_ipbox(chamadas.json())
             
             print(f"Dados processados para {nome_cliente}")
             
         except Exception as e:
-            logger.error(f'Erro ao procesar o cliente {cliente.get('Cliente')}: {e}', exc_info=True)
+            logger.error(f"Erro ao procesar o cliente {cliente}: {e}", exc_info=True)
             
     def executar(self):
         print('Iniciando a configuração do servidor IPBOX.....')
         sessao_logada, lista_clientes = self.autenticar_e_listar_clientes()
 
         
-        print('Iniciando a coleta de dados dos clietnes...')
+        print('Iniciando a coleta de dados dos clientes...')
         ipbox_client = IpboxClientConfig(
             url=self.url,
             login=self.login,
@@ -69,8 +69,8 @@ class PipelineIpbox:
             sessao_anterior=sessao_logada,
             token=self.token
         )
-        
-        for cliente in lista_clientes:
-            self.processar_cliente(cliente, ipbox_client)
+        for cliente, id_cliente in lista_clientes:
+            
+            self.processar_cliente(cliente, ipbox_client, id_cliente)
             time.sleep(5)
             

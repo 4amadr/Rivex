@@ -23,7 +23,7 @@ class IpboxInit:
         return f'{self.url}/contech/autenticacao.php'
 
     def _gerar_url_clientes(self):
-        return f'{self.url}/contech/viewRelatTelefoniaAtivo.php'
+        return f'{self.url}/contech/listFila.php'
         
     def login_ipbox(self) -> requests.Session:
         '''
@@ -32,7 +32,7 @@ class IpboxInit:
         logger.info("Iniciando login no ipbox...")
         url_login = self._gerar_url_login()
         try:
-            self.http_client.requisicao_post(payload_post=payload_login_ipbox(self.login, self.senha),
+            login = self.http_client.requisicao_post(payload_post=payload_login_ipbox(self.login, self.senha),
                                             headers=headers_ipbox(),
                                             url=url_login)
             logger.info("Autenticação no ipbox feita com sucesso")
@@ -53,7 +53,9 @@ class IpboxInit:
             cliente_ipbox = self.http_client.requisicao_get(payload_get=payload_get_clientes,
                                                 headers=headers_ipbox(),
                                                 url=url_get_clientes)
-            return parse_id_clientes(cliente_ipbox) 
+            filtro =  lista_de_clientes_para_filtragem(cliente_ipbox) 
+            print(filtro)
+            return filtro
         except Exception as e:
             logger.error("Falha ao tentar coletar clientes do IPBOX", exc_info=True)
             raise ConnectionError(f"Erro ao buscar clientes: {e}")
@@ -64,6 +66,7 @@ class IpboxInit:
         """
         sessao_logada = self.login_ipbox()
         clientes_ativos = self.buscar_lista_clientes()
+        print(clientes_ativos)
         
         logger.info("Base IPBOX finalizada e pronta para uso.")
         print(type(clientes_ativos))
@@ -73,7 +76,7 @@ class IpboxInit:
 
 
 class IpboxClientConfig:
-    IpboxColectData = NamedTuple("IpboxColectData", [
+    IpboxCollectData = NamedTuple("IpboxCollectData", [
         ("agressividade_html", str),
         ("chamadas", Response),
         ("agentes", Response)
@@ -89,10 +92,10 @@ class IpboxClientConfig:
         self.http_client = HttpRequisitions(session=sessao_anterior)
         self.token = token
 
-    def gerador_de_url_configs(self):
-        url_agressividade = f'{self.url}/contech/editFila.php?act=alter&obj_fila_id={self.id_cliente}'
-        url_relatorio_chamadas = f'{self.url}ipbox/api/getTA1'
-        url_relatorio_agentes = f'{self.url}ipbox/api/getPA1'
+    def gerador_de_url_configs(self, id_cliente):
+        url_agressividade = f'{self.url}/contech/editFila.php?act=alter&obj_fila_id={id_cliente}'
+        url_relatorio_chamadas = f'{self.url}/ipbox/api/getTA1'
+        url_relatorio_agentes = f'{self.url}/ipbox/api/getPA1'
 
         return url_agressividade, url_relatorio_chamadas, url_relatorio_agentes
 
@@ -107,24 +110,25 @@ class IpboxClientConfig:
                                                payload_get={})
 
     def get_relatorio_chamadas(self, url_relatorio_chamadas, nome_cliente): # coleta feita com API disponibilizada na documentação do ambiente
-        return self.hr.requisicao_post(headers=headers_api_telefonia(self.token),
+        return self.http_client.requisicao_post(headers=headers_api_telefonia(self.token),
                                           payload_post=payload_api_telefonia(self.data, nome_cliente),
                                           url=url_relatorio_chamadas)
 
     def get_relatorio_agente(self, url_relatorio_agentes):
-        return self.hr.requisicao_post(headers=headers_api_telefonia(self.token),
+        return self.http_client.requisicao_post(headers=headers_api_telefonia(self.token),
                                          payload_post=self.data_agentes,
                                          url=url_relatorio_agentes)
 
-    def execucao_ipbox(self, nome_cliente):
-        url_agressividade, url_relatorio_chamadas, url_relatorio_agentes = self.gerador_de_url_configs()
+    def execucao_ipbox(self, nome_cliente, id_cliente):
+        print(nome_cliente)
+        url_agressividade, url_relatorio_chamadas, url_relatorio_agentes = self.gerador_de_url_configs(id_cliente)
 
 
         agressividade = self.get_agressividade(url_agressividade)
-        chamadas = self.get_relatorio_chamadas(nome_cliente, url_relatorio_chamadas)
+        chamadas = self.get_relatorio_chamadas(url_relatorio_chamadas, nome_cliente)
         agentes = self.get_relatorio_agente(url_relatorio_agentes)
 
-        return IpboxColectData(
+        return self.IpboxCollectData(
             agressividade_html=agressividade.text,
             chamadas=chamadas,
             agentes=agentes

@@ -46,11 +46,13 @@ class PipelineIpbox:
             agressividade, chamadas, agentes = ipbox_client.execucao_ipbox(nome_cliente=nome_cliente, id_cliente=id_cliente)
             
             agressividade_limpa = limpeza_agressividade(agressividade_html=agressividade)
-            agentes_limpos = limpeza_agentes_ipbox(agentes.json())
-            chamadas_aceitas, chamadas_totais, chamadas_recusadas = limpeza_chamadas_ipbox(chamadas.json())
+            desempenho_agente = limpeza_agentes_ipbox(agentes.json())
+            estatisticas_chamadas = limpeza_chamadas_ipbox(chamadas.json())
+            print("Estatisticas de chamadas: ", estatisticas_chamadas)
+            print(f"Desempenho dos agentes da equipe {cliente}", desempenho_agente)
+            print(f"Agressividade da equipe {cliente}: ", agressividade_limpa)
             
             print(f"Dados processados para {nome_cliente}")
-            
         except Exception as e:
             logger.error(f"Erro ao procesar o cliente {cliente}: {e}", exc_info=True)
             

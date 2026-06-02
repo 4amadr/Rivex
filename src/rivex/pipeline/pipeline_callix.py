@@ -8,6 +8,7 @@ from src.rivex.data_processing.Callix.cleaner_callix_api import LimpezaCallixAPI
 from src.rivex.enviroments.discadores.Callix.callix_req import CAllixRequisition
 from src.rivex.data_processing.Callix.cleaner_callix_req import *
 from src.rivex.database.database import DatabaseRivex
+from src.rivex.enviroments.discadores.Callix.callix_get_clients import *
 
 
 
@@ -30,6 +31,14 @@ class PipelineCallix:
         self.login=os.getenv("login_callix")
         self.senha=os.getenv("senha_callix")
         self.limpeza=LimpezaCallixAPI()
+
+    def get_ambiente(self):
+        get_infos = CallixGetClients()
+        url_clientes, tech_clientes = get_infos.get_infos_callix()
+        print("URL dos clientes ativos no servidor: ", url_clientes.json())
+        return 
+
+
 
     def processar_cliente(self, cliente:str, token: str):
         """
@@ -83,12 +92,15 @@ class PipelineCallix:
 
     def executar(self):
         logger.info("Iniciando callix")
+        self.get_ambiente()
         db = CallixDB()
         token_clientes = db.get_token_and_client_from_db()
         db.close()
+        
 
         if not token_clientes:
             raise RuntimeError("Sem clientes ou tokens")
+        
         
         for cliente, token in token_clientes.items():
             self.processar_cliente(cliente, token)

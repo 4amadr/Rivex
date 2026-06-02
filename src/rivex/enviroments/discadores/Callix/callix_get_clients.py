@@ -9,25 +9,30 @@ from src.rivex.enviroments.discadores.Callix.callix_req import *
 load_dotenv()
 
 class CallixGetClients:
-    def __init__(self, usuario, senha):
+    def __init__(self):
         self.url_geral = os.getenv('URL_CALLIX_GERAL')
-        self.http_requisition = HttpRequisitions(session=requests.session)
-        self.usuario = usuario
-        self.senha = senha
+        self.http_requisition = HttpRequisitions(session=requests.Session())
+        self.usuario = os.getenv('USUARIO_CALLIX_GERAL')
+        self.senha = os.getenv('SENHA_CALLIX_GERAL')
 
     def login_ambiente_padrao(self):
         '''Loga no ambiente padrão e retorna a sessão'''
-        url_login = f"{self.url_geral}/login"
-        self.http_requisition.requisicao_post(url=url_login,
+        url_login = f"{self.url_geral}/api/v4/auth/session"
+        print("URL DE LOGIN: ", url_login)
+        login = self.http_requisition.requisicao_post_json(url=url_login,
                                               payload_post=payload_login_callix(login_ambiente=self.usuario, password=self.senha),
-                                              headers=headers_login_callix()
+                                              headers=headers_servidor_callix()
                                               )
-        return self.http_client.session
+        print("PAYLOADS ENVIADOS: ", payload_login_callix(self.usuario, self.senha))
+        print("HEADERS ENVIADOS: ", headers_servidor_callix())
+        print("LOGIN ", login.text)
+        print("RESPOSTA DA TENTATIVA DE LOGIN: ",login.status_code)
+        return self.http_requisition.session
 
     def get_client_url(self):
         '''Função para retornar a url dos ambientes'''
-        url_callix = f'{self.url_geral}/api/v4/tenants/sub-accounts?page[limit]=100'
-        print(url_callix)
+        url_callix = f'{self.url_geral}/api/v4/tenants/sub-accounts'
+        print("URL PARA COLETAR AS URL: ",url_callix)
         url_clientes = self.http_requisition.requisicao_get(headers=headers_servidor_callix(),
                                                             url=url_callix,
                                                             payload_get=payload_servidor_callix())
@@ -46,6 +51,7 @@ class CallixGetClients:
         return techs_clientes
     
     def get_infos_callix(self):
+        self.login_ambiente_padrao()
         url_clientes = self.get_client_url()
         tech_clientes = self.get_tech()
         return url_clientes, tech_clientes

@@ -54,7 +54,6 @@ class IpboxInit:
                                                 headers=headers_ipbox(),
                                                 url=url_get_clientes)
             filtro =  lista_de_clientes_para_filtragem(cliente_ipbox) 
-            print(filtro)
             return filtro
         except Exception as e:
             logger.error("Falha ao tentar coletar clientes do IPBOX", exc_info=True)

@@ -48,8 +48,6 @@ class DateConfig:
             
         }
 
-        print("Payload gerado:", payload)
-
         return payload
     
     

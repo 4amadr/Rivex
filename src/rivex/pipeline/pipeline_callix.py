@@ -112,5 +112,5 @@ class PipelineCallix:
             dict_tokens = tokens_callix.fluxo_de_tokens()
             print("MOSTANDO O DICIONÁRIO")
             print("Di ",dict_tokens)
-            self.processar_cliente(cliente)
+            self.processar_cliente(cliente, dict_tokens)
 

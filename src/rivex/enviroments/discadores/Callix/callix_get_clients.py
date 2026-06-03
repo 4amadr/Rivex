@@ -99,8 +99,9 @@ class GetTokenCallix:
         print("LOGADO")
         tokens_api = self.get_token(token_login)
         print("COLETA DE TOKENS FINALIZADA")
+        token = [token_cliente['attributes']['token'] for token_cliente in tokens_api['data']]
         
         return {
             "Cliente": self.cliente,
-            "Token do cliente": tokens_api
+            "Token do cliente": token
         }

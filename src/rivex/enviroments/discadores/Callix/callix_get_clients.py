@@ -37,7 +37,6 @@ class CallixGetClients:
                                                             url=url_callix,
                                                             payload_get=payload_servidor_callix())
         print("Resposta da requisição de url de clientes no callix: ", url_clientes.status_code)
-        print(url_clientes.json())
         return url_clientes
     
     def get_tech(self):
@@ -54,4 +53,4 @@ class CallixGetClients:
         self.login_ambiente_padrao()
         url_clientes = self.get_client_url()
         tech_clientes = self.get_tech()
-        return url_clientes, tech_clientes
+        return url_clientes, tech_clientes  

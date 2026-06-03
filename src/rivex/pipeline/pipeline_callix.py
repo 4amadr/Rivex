@@ -9,6 +9,7 @@ from src.rivex.enviroments.discadores.Callix.callix_req import CAllixRequisition
 from src.rivex.data_processing.Callix.cleaner_callix_req import *
 from src.rivex.database.database import DatabaseRivex
 from src.rivex.enviroments.discadores.Callix.callix_get_clients import *
+from src.rivex.data_processing.Callix.callix_clients import *
 
 
 
@@ -35,6 +36,8 @@ class PipelineCallix:
     def get_ambiente(self):
         get_infos = CallixGetClients()
         url_clientes, tech_clientes = get_infos.get_infos_callix()
+        clientes_ativos = clientes_ativos_callix(url_clientes.json())
+        print('Clientes ativos no callix atualmente', clientes_ativos)
         print("URL dos clientes ativos no servidor: ", url_clientes.json())
         return 
 

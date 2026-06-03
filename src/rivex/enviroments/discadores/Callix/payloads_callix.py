@@ -147,3 +147,25 @@ def headers_servidor_callix():
     "x-api": "1, 1",
     "x-timezone": "America/Sao_Paulo"
 }
+
+def payload_get_tokens():
+    return {
+        'sort': 'token',
+        'fields%5BapiTokens%5D': 'token%2CaccessProfile%2CcreatedAt',
+        'page%5Blimit%5D': '100'
+    }
+
+def gerar_headers_para_tokens(token, cliente):
+    return {
+        "accept": "application/json",
+        "content-type": "application/json",
+        "cookie": f"token={token}",
+        "referer": f"https://{cliente}.callix.com.br/api-tokens",
+        "user-agent": (
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+            "AppleWebKit/537.36 (KHTML, like Gecko) "
+            "Chrome/148.0.0.0 Safari/537.36"
+        ),
+        "x-api": "1",
+        "x-timezone": "America/Sao_Paulo"
+    }

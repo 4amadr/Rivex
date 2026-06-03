@@ -10,15 +10,15 @@ class CAllixRequisition:
     A classe vai coletar os dados com requests
     '''
     
-    def __init__(self, login, senha, cliente, data, id_campanha, token):
+    def __init__(self, login, senha, cliente, data, id_campanha):
         self.login = login
         self.senha = senha
         self.cliente = cliente
         self.data = data
         self.session = requests.Session()
         self.id_campanha = id_campanha
-        self.hr = HttpRequisitions(session=self.session)
-        self.token = token
+        self.http_request = HttpRequisitions(session=self.session)
+
         
     def url_callix(self):
         # vai tratar e gerar todas as URL de requisições limpas para serem usadas
@@ -33,13 +33,12 @@ class CAllixRequisition:
         return url_login, url_chamadas_agentes, lista_de_urls_de_agressividade, url_base
     
     def login_callix(self, url_login, url_base):
-        login = self.hr.requisicao_post_json(payload_post=payload_login_callix(self.login, self.senha),
+        login = self.http_request.requisicao_post_json(payload_post=payload_login_callix(self.login, self.senha),
                                        headers=headers_login_callix(url_base),
                                        url=url_login
                                        )
         token = login.json()["token"]
         return token
-    
     
     def conversor_de_url(self, url_chamadas_agentes):
         '''
@@ -50,13 +49,11 @@ class CAllixRequisition:
         params = payload_de_requisicao_de_chamadas(self.data)
         query_string = urllib.parse.urlencode(params, quote_via=urllib.parse.quote)
         url_final = f"{url_chamadas_agentes}?{query_string}"
-        return url_final
-        
-        
+        return url_final 
     
     def get_chamadas_agentes(self, url_final, url_chamadas_agentes, token_login):
         print('chegando nas chamadas')
-        chamadas_por_agentes = self.hr.requisicao_get(headers=get_performance_headers(token=token_login, url=url_chamadas_agentes),
+        chamadas_por_agentes = self.http_request.requisicao_get(headers=get_performance_headers(token=token_login, url=url_chamadas_agentes),
                                       url=url_final,
                                       payload_get=None
                                       )
@@ -65,17 +62,17 @@ class CAllixRequisition:
     def agressividade(self, url_agressividade, token):
         print("Coletando a agressividade")
         # pode haver mais de uma campanha o que gera mais de uma agressividade
-        
+        print('TOKEN USADO PARA COLETAR A AGRESSIVIDADE: ',token)
         lista_json_agressividade = []
         
         for url_unico_de_agressividade in url_agressividade:
-            agressividade = self.hr.requisicao_get(headers=headers_callix(token),
+            agressividade = self.http_request.requisicao_get(headers=headers_callix(token),
                                         url=url_unico_de_agressividade,
                                         payload_get=payload_agressividade()
                                         )
             lista_json_agressividade.append(agressividade)
         return lista_json_agressividade
-    
+
     def requisicao_callix(self):
         url_login, url_chamadas_agentes, url_agressividade, url_base = self.url_callix()
         

@@ -35,11 +35,12 @@ class PipelineCallix:
 
     def get_ambiente(self):
         get_infos = CallixGetClients()
-        url_clientes, tech_clientes = get_infos.get_infos_callix()
+        url_clientes = get_infos.get_infos_callix()
+
         clientes_ativos = clientes_ativos_callix(url_clientes.json())
         print('Clientes ativos no callix atualmente', clientes_ativos)
         print("URL dos clientes ativos no servidor: ", url_clientes.json())
-        return 
+        return clientes_ativos
 
 
 
@@ -95,16 +96,21 @@ class PipelineCallix:
 
     def executar(self):
         logger.info("Iniciando callix")
-        self.get_ambiente()
-        db = CallixDB()
-        token_clientes = db.get_token_and_client_from_db()
-        db.close()
+        clientes_ativos = self.get_ambiente()
+        #db = CallixDB()
+        #token_clientes = db.get_token_and_client_from_db()
+        #db.close()
         
 
-        if not token_clientes:
-            raise RuntimeError("Sem clientes ou tokens")
+        if not clientes_ativos:
+            raise RuntimeError("Sem clientes ativos")
         
         
-        for cliente, token in token_clientes.items():
-            self.processar_cliente(cliente, token)
+        for cliente in clientes_ativos:
+            cliente = cliente.replace('Contech - ', '')
+            tokens_callix = GetTokenCallix(cliente=cliente)
+            dict_tokens = tokens_callix.fluxo_de_tokens()
+            print("MOSTANDO O DICIONÁRIO")
+            print("Di ",dict_tokens)
+            self.processar_cliente(cliente)
 

@@ -22,9 +22,9 @@ class CAllixRequisition:
         
     def url_callix(self):
         # vai tratar e gerar todas as URL de requisições limpas para serem usadas
-        url_base = f'https://{self.cliente}contech.callix.com.br/login'
-        url_login = f'https://{self.cliente}contech.callix.com.br/api/v4/auth/session'
-        url_chamadas_agentes = f'https://{self.cliente}contech.callix.com.br/api/v4/entities/user-performance-histories'
+        url_base = f'https://{self.cliente}.callix.com.br/login'
+        url_login = f'https://{self.cliente}.callix.com.br/api/v4/auth/session'
+        url_chamadas_agentes = f'https://{self.cliente}.callix.com.br/api/v4/entities/user-performance-histories'
         
         lista_de_urls_de_agressividade = []
         for campanha in self.id_campanha:
@@ -33,10 +33,17 @@ class CAllixRequisition:
         return url_login, url_chamadas_agentes, lista_de_urls_de_agressividade, url_base
     
     def login_callix(self, url_login, url_base):
+        print("URL QUE VAI NO HEADER: ", url_base)
+        print("URL QUE VAI SOLICITAR O LOGIN: ", url_login)
+        print("PAYLOAD DE LOGIN: ", payload_login_callix(self.login, self.senha))
+        print("HEADERS DE LOGIN: ", headers_login_callix(url_base))
         login = self.http_request.requisicao_post_json(payload_post=payload_login_callix(self.login, self.senha),
                                        headers=headers_login_callix(url_base),
                                        url=url_login
                                        )
+        print("RESPOSTA DO LOGIN:   ",login.status_code)
+        print("JSON DO LOGIN:  ", login.json())
+        print(login.status_code)
         token = login.json()["token"]
         return token
     

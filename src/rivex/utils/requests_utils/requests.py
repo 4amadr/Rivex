@@ -34,6 +34,8 @@ class HttpRequisitions:
     
     def requisicao_post_json(self, payload_post: dict, headers: dict, url):
         postagem = self.session.post(url, json=payload_post, headers=headers)
+        print('STATUS:', postagem.status_code)
+        print('BODY:', postagem.text)
         analista_de_erros(postagem.status_code)
         return postagem
     

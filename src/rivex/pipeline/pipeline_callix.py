@@ -28,19 +28,23 @@ CallixClientData = namedtuple("CallixClientData", [
 
 class PipelineCallix:
     def __init__(self):
-        data=DateConfig()
-        self.login=os.getenv("login_callix")
-        self.senha=os.getenv("senha_callix")
+        self.data=DateConfig()
+        self.login=os.getenv("USUARIO_CALLIX_GERAL")
+        self.senha=os.getenv("SENHA_CALLIX_GERAL")
         self.limpeza=LimpezaCallixAPI()
 
     def get_ambiente(self):
+        '''
+        Retorna as informações necessárias para requisições futuras
+        '''
         get_infos = CallixGetClients()
         url_clientes = get_infos.get_infos_callix()
-
         clientes_ativos = clientes_ativos_callix(url_clientes.json())
-        print('Clientes ativos no callix atualmente', clientes_ativos)
-        print("URL dos clientes ativos no servidor: ", url_clientes.json())
-        return clientes_ativos
+        print('CLIENTES ATIVOS:  ',clientes_ativos)
+        get_token = GetTokenCallix(clientes_ativos)
+        lista_infos_clientes = get_token.fluxo_de_tokens()
+        
+        return lista_infos_clientes
 
 
 
@@ -55,13 +59,13 @@ class PipelineCallix:
 
         try:
             # Extração
-            api = CallixAPICollector(cliente, token, self.data)
+            api = CallixAPICollector(cliente, token, self.data.data_callix())
             dados_brutos_api = api.api_callix()
 
             req = CAllixRequisition(
                 login=self.login, senha=self.senha,
-                cliente=cliente_formatado, data=self.data,
-                id_campanha=dados_brutos_api['Campanha'], token=token
+                cliente=cliente_formatado, data=self.data.data_callix(),
+                id_campanha=dados_brutos_api['Campanha']
             )
             chamadas_brutas, agressividade_bruta = req.requisicao_callix()
 
@@ -96,21 +100,12 @@ class PipelineCallix:
 
     def executar(self):
         logger.info("Iniciando callix")
-        clientes_ativos = self.get_ambiente()
-        #db = CallixDB()
-        #token_clientes = db.get_token_and_client_from_db()
-        #db.close()
+        lista_tokens = self.get_ambiente()
         
-
-        if not clientes_ativos:
-            raise RuntimeError("Sem clientes ativos")
+        if not lista_tokens:
+            raise RuntimeError("Sem clientes ou tokens")
         
         
-        for cliente in clientes_ativos:
-            cliente = cliente.replace('Contech - ', '')
-            tokens_callix = GetTokenCallix(cliente=cliente)
-            dict_tokens = tokens_callix.fluxo_de_tokens()
-            print("MOSTANDO O DICIONÁRIO")
-            print("Di ",dict_tokens)
-            self.processar_cliente(cliente, dict_tokens)
+        for info in lista_tokens:
+            self.processar_cliente(info['Cliente'], info['Token'])
 

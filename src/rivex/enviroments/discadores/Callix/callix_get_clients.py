@@ -69,9 +69,9 @@ class GetTokenCallix:
         self.http_request = HttpRequisitions(session=requests.Session())
         self.cliente = cliente
 
-    def login_callix(self):
-        url_base = f'https://{self.cliente}.callix.com.br/login'
-        url_login = f'https://{self.cliente}.callix.com.br/api/v4/auth/session'
+    def login_callix(self, cliente_vez):
+        url_base = f'https://{cliente_vez}.callix.com.br/login'
+        url_login = f'https://{cliente_vez}.callix.com.br/api/v4/auth/session'
         login = self.http_request.requisicao_post_json(payload_post=payload_login_callix(self.login, self.senha),
                                         headers=headers_login_callix(url_base),
                                         url=url_login
@@ -80,28 +80,25 @@ class GetTokenCallix:
         token = login.json()['token']
         return token
 
-    def get_token(self, token):
+    def get_token(self, token, cliente_vez):
         '''Retorna o token do cliente usado em requisições de API'''
 
-        url_tokens = f'https://{self.cliente}.callix.com.br/api/v4/entities/api-tokens'
+        url_tokens = f'https://{cliente_vez}.callix.com.br/api/v4/entities/api-tokens'
         tokens_api = self.http_request.requisicao_get(url=url_tokens,
                                                         payload_get=payload_get_tokens(),
                                                         headers=gerar_headers_para_tokens(token, self.cliente))
-        print(url_tokens)
-        print(tokens_api.request.headers)
-        print(tokens_api.request.body)
-        print(tokens_api.json())
         return tokens_api.json()
 
     def fluxo_de_tokens(self):
-        print("LOGANDO PARA PEGAR OS TOKENS")
-        token_login = self.login_callix()
-        print("LOGADO")
-        tokens_api = self.get_token(token_login)
-        print("COLETA DE TOKENS FINALIZADA")
-        token = [token_cliente['attributes']['token'] for token_cliente in tokens_api['data']]
-        
-        return {
-            "Cliente": self.cliente,
-            "Token do cliente": token
-        }
+        for selecao_cliente in self.cliente:
+            print("Cliente da vez", selecao_cliente)
+            token_login = self.login_callix(selecao_cliente)
+            tokens_api = self.get_token(token_login, selecao_cliente)
+            token = [token_cliente['attributes']['token'] for token_cliente in tokens_api['data']]
+            
+            dict_infos_cliente = {
+                "Cliente": selecao_cliente,
+                "Token": token
+            }
+            lista_tokens = [dict_infos_cliente]
+        return lista_tokens

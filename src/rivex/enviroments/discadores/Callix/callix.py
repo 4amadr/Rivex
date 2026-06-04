@@ -12,19 +12,25 @@ class CallixAPICollector:
         self.hr = HttpRequisitions(session=self.session)
         
     def url_tratada(self, endpoint):
-        url = f'https://{self.cliente}/api/v1/{endpoint}'
+        url = f'https://{self.cliente}.callix.com.br/api/v1/{endpoint}'
+        print('URL USADA NA REQUISIÇÃO DE CHAMADAS CALLIX: ', url)
         return url
     
     def coletar(self, endpoint, data=None, filtro_ativar=None, filtro_setar=None, ativador_payload: bool=True):
         '''Vai ser usado para coletar todos os tipos de chamadas'''
         payload_config = payload_callix(endpoint, data, filtro_ativar, filtro_setar)
+        print(headers_callix(self.token))
+        print(self.url_tratada(endpoint))
+        print(payload_config)
+        print("TOKEN ENVIADO:       ",self.token[0])
+        print("TIPO DE DADO DO TOKEN:   ",type(self.token[0]))
         
         # verificador para automatizar campanhas sem data
         if ativador_payload == False:
             payload_config = None
             
         dados_chamadas = self.hr.requisicao_get(
-            headers_callix(self.token),
+            headers_callix(self.token[0]),
             self.url_tratada(endpoint),
             payload_config
         )

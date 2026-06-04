@@ -38,7 +38,7 @@ def headers_login_callix(BASE_URL):
     "Content-Type": "application/json",
     "Accept": "application/json",
     "Origin": BASE_URL,
-    "Referer": f"{BASE_URL}/login",
+    "Referer": f"{BASE_URL}",
     "X-Api": "1, 1",
     "User-Agent": "Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36",
 }

@@ -148,7 +148,7 @@ def main_callixx():
         api = CallixAPICollector(cliente, token, data)
         cliente_formatado = cliente.removesuffix("contech.callix.com.br")
         
-        '''
+        ''''
         Ordem lógica de coleta que deve ser seguida
         1 - coleta
         2 - limpeza

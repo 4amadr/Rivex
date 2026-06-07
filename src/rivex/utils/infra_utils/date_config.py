@@ -10,7 +10,7 @@ class DateConfig:
         return data_formatada
     
     def data_callix(self):
-        data_ref = date.today() - timedelta(days=3)
+        data_ref = date.today() - timedelta(days=4)
         data_formatada = data_ref.strftime("%Y-%m-%d")
         print('Dia selecionado: ', data_formatada)
         return data_formatada

@@ -38,7 +38,7 @@ class CallixGetClients:
     def login_callix(self, cliente):
         url_base = f'https://{cliente}contech.callix.com.br/login'
         url_login = f'https://{cliente}contech.callix.com.br/api/v4/auth/session'
-        login = self.http_request.requisicao_post_json(payload_post=payload_login_callix(self.login, self.senha),
+        login = self.http_requisition.requisicao_post_json(payload_post=payload_login_callix(self.login, self.senha),
                                         headers=headers_login_callix(url_base),
                                         url=url_login
                                         )
@@ -49,7 +49,7 @@ class CallixGetClients:
         '''Retorna o token do cliente usado em requisições de API'''
 
         url_tokens = f'https://{cliente}contech.callix.com.br/api/v4/entities/api-tokens'
-        tokens_api = self.http_request.requisicao_get(url=url_tokens,
+        tokens_api = self.http_requisition.requisicao_get(url=url_tokens,
                                                       payload_get=payload_get_tokens(),
                                                       headers=headers_callix())
         print("RESULTADO DA REQUISIÇÃO DE TOKENS DO AMBIENTE CALLIX: ", tokens_api.status_code)

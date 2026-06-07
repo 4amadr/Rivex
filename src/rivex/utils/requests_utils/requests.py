@@ -34,8 +34,6 @@ class HttpRequisitions:
     
     def requisicao_post_json(self, payload_post: dict, headers: dict, url):
         postagem = self.session.post(url, json=payload_post, headers=headers)
-        print('STATUS:', postagem.status_code)
-        print('BODY:', postagem.text)
         analista_de_erros(postagem.status_code)
         return postagem
     
@@ -48,6 +46,10 @@ class HttpRequisitions:
         else:
             coleta = self.session.get(url, params=payload_get, headers=headers,)
             # verificação se há erros nos status_code
-            print(coleta.status_code)
-            analista_de_erros(coleta.status_code)
-            return coleta
+            if coleta.status_code == 200:
+                print("Requisição valida")
+                return coleta
+            else:
+                print(coleta.status_code)
+                analista_de_erros(coleta.status_code)
+                return coleta

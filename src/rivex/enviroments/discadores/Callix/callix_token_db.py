@@ -20,6 +20,19 @@ class CallixDB:
             print("Erro durante a conexão com o banco de dados:", e)
             self.conexao = None
             self.cursor = None
+            
+    def insert_token_in_db(self, cliente_callix_ativo, token_callix_ativo):
+        '''
+        Função para inserir os clientes e os tokens no banco de dados callix
+        '''
+        try:
+            sql = "INSERT INTO callix_tokens (cliente, token) VALUES (%s, %s)"
+            dados = (cliente_callix_ativo, token_callix_ativo)
+            self.cursor.execute(sql, dados)
+            self.conexao.commit()
+            print("Clientes e tokens inseridos no banco de dados callix_tokens")
+        except psycopg2.Error as e:
+            print(f"Erro {e} ao tentar inserir os clientes/tokens no banco de dados")
 
     def get_token_and_client_from_db(self):
         """Coleta token e cliente da tabela callix_tokens."""

@@ -13,17 +13,11 @@ class CallixAPICollector:
         
     def url_tratada(self, endpoint):
         url = f'https://{self.cliente}.callix.com.br/api/v1/{endpoint}'
-        print('URL USADA NA REQUISIÇÃO DE CHAMADAS CALLIX: ', url)
         return url
     
     def coletar(self, endpoint, data=None, filtro_ativar=None, filtro_setar=None, ativador_payload: bool=True):
         '''Vai ser usado para coletar todos os tipos de chamadas'''
         payload_config = payload_callix(endpoint, data, filtro_ativar, filtro_setar)
-        print(headers_callix(self.token))
-        print(self.url_tratada(endpoint))
-        print(payload_config)
-        print("TOKEN ENVIADO:       ",self.token[0])
-        print("TIPO DE DADO DO TOKEN:   ",type(self.token[0]))
         
         # verificador para automatizar campanhas sem data
         if ativador_payload == False:
@@ -62,13 +56,15 @@ class CallixAPICollector:
         chamadas_abandonadas = self.chamadas_abandonadas()
         
         # campanha (agressividade)
-        campanha = self.campanha()
+        campanha_json = self.campanha().json()
+        campanhas = [campanha['id'] for campanha in campanha_json['data']]
+        print("IDENTIFICADOR DA CAMPANHA QUE SERÁ USADO: ", campanhas)
         
         return {
             "Completas": chamadas_completas.json(),
             "Recusadas": chamadas_recusadas.json(),
             "Abandonadas": chamadas_abandonadas.json(),
-            "Campanha": campanha.json()
+            "Campanha": campanhas
         }
         
         

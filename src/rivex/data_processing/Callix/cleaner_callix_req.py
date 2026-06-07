@@ -1,5 +1,7 @@
+from dis import print_instructions
 import pandas as pd
 from src.rivex.enviroments.discadores.Callix.callix_req import CAllixRequisition
+from collections import namedtuple
 
 '''
 Modulo para limpar os dados que vem de requisições do callix.
@@ -8,6 +10,11 @@ Aqui serão limpos:
 2 - Dados coletados em fontes do callix que não tem documentação explicita
 3 - Dados que não estão contidos no resultado da API
 '''
+AgenteData = namedtuple(
+    "AgenteData",
+    []    
+)
+
 
 def limpar_chamadas_agentes(json_agentes):
     dados = json_agentes.json()
@@ -42,6 +49,7 @@ def limpar_agressividade(json_agressividade): # por enquanto vai retornar a medi
     
     for agressividade in json_agressividade:
         dados = agressividade.json()
+        print(dados)
         atributos = dados["data"]["attributes"]
         lista_agressividade.append(atributos["powerAggressiveness"])
 

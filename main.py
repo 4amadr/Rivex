@@ -4,7 +4,6 @@ import requests
 from dotenv import load_dotenv
 from src.rivex.enviroments.discadores.Callix.callix import CallixAPICollector
 from src.rivex.enviroments.discadores.Callix.callix_token_db import CallixDB
-from src.rivex.data_processing.Callix.cleaner_callix_api import LimpezaCallixAPI
 from src.rivex.enviroments.discadores.vonix.equipes_vonix import dict_agentes
 from src.rivex.utils.csv_utils.callix_csv.callix_converter import CallixCSVConverter
 from src.rivex.utils.infra_utils.date_config import DateConfig

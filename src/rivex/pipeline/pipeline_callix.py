@@ -4,26 +4,15 @@ from src.rivex.utils.infra_utils.date_config import DateConfig
 import os
 from src.rivex.enviroments.discadores.Callix.callix import CallixAPICollector
 from src.rivex.enviroments.discadores.Callix.callix_token_db import CallixDB
-from src.rivex.data_processing.Callix.cleaner_callix_api import LimpezaCallixAPI
+from src.rivex.data_processing.Callix.cleaner_callix_api import *
 from src.rivex.enviroments.discadores.Callix.callix_req import CAllixRequisition
 from src.rivex.data_processing.Callix.cleaner_callix_req import *
 from src.rivex.database.database import DatabaseRivex
 from src.rivex.enviroments.discadores.Callix.callix_get_clients import *
 from src.rivex.data_processing.Callix.callix_clients import *
-
-
-
 load_dotenv()
 logger = logging.getLogger(__name__)
-from collections import namedtuple
 
-CallixClientData = namedtuple("CallixClientData", [
-    "nome_cliente",
-    "data",
-    "dados_limpos",
-    "agressovodade",
-    "chamadas_agentes"
-])
 
 
 class PipelineCallix:
@@ -31,7 +20,6 @@ class PipelineCallix:
         self.data=DateConfig()
         self.login=os.getenv("USUARIO_CALLIX_GERAL")
         self.senha=os.getenv("SENHA_CALLIX_GERAL")
-        self.limpeza=LimpezaCallixAPI()
 
     def get_ambiente(self):
         '''
@@ -60,7 +48,8 @@ class PipelineCallix:
         try:
             # Extração
             api = CallixAPICollector(cliente, token, self.data.data_callix())
-            dados_brutos_api = api.api_callix()
+            dados_brutos_api = api.api_callix() # dict
+            print("ID DA CAMPANHA: ", dados_brutos_api["Campanha"])
 
             req = CAllixRequisition(
                 login=self.login, senha=self.senha,
@@ -70,7 +59,7 @@ class PipelineCallix:
             chamadas_brutas, agressividade_bruta = req.requisicao_callix()
 
             # limpeza
-            dict_limpeza = self.limpeza.limpeza_callix(
+            dict_limpeza = processar_dados(
                 dados_brutos_api['Completas'],
                 dados_brutos_api['Recusadas'],
                 dados_brutos_api['Abandonadas'],
@@ -87,13 +76,17 @@ class PipelineCallix:
                 nome_cliente=cliente_formatado,
                 data=self.data,
                 dados_limpos=dict_limpeza,
-                agressovodade=agressividade_limpa,
+                agressividade=agressividade_limpa,
                 chamadas_agentes=chamadas_limpas
             )
 
             # carregar
             logger.info("Enviando dados estruturados para o banco de dados")
-            DatabaseRivex.coleta_callix(dados_processados)
+            DatabaseRivex.coleta_callix(dados_processados.data,
+                                        dados_processados.nome_cliente,
+                                        dados_processados.dados_limpos,
+                                        dados_processados.agressividade,
+                                        dados_processados.chamadas_agentes,)
 
         except Exception as e:
             logger.error(f"Falha ao processar o cliente {cliente_formatado}. Erro {e}", exc_info=True)

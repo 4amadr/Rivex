@@ -8,6 +8,7 @@ from src.rivex.data_processing.Callix.cleaner_callix_api import *
 from src.rivex.enviroments.discadores.Callix.callix_req import CAllixRequisition
 from src.rivex.data_processing.Callix.cleaner_callix_req import *
 from src.rivex.database.database import DatabaseRivex
+from src.rivex.enviroments.discadores.Callix.callix_client_package import *
 from src.rivex.enviroments.discadores.Callix.callix_get_clients import *
 from src.rivex.data_processing.Callix.callix_clients import *
 load_dotenv()
@@ -46,14 +47,15 @@ class PipelineCallix:
 
 
         try:
+            data_selecionada = self.data.data_callix()
             # Extração
-            api = CallixAPICollector(cliente, token, self.data.data_callix())
+            api = CallixAPICollector(cliente, token, data_selecionada)
             dados_brutos_api = api.api_callix() # dict
             print("ID DA CAMPANHA: ", dados_brutos_api["Campanha"])
 
             req = CAllixRequisition(
                 login=self.login, senha=self.senha,
-                cliente=cliente_formatado, data=self.data.data_callix(),
+                cliente=cliente_formatado, data=data_selecionada,
                 id_campanha=dados_brutos_api['Campanha']
             )
             chamadas_brutas, agressividade_bruta = req.requisicao_callix()
@@ -72,6 +74,21 @@ class PipelineCallix:
             )
 
             # emcapsulando
+            empacotamento_callix = CallixClientData(
+                cliente=cliente_formatado,
+                chamadas=dict_limpeza["Chamadas totais"],
+                aceitas=dict_limpeza["Chamadas aceitas"],
+                recusadas=dict_limpeza["Chamadas recusadas"],
+                abandonadas=dict_limpeza["Chamadas abandonadas"],
+                agressividade=agressividade_limpa,
+                data=data_selecionada,
+                agentes_info=chamadas_limpas
+            )
+            dict_chamadas = empacotamento_callix.pacote_chamadas()
+            dict_agentes = empacotamento_callix.pacote_agentes()
+            print("CHAMADAAAAAAAAAAS: ", dict_chamadas)
+            print("AGENTEEEEEEEEEEEEEEES: ", dict_agentes)
+            
             dados_processados = CallixClientData(
                 nome_cliente=cliente_formatado,
                 data=self.data,

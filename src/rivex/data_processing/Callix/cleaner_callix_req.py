@@ -17,6 +17,9 @@ AgenteData = namedtuple(
 
 
 def limpar_chamadas_agentes(json_agentes):
+    print("INICIO JSON DE AGENTES: ")
+    print(json_agentes.json())
+    print("FINAL JSON DE AGENTES: ")
     dados = json_agentes.json()
 
     # se não houver "included", não há agentes para processar
@@ -37,7 +40,7 @@ def limpar_chamadas_agentes(json_agentes):
     resultado = [
         {
             "agente": usuarios.get(item["relationships"]["user"]["data"]["id"], "Desconhecido"),
-            "chamadas_atendidas": item["attributes"]["answeredCount"]
+            "Chamadas atendidas": item["attributes"]["answeredCount"]
         }
         for item in dados["data"]
     ]

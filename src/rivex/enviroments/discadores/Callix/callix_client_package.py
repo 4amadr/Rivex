@@ -31,13 +31,15 @@ class CallixClientData:
     
     def pacote_agentes(self):
         for dicionario_agente in self.agentes_info:
+            print("AGENTES INFOOOOOOOOOOOOOOOOOO: ", self.agentes_info)
             for agente, chamada_aceita in dicionario_agente.items():
+                print("DICIONARIO DO AGENTEEEEEEEEEEEEEEEEEEEEE: ", dicionario_agente)
                 dict_agentes = {
                     "Cliente": self.cliente,
                     "Data": self.data,
-                    "Nome do agente": agente["agente"],
-                    "Chamadas aceitas do agente": chamada_aceita["Chamadas atendidas"],
+                    "Nome do agente": agente,
+                    "Chamadas aceitas do agente": chamada_aceita,
                 }
                 lista_agentes = [dict_agentes]
-        print("Dicionário dos dos agentes: ", dict_agentes)
+        print("Dicionário dos dos agentes: ", lista_agentes)
         return lista_agentes

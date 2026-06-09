@@ -89,21 +89,9 @@ class PipelineCallix:
             print("CHAMADAAAAAAAAAAS: ", dict_chamadas)
             print("AGENTEEEEEEEEEEEEEEES: ", dict_agentes)
             
-            dados_processados = CallixClientData(
-                nome_cliente=cliente_formatado,
-                data=self.data,
-                dados_limpos=dict_limpeza,
-                agressividade=agressividade_limpa,
-                chamadas_agentes=chamadas_limpas
-            )
 
             # carregar
             logger.info("Enviando dados estruturados para o banco de dados")
-            DatabaseRivex.coleta_callix(dados_processados.data,
-                                        dados_processados.nome_cliente,
-                                        dados_processados.dados_limpos,
-                                        dados_processados.agressividade,
-                                        dados_processados.chamadas_agentes,)
 
         except Exception as e:
             logger.error(f"Falha ao processar o cliente {cliente_formatado}. Erro {e}", exc_info=True)

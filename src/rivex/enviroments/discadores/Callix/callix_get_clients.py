@@ -90,9 +90,14 @@ class GetTokenCallix:
         return tokens_api.json()
 
     def fluxo_de_tokens(self):
+        lista_tokens = []
         for selecao_cliente in self.cliente:
             print("Cliente da vez", selecao_cliente)
+            
+            # login no ambiente
             token_login = self.login_callix(selecao_cliente)
+            
+            # token
             tokens_api = self.get_token(token_login, selecao_cliente)
             token = [token_cliente['attributes']['token'] for token_cliente in tokens_api['data']]
             
@@ -100,5 +105,5 @@ class GetTokenCallix:
                 "Cliente": selecao_cliente,
                 "Token": token
             }
-            lista_tokens = [dict_infos_cliente]
+            lista_tokens.append(dict_infos_cliente)
         return lista_tokens

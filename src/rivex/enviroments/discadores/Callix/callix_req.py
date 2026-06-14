@@ -25,12 +25,13 @@ class CAllixRequisition:
         url_base = f'https://{self.cliente}.callix.com.br/login'
         url_login = f'https://{self.cliente}.callix.com.br/api/v4/auth/session'
         url_chamadas_agentes = f'https://{self.cliente}.callix.com.br/api/v4/entities/user-performance-histories'
+        url_get_tech = f'https://{self.cliente}.callix.com.br/api/v4/entities/accounts'
         
         lista_de_urls_de_agressividade = []
         for campanha in self.id_campanha:
             url_agressividade = f'https://{self.cliente}.callix.com.br/api/v4/entities/campaigns/{campanha}'
             lista_de_urls_de_agressividade.append(url_agressividade)
-        return url_login, url_chamadas_agentes, lista_de_urls_de_agressividade, url_base
+        return url_login, url_chamadas_agentes, lista_de_urls_de_agressividade, url_base, url_get_tech
     
     def login_callix(self, url_login, url_base):
         login = self.http_request.requisicao_post_json(payload_post=payload_login_callix(self.login, self.senha),
@@ -53,7 +54,6 @@ class CAllixRequisition:
         return url_final 
     
     def get_chamadas_agentes(self, url_final, url_chamadas_agentes, token_login):
-        print('chegando nas chamadas')
         chamadas_por_agentes = self.http_request.requisicao_get(headers=get_performance_headers(token=token_login, url=url_chamadas_agentes),
                                       url=url_final,
                                       payload_get=None
@@ -71,14 +71,22 @@ class CAllixRequisition:
                                         )
             lista_json_agressividade.append(agressividade)
         return lista_json_agressividade
+    
+    def get_tech(self, url_tech, token):
+        tech_cliente = self.http_request.requisicao_get(headers=headers_callix(token),
+                                                         url=url_tech,
+                                                         payload_get=payload_get_tech())
+        print("TECH COLETADA DOS CLIENTE EM FORMATO JSON: ",tech_cliente.json())
+        return tech_cliente
 
     def requisicao_callix(self):
-        url_login, url_chamadas_agentes, url_agressividade, url_base = self.url_callix()
+        url_login, url_chamadas_agentes, url_agressividade, url_base, url_get_tech = self.url_callix()
         
         print('Logando...')
         login = self.login_callix(url_login, url_base)
         url_final = self.conversor_de_url(url_chamadas_agentes)
         chamadas_por_agentes = self.get_chamadas_agentes(url_final, url_chamadas_agentes, login)
         agressividade = self.agressividade(url_agressividade, login) # lista
+        tech_cliente = self.get_tech(url_get_tech, login)
         
-        return chamadas_por_agentes, agressividade
+        return chamadas_por_agentes, agressividade, tech_cliente

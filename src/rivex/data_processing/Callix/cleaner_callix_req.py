@@ -17,9 +17,6 @@ AgenteData = namedtuple(
 
 
 def limpar_chamadas_agentes(json_agentes):
-    print("INICIO JSON DE AGENTES: ")
-    print(json_agentes.json())
-    print("FINAL JSON DE AGENTES: ")
     dados = json_agentes.json()
 
     # se não houver "included", não há agentes para processar
@@ -52,7 +49,6 @@ def limpar_agressividade(json_agressividade): # por enquanto vai retornar a medi
     
     for agressividade in json_agressividade:
         dados = agressividade.json()
-        print(dados)
         atributos = dados["data"]["attributes"]
         lista_agressividade.append(atributos["powerAggressiveness"])
 
@@ -60,7 +56,34 @@ def limpar_agressividade(json_agressividade): # por enquanto vai retornar a medi
 
     return {"agressividade": media}
 
+def  limpeza_techs_callix(techs_json):
+    '''
+    Vai isolar o valor da tech de um arquivo json
+    '''
+    data_json = techs_json['included']
+    for dados in data_json:
+        tech_suja = dados['attributes']['name']
+    print("TECH COMPLETA DO CLIENTE ATUAL: ",tech_suja)
+    return tech_suja
+        
+def tech_limpa_callix(tech_suja):
+    '''Vai retornar
+    *tech*
+    *ID*
+    *Fila*
+    '''
+    numeracao = "".join(caractere for caractere in tech_suja if caractere.isdigit())
+    print("NUMERAÇÃO DE IDENTIFICADOR: ",numeracao)
+    
+    dict_info = {
+        "Tech": numeracao[:6],
+        "Id": numeracao[:4],
+        "Fila": numeracao[1:3]
+    }
+    print("INFORMAÇÕES DO CLIENTE SELECIONADO: ",dict_info)
+    return dict_info
 
-def agressividade_e_agentes(json_agressividade, json_agentes):
-    return limpar_agressividade(json_agressividade), limpar_chamadas_agentes(json_agentes)
+def limpeza_req_callix(json_agressividade, json_agentes, techs_json):
+    tech_suja = limpeza_techs_callix(techs_json)
+    return limpar_agressividade(json_agressividade), limpar_chamadas_agentes(json_agentes), tech_limpa_callix(tech_suja)
     

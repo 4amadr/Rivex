@@ -58,7 +58,6 @@ class CallixAPICollector:
         # campanha (agressividade)
         campanha_json = self.campanha().json()
         campanhas = [campanha['id'] for campanha in campanha_json['data']]
-        print("IDENTIFICADOR DA CAMPANHA QUE SERÁ USADO: ", campanhas)
         
         return {
             "Completas": chamadas_completas.json(),

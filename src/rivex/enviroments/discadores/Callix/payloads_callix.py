@@ -169,3 +169,96 @@ def gerar_headers_para_tokens(token, cliente):
         "x-api": "1",
         "x-timezone": "America/Sao_Paulo"
     }
+    
+def payload_get_tech() -> dict:
+    """
+    Retorna os parâmetros utilizados na consulta de informações
+    técnicas da conta.
+    """
+
+    return {
+        "include": ",".join([
+            "nationalInboundNumberAsCallerId",
+            "nationalTenantRoute",
+            "internationalTenantRoute"
+        ]),
+
+        "fields[accounts]": ",".join([
+            "legalName",
+            "legalCode",
+            "municipalRegistryCode",
+            "stateRegistryCode",
+            "addressStreet",
+            "addressNumber",
+            "addressNeighborhood",
+            "addressComplement",
+            "addressZipCode",
+            "addressCity",
+            "addressState",
+            "agentMaxIdleDuration",
+            "businessPartners",
+            "contacts",
+            "nationalOutboundRouteUsage",
+            "nationalTenantCallerId",
+            "nationalInboundNumberAsCallerId",
+            "internationalOutboundRouteUsage",
+            "nationalTenantRoute",
+            "internationalTenantRoute",
+            "nationalOutboundRouteType",
+            "allowTenantGroupRoutes",
+            "mainTenantId",
+            "allowInternationalCalls",
+            "defaultQualificationId",
+            "transferQualificationId",
+            "afterCallQualificationId",
+            "clickToChatTerminateQualificationId",
+            "chatFinishedByNewActiveMessageQualificationId",
+            "defaultChatQualificationId",
+            "chatTimeoutQualificationId",
+            "didNotSpeakToAPersonQualificationId",
+            "didNotSpeakToRightPersonQualificationId",
+            "callDidNotEndWithSuccessQualificationId",
+            "endTrialDate",
+            "endOnboardingDate",
+            "status",
+            "metadata",
+            "entryDate",
+            "lastOperationDate",
+            "outboundRouteType1Enabled",
+            "outboundRouteType2Enabled",
+            "outboundRouteType3Enabled",
+            "outboundRouteType4Enabled",
+            "outboundRouteType5Enabled",
+            "outboundRouteType11LocalPrice",
+            "outboundRouteType11LdnPrice",
+            "outboundRouteType11MobilePrice",
+            "outboundRouteType12Enabled",
+            "outboundRouteType12LocalPrice",
+            "outboundRouteType12LdnPrice",
+            "outboundRouteType12MobilePrice",
+            "outboundRouteType13Enabled",
+            "assistantEnabled",
+            "assistantConfig",
+            "automaticCallTranscriptionEnabled",
+            "automaticCallTranscriptionConfig",
+            "transcriptionConfig",
+            "transcriptionDefinitions",
+            "outboundRouteType13LocalPrice",
+            "outboundRouteType13LdnPrice",
+            "outboundRouteType13MobilePrice",
+            "productVersion",
+            "transcriptionProviderType",
+            "stereoCallRecordingEnabled",
+            "shouldLogoutAgentByIdle",
+            "initialBreakId"
+        ]),
+
+        "fields[nationalInboundNumberAsCallerId]": "phone",
+
+        "fields[nationalTenantRoute]": ",".join([
+            "name",
+            "requiresCallerId"
+        ]),
+
+        "fields[internationalTenantRoute]": "name"
+    }

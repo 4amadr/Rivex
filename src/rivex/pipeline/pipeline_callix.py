@@ -42,7 +42,7 @@ class PipelineCallix:
         Processa a coleta, limpeza e carga de um liente
         """
         cliente_formatado=cliente.removeprefix("contech.callix.com.br")
-        logger.info(f"Coletando dados do cliente {cliente_formatado}")
+        logger.info(f"Coletando dados do cliente -> {cliente_formatado}")
 
 
 
@@ -58,7 +58,7 @@ class PipelineCallix:
                 cliente=cliente_formatado, data=data_selecionada,
                 id_campanha=dados_brutos_api['Campanha']
             )
-            chamadas_brutas, agressividade_bruta = req.requisicao_callix()
+            chamadas_brutas, agressividade_bruta, tech_cliente_json = req.requisicao_callix()
 
             # limpeza
             dict_limpeza = processar_dados(
@@ -68,9 +68,10 @@ class PipelineCallix:
                 dados_brutos_api['Campanha']
             )
 
-            agressividade_limpa, chamadas_limpas = agressividade_e_agentes(
+            agressividade_limpa, chamadas_limpas, tech_suja = limpeza_req_callix(
                 json_agentes=chamadas_brutas,
-                json_agressividade=agressividade_bruta
+                json_agressividade=agressividade_bruta,
+                techs_json=tech_cliente_json.json()
             )
 
             # emcapsulando
@@ -106,4 +107,5 @@ class PipelineCallix:
         
         for info in lista_tokens:
             self.processar_cliente(info['Cliente'], info['Token'])
+            print("FIM DO CICLO DA INFO, SEGUINDO PARA A PRÓXIMA")
 

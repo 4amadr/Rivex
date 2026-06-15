@@ -60,30 +60,18 @@ def  limpeza_techs_callix(techs_json):
     '''
     Vai isolar o valor da tech de um arquivo json
     '''
-    data_json = techs_json['included']
-    for dados in data_json:
-        tech_suja = dados['attributes']['name']
-    print("TECH COMPLETA DO CLIENTE ATUAL: ",tech_suja)
-    return tech_suja
-        
-def tech_limpa_callix(tech_suja):
-    '''Vai retornar
-    *tech*
-    *ID*
-    *Fila*
-    '''
-    numeracao = "".join(caractere for caractere in tech_suja if caractere.isdigit())
-    print("NUMERAÇÃO DE IDENTIFICADOR: ",numeracao)
-    
-    dict_info = {
-        "Tech": numeracao[:6],
-        "Id": numeracao[:4],
-        "Fila": numeracao[1:3]
-    }
-    print("INFORMAÇÕES DO CLIENTE SELECIONADO: ",dict_info)
-    return dict_info
+
+    for valor in techs_json["data"]:
+        tech = valor["attributes"].get("techPrefix")
+
+        if tech:
+            print("TECH DO CLIENTE: ",tech)
+            return tech
+    return None
+
+
 
 def limpeza_req_callix(json_agressividade, json_agentes, techs_json):
-    tech_suja = limpeza_techs_callix(techs_json)
-    return limpar_agressividade(json_agressividade), limpar_chamadas_agentes(json_agentes), tech_limpa_callix(tech_suja)
+
+    return limpar_agressividade(json_agressividade), limpar_chamadas_agentes(json_agentes), limpeza_techs_callix(techs_json)
     

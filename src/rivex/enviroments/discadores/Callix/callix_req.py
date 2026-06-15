@@ -72,12 +72,12 @@ class CAllixRequisition:
             lista_json_agressividade.append(agressividade)
         return lista_json_agressividade
     
-    def get_tech(self, url_tech, token):
+    """def get_tech(self, url_tech, token):
         tech_cliente = self.http_request.requisicao_get(headers=headers_callix(token),
                                                          url=url_tech,
                                                          payload_get=payload_get_tech())
         print("TECH COLETADA DOS CLIENTE EM FORMATO JSON: ",tech_cliente.json())
-        return tech_cliente
+        return tech_cliente"""
 
         
 
@@ -89,6 +89,5 @@ class CAllixRequisition:
         url_final = self.conversor_de_url(url_chamadas_agentes)
         chamadas_por_agentes = self.get_chamadas_agentes(url_final, url_chamadas_agentes, login)
         agressividade = self.agressividade(url_agressividade, login) # lista
-        tech_cliente = self.get_tech(url_get_tech, login)
         
-        return chamadas_por_agentes, agressividade, tech_cliente
+        return chamadas_por_agentes, agressividade

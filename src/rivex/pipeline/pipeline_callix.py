@@ -37,7 +37,7 @@ class PipelineCallix:
 
 
 
-    def processar_cliente(self, cliente:str, token: str):
+    def processar_cliente(self, cliente:str, token: str, json_tech: str):
         """
         Processa a coleta, limpeza e carga de um liente
         """
@@ -58,7 +58,7 @@ class PipelineCallix:
                 cliente=cliente_formatado, data=data_selecionada,
                 id_campanha=dados_brutos_api['Campanha']
             )
-            chamadas_brutas, agressividade_bruta, tech_cliente_json = req.requisicao_callix()
+            chamadas_brutas, agressividade_bruta = req.requisicao_callix()
 
             # limpeza
             dict_limpeza = processar_dados(
@@ -68,11 +68,13 @@ class PipelineCallix:
                 dados_brutos_api['Campanha']
             )
 
-            agressividade_limpa, chamadas_limpas, tech_suja = limpeza_req_callix(
+            agressividade_limpa, chamadas_limpas, tech_limpa = limpeza_req_callix(
                 json_agentes=chamadas_brutas,
                 json_agressividade=agressividade_bruta,
-                techs_json=tech_cliente_json.json()
+                techs_json=json_tech
             )
+
+            print("TECH PÓS LIMPEZA         -> " , tech_limpa)
 
             # emcapsulando
             empacotamento_callix = CallixClientData(
@@ -100,12 +102,15 @@ class PipelineCallix:
     def executar(self):
         logger.info("Iniciando callix")
         lista_tokens = self.get_ambiente()
+        get_clients = CallixGetClients()
         
         if not lista_tokens:
             raise RuntimeError("Sem clientes ou tokens")
         
         
         for info in lista_tokens:
-            self.processar_cliente(info['Cliente'], info['Token'])
-            print("FIM DO CICLO DA INFO, SEGUINDO PARA A PRÓXIMA")
+            tech = get_clients.teste_get_tech(info["Cliente"]) # funcional
+
+            self.processar_cliente(info['Cliente'], info['Token'], tech)
+
 

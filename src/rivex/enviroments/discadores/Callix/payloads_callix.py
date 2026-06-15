@@ -170,122 +170,28 @@ def gerar_headers_para_tokens(token, cliente):
         "x-timezone": "America/Sao_Paulo"
     }
     
-def payload_get_tech() -> dict:
-    """
-    Retorna os parâmetros utilizados na consulta de informações
-    técnicas da conta.
-    """
-
-    return {
-        "include": ",".join([
-            "nationalInboundNumberAsCallerId",
-            "nationalTenantRoute",
-            "internationalTenantRoute"
-        ]),
-
-        "fields[accounts]": ",".join([
-            "legalName",
-            "legalCode",
-            "municipalRegistryCode",
-            "stateRegistryCode",
-            "addressStreet",
-            "addressNumber",
-            "addressNeighborhood",
-            "addressComplement",
-            "addressZipCode",
-            "addressCity",
-            "addressState",
-            "agentMaxIdleDuration",
-            "businessPartners",
-            "contacts",
-            "nationalOutboundRouteUsage",
-            "nationalTenantCallerId",
-            "nationalInboundNumberAsCallerId",
-            "internationalOutboundRouteUsage",
-            "nationalTenantRoute",
-            "internationalTenantRoute",
-            "nationalOutboundRouteType",
-            "allowTenantGroupRoutes",
-            "mainTenantId",
-            "allowInternationalCalls",
-            "defaultQualificationId",
-            "transferQualificationId",
-            "afterCallQualificationId",
-            "clickToChatTerminateQualificationId",
-            "chatFinishedByNewActiveMessageQualificationId",
-            "defaultChatQualificationId",
-            "chatTimeoutQualificationId",
-            "didNotSpeakToAPersonQualificationId",
-            "didNotSpeakToRightPersonQualificationId",
-            "callDidNotEndWithSuccessQualificationId",
-            "endTrialDate",
-            "endOnboardingDate",
-            "status",
-            "metadata",
-            "entryDate",
-            "lastOperationDate",
-            "outboundRouteType1Enabled",
-            "outboundRouteType2Enabled",
-            "outboundRouteType3Enabled",
-            "outboundRouteType4Enabled",
-            "outboundRouteType5Enabled",
-            "outboundRouteType11LocalPrice",
-            "outboundRouteType11LdnPrice",
-            "outboundRouteType11MobilePrice",
-            "outboundRouteType12Enabled",
-            "outboundRouteType12LocalPrice",
-            "outboundRouteType12LdnPrice",
-            "outboundRouteType12MobilePrice",
-            "outboundRouteType13Enabled",
-            "assistantEnabled",
-            "assistantConfig",
-            "automaticCallTranscriptionEnabled",
-            "automaticCallTranscriptionConfig",
-            "transcriptionConfig",
-            "transcriptionDefinitions",
-            "outboundRouteType13LocalPrice",
-            "outboundRouteType13LdnPrice",
-            "outboundRouteType13MobilePrice",
-            "productVersion",
-            "transcriptionProviderType",
-            "stereoCallRecordingEnabled",
-            "shouldLogoutAgentByIdle",
-            "initialBreakId"
-        ]),
-
-        "fields[nationalInboundNumberAsCallerId]": "phone",
-
-        "fields[nationalTenantRoute]": ",".join([
-            "name",
-            "requiresCallerId"
-        ]),
-
-        "fields[internationalTenantRoute]": "name"
-    }
     
 def payload_get_tech(cliente: str):
+    print("CLIENTE SEM FILTRAGEM: ",cliente)
+
+    cliente = cliente.replace("contech", "")
+
+    print("CLIENTE APÓS A FILTRAGEM: ", cliente)
+
     filtro = (
         f"(:or,"
-        f"(name,:unaccentlike,`{cliente}`),"
-        f"(tenantOwner.name,:unaccentlike,`{cliente}`),"
-        f"(callProviderServer.callProvider.name,:unaccentlike,`{cliente}`)"
+        f"(name,:like,`%{cliente}%`),"
+        f"(tenantOwner.name,:like,`%{cliente}%`)"
         f")"
     )
-
     return {
         "include": "callProviderServer.callProvider",
         "sort": "name",
         "filter": filtro,
         "fields[outboundRoutes]": (
-            "name,"
-            "callProviderServer,"
-            "tenantOwner,"
-            "techPrefix,"
-            "sipUser,"
-            "enabled,"
-            "allowInternationalCalls,"
-            "localAreaCode,"
-            "mode"
+            "name,callProviderServer,tenantOwner,"
+            "techPrefix,sipUser,enabled,"
+            "allowInternationalCalls,localAreaCode,mode"
         ),
-        "page[limit]": 100
+        "page[limit]": 100,
     }

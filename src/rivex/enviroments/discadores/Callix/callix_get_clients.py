@@ -26,17 +26,18 @@ class CallixGetClients:
         return self.http_requisition.session
     
     def teste_get_tech(self, cliente):
+
+        self.login_ambiente_padrao()
         url_tech_teste = f"{self.url_geral}/api/v4/entities/outbound-routes"
         techs_clientes = self.http_requisition.requisicao_get(headers=headers_servidor_callix(),
                                                           url=url_tech_teste,
-                                                          payload_get=payload_get_tech_teste(cliente))
-        print("ATENÇÃO!!!! TECH DOS CLIENTES AQUI--->",techs_clientes.json())
+                                                          payload_get=payload_get_tech(cliente))
+
         return techs_clientes.json()
 
     def get_client_url(self):
         '''Função para retornar a url dos ambientes'''
         url_callix = f'{self.url_geral}/api/v4/tenants/sub-accounts'
-        print("URL PARA COLETAR AS URL: ",url_callix)
         url_clientes = self.http_requisition.requisicao_get(headers=headers_servidor_callix(),
                                                             url=url_callix,
                                                             payload_get=payload_servidor_callix())
@@ -60,14 +61,11 @@ class CallixGetClients:
         tokens_api = self.http_requisition.requisicao_get(url=url_tokens,
                                                       payload_get=payload_get_tokens(),
                                                       headers=headers_callix())
-        print("RESULTADO DA REQUISIÇÃO DE TOKENS DO AMBIENTE CALLIX: ", tokens_api.status_code)
-        print("TOKENS: ", tokens_api)
         return tokens_api
     
     def get_infos_callix(self):
         self.login_ambiente_padrao()
         url_clientes = self.get_client_url()
-        tech_cliente = self.teste_get_tech()
         return url_clientes  
     
 

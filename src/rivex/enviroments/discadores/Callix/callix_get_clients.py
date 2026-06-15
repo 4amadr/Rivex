@@ -24,6 +24,14 @@ class CallixGetClients:
                                               headers=headers_servidor_callix()
                                               )
         return self.http_requisition.session
+    
+    def teste_get_tech(self, cliente):
+        url_tech_teste = f"{self.url_geral}/api/v4/entities/outbound-routes"
+        techs_clientes = self.http_requisition.requisicao_get(headers=headers_servidor_callix(),
+                                                          url=url_tech_teste,
+                                                          payload_get=payload_get_tech_teste(cliente))
+        print("ATENÇÃO!!!! TECH DOS CLIENTES AQUI--->",techs_clientes.json())
+        return techs_clientes.json()
 
     def get_client_url(self):
         '''Função para retornar a url dos ambientes'''
@@ -59,6 +67,7 @@ class CallixGetClients:
     def get_infos_callix(self):
         self.login_ambiente_padrao()
         url_clientes = self.get_client_url()
+        tech_cliente = self.teste_get_tech()
         return url_clientes  
     
 

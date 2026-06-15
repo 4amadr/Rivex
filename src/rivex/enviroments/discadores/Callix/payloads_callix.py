@@ -262,3 +262,30 @@ def payload_get_tech() -> dict:
 
         "fields[internationalTenantRoute]": "name"
     }
+    
+def payload_get_tech(cliente: str):
+    filtro = (
+        f"(:or,"
+        f"(name,:unaccentlike,`{cliente}`),"
+        f"(tenantOwner.name,:unaccentlike,`{cliente}`),"
+        f"(callProviderServer.callProvider.name,:unaccentlike,`{cliente}`)"
+        f")"
+    )
+
+    return {
+        "include": "callProviderServer.callProvider",
+        "sort": "name",
+        "filter": filtro,
+        "fields[outboundRoutes]": (
+            "name,"
+            "callProviderServer,"
+            "tenantOwner,"
+            "techPrefix,"
+            "sipUser,"
+            "enabled,"
+            "allowInternationalCalls,"
+            "localAreaCode,"
+            "mode"
+        ),
+        "page[limit]": 100
+    }

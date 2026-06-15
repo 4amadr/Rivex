@@ -79,6 +79,8 @@ class CAllixRequisition:
         print("TECH COLETADA DOS CLIENTE EM FORMATO JSON: ",tech_cliente.json())
         return tech_cliente
 
+        
+
     def requisicao_callix(self):
         url_login, url_chamadas_agentes, url_agressividade, url_base, url_get_tech = self.url_callix()
         

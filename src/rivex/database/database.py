@@ -1,49 +1,60 @@
 from src.rivex.utils.database_utils.database_config import DatabaseConfig
-
+import psycopg2
 
 class DatabaseRivex:
     def __init__(self):
-        pass
+        self.db_config = {
+            "host": "localhost",
+            "database": "meu_banco",
+            "user": "nome_usuario",
+            "password": "senha",
+            "port": "5432"
+        }
+        self.query_chamadas = {
+            """
+            INSERT INTO chamadas_cliente (tech, cliente_nome, data, chamadas, completas, recusadas, abandonadas, agressividade)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+
+"""
+        }
+        self.query_agentes = {
+            """
+            INSERT INTO chamadas_agente (tech, cliente_nome, data, nome_agente, chamadas_agente)
+            VALUES (%s, %s, %s, %s, %s)
+
+"""
+        }
+
+    def abrir_banco(self):
+        connection = psycopg2.connect(**self.db_config)
+        print("Conectado ao banco de dados")
+        cursor = connection.cursor
+        return cursor
     
-    @staticmethod
-    def coleta_chamadas(conexao, dados_equipe: dict):
-        dc = DatabaseConfig()
-
-        
-        if conexao is None:
-            return
+    def envio_banco(self, chamadas: dict, desempenho_do_agente: list, cursor):
         try:
-            dc.inserir_dicionario_no_banco_de_dados(conexao=conexao, dados_equipe=dados_equipe)
-        finally:
-            print("Tentativa finalizada de inserir dados no banco de chamadas")
-        return conexao
+            print("Enviando dados de chamadas para o banco de dados")
+            cursor.execute(self.query_chamadas, chamadas)
+            print("Chamadas enviadas para o banco de dados!")
+        except psycopg2.Error as erro_de_envio_de_chamadas:
+            print(f"Erro ao enviar chamadas para o banco de dados! {erro_de_envio_de_chamadas}")
         
-    def coleta_agentes(conexao, cliente, data, dados_agentes: dict):
-        dc = DatabaseConfig()
-
-        if conexao is not None:
-            try:
-                dc.inserir_chamadas_e_agentes_db(cliente, data, conexao, dados_agentes)
-            finally:
-                print('Tentativa finalizada no banco de agentes e chamadas')
-        return conexao
-        
-    @staticmethod  
-    def coleta_callix(data, cliente, chamadas: dict, agressividade: dict, dados_agentes: dict):
-        dc = DatabaseConfig()
-        conexao = dc.conect_database()
-        
-        if conexao is None:
-            return
         try:
-            dc.chamadas_callix(data, cliente, conexao, chamadas, agressividade)
-            dc.dados_agentes_callix(cliente, data, conexao, dados_agentes)
-        finally:
-            dc.fechar_conexao(conexao)
-            
-    @staticmethod            
-    def fechar_conexao_vonix(conexao):
-        # fechar a conexão do banco Vonix
+            print("Enviando dados de desempenho dos agentes para o banco de dados")
+            for desempenho in desempenho_do_agente:
+                cursor.execute(self.query_agentes, desempenho)
+                print("Dados de agentes enviados para o banco de dados!")
+        except psycopg2.Error as erro_envio_dados_agentes:
+            print(f"Erro ao enviar dados de agentes para o banco de dados {erro_envio_dados_agentes}")
+        return True
+    
+    def fechar_db(self, cursor, conexao):
         if conexao:
+            cursor.close()
             conexao.close()
-            print("Conexão fechada NO VONIX") 
+            print("Conexão fechada com o DB")
+    
+
+
+            
+            

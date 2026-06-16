@@ -21,6 +21,7 @@ class PipelineCallix:
         self.data=DateConfig()
         self.login=os.getenv("USUARIO_CALLIX_GERAL")
         self.senha=os.getenv("SENHA_CALLIX_GERAL")
+        self.banco_callix=DatabaseRivex()
 
     def get_ambiente(self):
         '''
@@ -37,7 +38,7 @@ class PipelineCallix:
 
 
 
-    def processar_cliente(self, cliente:str, token: str, json_tech: str):
+    def processar_cliente(self, cliente:str, token: str, json_tech: str, cursor):
         """
         Processa a coleta, limpeza e carga de um liente
         """
@@ -85,11 +86,12 @@ class PipelineCallix:
                 agentes_info=chamadas_limpas
             )
             dict_chamadas = empacotamento_callix.pacote_chamadas()
-            dict_agentes = empacotamento_callix.pacote_agentes()
+            lista_agentes = empacotamento_callix.pacote_agentes()
             
 
             # carregar
             logger.info("Enviando dados estruturados para o banco de dados")
+            self.banco_callix.envio_banco(chamadas=dict_chamadas, desempenho_do_agente=lista_agentes, cursor=cursor)
 
         except Exception as e:
             logger.error(f"Falha ao processar o cliente {cliente_formatado}. Erro {e}", exc_info=True)
@@ -102,10 +104,16 @@ class PipelineCallix:
         if not lista_tokens:
             raise RuntimeError("Sem clientes ou tokens")
         
+        print("Abrindo banco de dados")
+        cursor = self.banco_callix.abrir_banco()
+        
         
         for info in lista_tokens:
             tech = get_clients.teste_get_tech(info["Cliente"])
 
-            self.processar_cliente(info['Cliente'], info['Token'], tech)
+            self.processar_cliente(info['Cliente'], info['Token'], tech, cursor)
+        print("Fechando banco de dados")
+        self.banco_callix.fechar_db(cursor=cursor)
+
 
 

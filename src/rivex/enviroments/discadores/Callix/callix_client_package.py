@@ -30,16 +30,32 @@ class CallixClientData:
         return dict_chamadas
     
     def pacote_agentes(self):
+        print("Informação dos agentes: ", self.agentes_info)
+
+        lista_agentes = []
+
+        if not self.agentes_info:
+            return [{
+                "Cliente": self.cliente,
+                "Data": self.data,
+                "Nome do agente": "Sem agente",
+                "Chamadas aceitas do agente": 0,
+            }]
+
         for dicionario_agente in self.agentes_info:
-            print("AGENTES INFOOOOOOOOOOOOOOOOOO: ", self.agentes_info)
+
+
             for agente, chamada_aceita in dicionario_agente.items():
-                print("DICIONARIO DO AGENTEEEEEEEEEEEEEEEEEEEEE: ", dicionario_agente)
+
                 dict_agentes = {
                     "Cliente": self.cliente,
                     "Data": self.data,
-                    "Nome do agente": agente,
-                    "Chamadas aceitas do agente": chamada_aceita,
+                    "Nome do agente": dicionario_agente.get("agente"),
+                    "Chamadas aceitas do agente": dicionario_agente.get("Chamadas atendidas", 0),
                 }
-                lista_agentes = [dict_agentes]
-        print("Dicionário dos dos agentes: ", lista_agentes)
+
+
+                lista_agentes.append(dict_agentes)
+
+        print("Dicionário dos agentes: ", lista_agentes)
         return lista_agentes

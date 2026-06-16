@@ -71,13 +71,6 @@ class CAllixRequisition:
                                         )
             lista_json_agressividade.append(agressividade)
         return lista_json_agressividade
-    
-    """def get_tech(self, url_tech, token):
-        tech_cliente = self.http_request.requisicao_get(headers=headers_callix(token),
-                                                         url=url_tech,
-                                                         payload_get=payload_get_tech())
-        print("TECH COLETADA DOS CLIENTE EM FORMATO JSON: ",tech_cliente.json())
-        return tech_cliente"""
 
         
 

@@ -18,7 +18,6 @@ class CallixGetClients:
     def login_ambiente_padrao(self):
         '''Loga no ambiente padrão e retorna a sessão'''
         url_login = f"{self.url_geral}/api/v4/auth/session"
-        print("URL DE LOGIN: ", url_login)
         login = self.http_requisition.requisicao_post_json(url=url_login,
                                               payload_post=payload_login_callix(login_ambiente=self.usuario, password=self.senha),
                                               headers=headers_servidor_callix()
@@ -99,7 +98,6 @@ class GetTokenCallix:
     def fluxo_de_tokens(self):
         lista_tokens = []
         for selecao_cliente in self.cliente:
-            print("Cliente da vez", selecao_cliente)
             
             # login no ambiente
             token_login = self.login_callix(selecao_cliente)

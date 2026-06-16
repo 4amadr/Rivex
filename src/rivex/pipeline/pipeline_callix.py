@@ -29,7 +29,7 @@ class PipelineCallix:
         get_infos = CallixGetClients()
         url_clientes = get_infos.get_infos_callix()
         clientes_ativos = clientes_ativos_callix(url_clientes.json())
-        print('CLIENTES ATIVOS:  ',clientes_ativos)
+        print('Clientes ativos no callix:  ',clientes_ativos)
         get_token = GetTokenCallix(clientes_ativos)
         lista_infos_clientes = get_token.fluxo_de_tokens()
         
@@ -42,7 +42,7 @@ class PipelineCallix:
         Processa a coleta, limpeza e carga de um liente
         """
         cliente_formatado=cliente.removeprefix("contech.callix.com.br")
-        logger.info(f"Coletando dados do cliente -> {cliente_formatado}")
+        logger.info(f"Coletando dados do cliente: {cliente_formatado}")
 
 
 
@@ -51,7 +51,6 @@ class PipelineCallix:
             # Extração
             api = CallixAPICollector(cliente, token, data_selecionada)
             dados_brutos_api = api.api_callix() # dict
-            print("ID DA CAMPANHA: ", dados_brutos_api["Campanha"])
 
             req = CAllixRequisition(
                 login=self.login, senha=self.senha,
@@ -74,8 +73,6 @@ class PipelineCallix:
                 techs_json=json_tech
             )
 
-            print("TECH PÓS LIMPEZA         -> " , tech_limpa)
-
             # emcapsulando
             empacotamento_callix = CallixClientData(
                 cliente=cliente_formatado,
@@ -89,8 +86,6 @@ class PipelineCallix:
             )
             dict_chamadas = empacotamento_callix.pacote_chamadas()
             dict_agentes = empacotamento_callix.pacote_agentes()
-            print("CHAMADAAAAAAAAAAS: ", dict_chamadas)
-            print("AGENTEEEEEEEEEEEEEEES: ", dict_agentes)
             
 
             # carregar
@@ -109,7 +104,7 @@ class PipelineCallix:
         
         
         for info in lista_tokens:
-            tech = get_clients.teste_get_tech(info["Cliente"]) # funcional
+            tech = get_clients.teste_get_tech(info["Cliente"])
 
             self.processar_cliente(info['Cliente'], info['Token'], tech)
 

@@ -47,9 +47,9 @@ class HttpRequisitions:
             coleta = self.session.get(url, params=payload_get, headers=headers,)
             # verificação se há erros nos status_code
             if coleta.status_code == 200:
-                print("Requisição valida")
                 return coleta
             else:
+                print("Requisição inválida")
                 print(coleta.status_code)
                 analista_de_erros(coleta.status_code)
                 return coleta

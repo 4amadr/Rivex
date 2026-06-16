@@ -172,11 +172,9 @@ def gerar_headers_para_tokens(token, cliente):
     
     
 def payload_get_tech(cliente: str):
-    print("CLIENTE SEM FILTRAGEM: ",cliente)
-
     cliente = cliente.replace("contech", "")
 
-    print("CLIENTE APÓS A FILTRAGEM: ", cliente)
+    print("Cliente selecionado: ", cliente)
 
     filtro = (
         f"(:or,"

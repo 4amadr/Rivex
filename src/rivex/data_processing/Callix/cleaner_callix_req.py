@@ -54,7 +54,7 @@ def limpar_agressividade(json_agressividade): # por enquanto vai retornar a medi
 
     media = round(sum(lista_agressividade) / len(lista_agressividade), 2) if lista_agressividade else 0.0
 
-    return {"agressividade": media}
+    return media
 
 def  limpeza_techs_callix(techs_json):
     '''

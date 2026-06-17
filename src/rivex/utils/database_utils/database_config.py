@@ -14,7 +14,7 @@ class DatabaseConfig:
                 dbname = os.getenv('database_tokens'),
                 user = os.getenv('user_database_tokens'),
                 port = os.getenv('port_database_tokens'),
-                host = os.getenv('host_datanase_tokens'),
+                host = os.getenv('host_database_tokens'),
             )
             print('Conectado no banco de dados!')
             return conect

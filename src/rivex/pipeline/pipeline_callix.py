@@ -76,6 +76,7 @@ class PipelineCallix:
 
             # emcapsulando
             empacotamento_callix = CallixClientData(
+                tech=tech_limpa,
                 cliente=cliente_formatado,
                 chamadas=dict_limpeza["Chamadas totais"],
                 aceitas=dict_limpeza["Chamadas aceitas"],
@@ -97,16 +98,16 @@ class PipelineCallix:
             logger.error(f"Falha ao processar o cliente {cliente_formatado}. Erro {e}", exc_info=True)
 
     def executar(self):
+        print("Abrindo banco de dados")
+        cursor = self.banco_callix.abrir_banco()
+
+
         logger.info("Iniciando callix")
         lista_tokens = self.get_ambiente()
         get_clients = CallixGetClients()
         
         if not lista_tokens:
             raise RuntimeError("Sem clientes ou tokens")
-        
-        print("Abrindo banco de dados")
-        cursor = self.banco_callix.abrir_banco()
-        
         
         for info in lista_tokens:
             tech = get_clients.teste_get_tech(info["Cliente"])

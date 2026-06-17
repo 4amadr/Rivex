@@ -1,41 +1,60 @@
 from src.rivex.utils.database_utils.database_config import DatabaseConfig
 import psycopg2
+from psycopg2 import OperationalError
+from dotenv import load_dotenv
+import os
+import logging
+
+log = logging.getLogger(__name__)
+
+
 
 class DatabaseRivex:
     def __init__(self):
-        self.db_config = {
-            "host": "localhost",
-            "database": "meu_banco",
-            "user": "nome_usuario",
-            "password": "senha",
-            "port": "5432"
-        }
-        self.query_chamadas = {
+        load_dotenv()
+        self._config = self._carrecar_banco()
+        self.query_chamadas = """
+            INSERT INTO dados_discador.chamadas_cliente (tech_cliente, cliente_nome, data, chamadas, completas, recusadas, abandonadas, agressividade)
+            VALUES (%(tech)s, %(Cliente)s, %(Data)s, %(Chamadas totais)s, %(Chamadas aceitas)s, %(Chamadas recusadas)s, %(Chamadas abandonadas)s, %(Agressividade)s)
             """
-            INSERT INTO chamadas_cliente (tech, cliente_nome, data, chamadas, completas, recusadas, abandonadas, agressividade)
-            VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
-
-"""
-        }
-        self.query_agentes = {
+        
+        self.query_agentes = """
+            INSERT INTO dados_discador.chamadas_agente (tech, cliente_nome, data, nome_agente, chamadas_agente)
+            VALUES (%(tech)s, %(Cliente)s, %(Data)s, %(Nome do agente)s, %(Chamadas aceitas do agente)s)
             """
-            INSERT INTO chamadas_agente (tech, cliente_nome, data, nome_agente, chamadas_agente)
-            VALUES (%s, %s, %s, %s, %s)
-
-"""
+        
+    
+    def _carrecar_banco(self) -> dict:
+        return {
+            "host": os.getenv("HOST_DB"),
+            "database": os.getenv("DATABASE_CONTECH"),
+            "user": os.getenv("USER_DB"),
+            "password": os.getenv("SENHA_DB"),
+            "port": os.getenv("PORT_DB")
         }
 
     def abrir_banco(self):
-        connection = psycopg2.connect(**self.db_config)
-        print("Conectado ao banco de dados")
-        cursor = connection.cursor
-        return cursor
+        try:
+            self.connection = psycopg2.connect(**self._config)
+            print("Conectado ao banco de dados")
+            return self.connection.cursor()
+        except OperationalError as erro_banco:
+            log.error(f"Erro {erro_banco} ao conectar com o banco de dados, verifique as suas credenciais.")
+        except UnicodeDecodeError as erro_decode:
+            log.error(f"Erro de encoding nas variaveis de ambiente: {erro_decode}")
+            raise
+        except psycopg2.OperationalError as erro_operacao:
+            log.error(f"Erro ao se conectar com o banco de dados: {erro_operacao}")
+            raise
+            
     
     def envio_banco(self, chamadas: dict, desempenho_do_agente: list, cursor):
         try:
             print("Enviando dados de chamadas para o banco de dados")
+            print(type(self.query_chamadas))
             cursor.execute(self.query_chamadas, chamadas)
             print("Chamadas enviadas para o banco de dados!")
+            self.connection.commit()
         except psycopg2.Error as erro_de_envio_de_chamadas:
             print(f"Erro ao enviar chamadas para o banco de dados! {erro_de_envio_de_chamadas}")
         

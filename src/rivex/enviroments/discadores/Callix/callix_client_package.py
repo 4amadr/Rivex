@@ -4,7 +4,8 @@ class CallixClientData:
     1 - Dict cliente: id, fila, chamadas totais, chamadas aceitas, chamadas recusadas, chamadas abandonadas, agressividade e data
     2 - Dict agente: id, fila, nome agente, chamadas_aceitas_agente
     '''
-    def __init__(self, cliente, chamadas, aceitas, recusadas, abandonadas, agressividade, data, agentes_info):
+    def __init__(self, cliente, chamadas, aceitas, recusadas, abandonadas, agressividade, data, agentes_info, tech):
+        self.tech = tech
         self.cliente = cliente
         self.chamadas = chamadas
         self.aceitas = aceitas
@@ -18,6 +19,7 @@ class CallixClientData:
 
     def pacote_chamadas(self):
         dict_chamadas =  {
+            "tech": self.tech,
             "Cliente": self.cliente,
             "Data": self.data,
             "Chamadas totais": self.chamadas,
@@ -36,6 +38,7 @@ class CallixClientData:
 
         if not self.agentes_info:
             return [{
+                "tech": self.tech,
                 "Cliente": self.cliente,
                 "Data": self.data,
                 "Nome do agente": "Sem agente",
@@ -48,6 +51,7 @@ class CallixClientData:
             for agente, chamada_aceita in dicionario_agente.items():
 
                 dict_agentes = {
+                    "tech": self.tech,
                     "Cliente": self.cliente,
                     "Data": self.data,
                     "Nome do agente": dicionario_agente.get("agente"),

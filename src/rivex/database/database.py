@@ -16,11 +16,20 @@ class DatabaseRivex:
         self.query_chamadas = """
             INSERT INTO dados_discador.chamadas_cliente (tech_cliente, cliente_nome, data, chamadas, completas, recusadas, abandonadas, agressividade)
             VALUES (%(tech)s, %(Cliente)s, %(Data)s, %(Chamadas totais)s, %(Chamadas aceitas)s, %(Chamadas recusadas)s, %(Chamadas abandonadas)s, %(Agressividade)s)
+            ON CONFLICT (tech_cliente, data)
+            DO UPDATE SET
+            chamadas = EXCLUDED.chamadas,
+            completas = EXCLUDED.completas,
+            recusadas = EXCLUDED.recusadas,
+            abandonadas = EXCLUDED.abandonadas,
+            agressividade = EXCLUDED.agressividade;
             """
-        
         self.query_agentes = """
             INSERT INTO dados_discador.chamadas_agente (tech, cliente_nome, data, nome_agente, chamadas_agente)
-            VALUES (%(tech)s, %(Cliente)s, %(Data)s, %(Nome do agente)s, %(Chamadas aceitas do agente)s)
+            SELECT %(tech)s, %(Cliente)s, %(Data)s, %(Nome do agente)s, %(Chamadas aceitas do agente)s
+            ON CONFLICT (tech, data, nome_agente)
+            DO UPDATE SET
+            chamadas_agente = EXCLUDED.chamadas_agente;
             """
         
     
@@ -37,7 +46,7 @@ class DatabaseRivex:
         try:
             self.connection = psycopg2.connect(**self._config)
             print("Conectado ao banco de dados")
-            return self.connection.cursor()
+            return self.connection.cursor(), self.connection
         except OperationalError as erro_banco:
             log.error(f"Erro {erro_banco} ao conectar com o banco de dados, verifique as suas credenciais.")
         except UnicodeDecodeError as erro_decode:
@@ -46,7 +55,6 @@ class DatabaseRivex:
         except psycopg2.OperationalError as erro_operacao:
             log.error(f"Erro ao se conectar com o banco de dados: {erro_operacao}")
             raise
-            
     
     def envio_banco(self, chamadas: dict, desempenho_do_agente: list, cursor):
         try:

@@ -99,7 +99,7 @@ class PipelineCallix:
 
     def executar(self):
         print("Abrindo banco de dados")
-        cursor = self.banco_callix.abrir_banco()
+        cursor, conexao = self.banco_callix.abrir_banco()
 
 
         logger.info("Iniciando callix")
@@ -114,7 +114,7 @@ class PipelineCallix:
 
             self.processar_cliente(info['Cliente'], info['Token'], tech, cursor)
         print("Fechando banco de dados")
-        self.banco_callix.fechar_db(cursor=cursor)
+        self.banco_callix.fechar_db(cursor=cursor, conexao=conexao)
 
 
 

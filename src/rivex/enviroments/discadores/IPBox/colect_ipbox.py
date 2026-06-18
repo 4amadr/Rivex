@@ -53,8 +53,8 @@ class IpboxInit:
             cliente_ipbox = self.http_client.requisicao_get(payload_get=payload_get_clientes,
                                                 headers=headers_ipbox(),
                                                 url=url_get_clientes)
-            filtro =  lista_de_clientes_para_filtragem(cliente_ipbox) 
-            return filtro
+            print("RESPOSTA DA REQUISIÇÃO DOS CLIENTES: ", cliente_ipbox)
+            return cliente_ipbox
         except Exception as e:
             logger.error("Falha ao tentar coletar clientes do IPBOX", exc_info=True)
             raise ConnectionError(f"Erro ao buscar clientes: {e}")
@@ -65,21 +65,14 @@ class IpboxInit:
         """
         sessao_logada = self.login_ipbox()
         clientes_ativos = self.buscar_lista_clientes()
-        print(clientes_ativos)
-        
+
         logger.info("Base IPBOX finalizada e pronta para uso.")
-        print(type(clientes_ativos))
         
         # Retorna os dados agrupados de forma segura e limpa
         return sessao_logada, clientes_ativos
 
 
 class IpboxClientConfig:
-    IpboxCollectData = NamedTuple("IpboxCollectData", [
-        ("agressividade_html", str),
-        ("chamadas", Response),
-        ("agentes", Response)
-    ])
 
     def __init__(self, url, login, senha, data, data_agentes, sessao_anterior, token):
         self.url = url.rstrip('/')
@@ -109,9 +102,12 @@ class IpboxClientConfig:
                                                payload_get={})
 
     def get_relatorio_chamadas(self, url_relatorio_chamadas, nome_cliente): # coleta feita com API disponibilizada na documentação do ambiente
-        return self.http_client.requisicao_post(headers=headers_api_telefonia(self.token),
+        chamadas = self.http_client.requisicao_post(headers=headers_api_telefonia(self.token),
                                           payload_post=payload_api_telefonia(self.data, nome_cliente),
                                           url=url_relatorio_chamadas)
+        print("CHAMADAS:   ", chamadas)
+        print("PAYLOAD:   ", payload_api_telefonia(self.data, nome_cliente))
+        return chamadas
 
     def get_relatorio_agente(self, url_relatorio_agentes):
         return self.http_client.requisicao_post(headers=headers_api_telefonia(self.token),
@@ -119,7 +115,7 @@ class IpboxClientConfig:
                                          url=url_relatorio_agentes)
 
     def execucao_ipbox(self, nome_cliente, id_cliente):
-        print(nome_cliente)
+        print("NOME DO CLIENTE: ",nome_cliente)
         url_agressividade, url_relatorio_chamadas, url_relatorio_agentes = self.gerador_de_url_configs(id_cliente)
 
 
@@ -127,9 +123,10 @@ class IpboxClientConfig:
         chamadas = self.get_relatorio_chamadas(url_relatorio_chamadas, nome_cliente)
         agentes = self.get_relatorio_agente(url_relatorio_agentes)
 
-        return self.IpboxCollectData(
-            agressividade_html=agressividade.text,
-            chamadas=chamadas,
-            agentes=agentes
-        )
+        print("AGRESSIVIDADE: ", agressividade)
+        print("CHAMADAS: ", chamadas)
+        print("AGENTES: ", agentes)
+
+        return agressividade.text,chamadas.text ,agentes.text
+
 

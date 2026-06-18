@@ -10,7 +10,7 @@ class DateConfig:
         return data_formatada
     
     def data_callix(self):
-        data_ref = date.today() - timedelta(days=1)
+        data_ref = date.today() - timedelta(days=2)
         data_formatada = data_ref.strftime("%Y-%m-%d")
         print('Dia de coleta: ', data_formatada)
         return data_formatada

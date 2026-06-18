@@ -44,21 +44,16 @@ class PipelineIpbox:
         try:
             nome_cliente = cliente
             agressividade, chamadas, agentes = ipbox_client.execucao_ipbox(nome_cliente=nome_cliente, id_cliente=id_cliente)
-            
-            agressividade_limpa = limpeza_agressividade(agressividade_html=agressividade)
-            desempenho_agente = limpeza_agentes_ipbox(agentes.json())
-            estatisticas_chamadas = limpeza_chamadas_ipbox(chamadas.json())
-            print("Estatisticas de chamadas: ", estatisticas_chamadas)
-            print(f"Desempenho dos agentes da equipe {cliente}", desempenho_agente)
-            print(f"Agressividade da equipe {cliente}: ", agressividade_limpa)
-            
-            print(f"Dados processados para {nome_cliente}")
+            print("Agressividade: ",agressividade)
+            print("Chamadas: ",chamadas)
+            print("Agentes: ", agentes)
         except Exception as e:
             logger.error(f"Erro ao procesar o cliente {cliente}: {e}", exc_info=True)
             
     def executar(self):
         print('Iniciando a configuração do servidor IPBOX.....')
         sessao_logada, lista_clientes = self.autenticar_e_listar_clientes()
+        
 
         
         print('Iniciando a coleta de dados dos clientes...')
@@ -71,8 +66,9 @@ class PipelineIpbox:
             sessao_anterior=sessao_logada,
             token=self.token
         )
-        for cliente, id_cliente in lista_clientes:
+        for cliente in lista_clientes:
+            print(cliente)
             
-            self.processar_cliente(cliente, ipbox_client, id_cliente)
+            self.processar_cliente(cliente, ipbox_client, cliente)
             time.sleep(5)
             

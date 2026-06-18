@@ -85,7 +85,8 @@ def main_agitel():
         id_clientes -> Id de cada cliente, nome do cliente
         '''
         custo_minutagem_por_cliente, id_clientes = sc.execucao_pipeline_sip()
-        clientes_mapeados = mapeamento_clientes(id_clientes.json())
+        #print(id_clientes.text)
+        clientes_mapeados = mapeamento_clientes(id_clientes.text)
         
         #Limpeza de dados
         clientes_mapeados, resultado_custos = limpeza_de_dados_base(id_clientes.json(),
@@ -171,7 +172,7 @@ def main_callix():
 
 #exec_ipbox = main_ipbox()
 #exec_pentagono = main_pentagono()
-#exec_agitel = main_agitel()
+exec_agitel = main_agitel()
 #exec_gs = main_gs()
 #dados_vonix = main_vonix()
-dados_callix = main_callix()
+#dados_callix = main_callix()

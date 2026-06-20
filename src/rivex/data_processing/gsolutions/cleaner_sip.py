@@ -1,18 +1,25 @@
 from bs4 import BeautifulSoup
+import json
+import re 
 
-def mapeamento_clientes(json_clientes):
+def mapeamento_clientes(clientes_html):
+    dados = json.loads(clientes_html)
+
     return [
-        {"Cliente": info['value'],
-         "id": info['id'],
-        }
-         for info in json_clientes]
-        
-def limpeza_custo(html_custos):
+        {"Tech": re.sub(r"\D", "",dado["value"]),
+         "Cliente": dado["value"],
+         "id": dado["id"]
+         }
+        for dado in dados
+        ]
+    
+    
+def limpeza_consumo(html_consumo):
     '''
     Recebe o HTML da página e 
     retorna uma lista de dicts: cliente, minutagem, custo
     '''
-    soup = BeautifulSoup(html_custos, 'html.parser')
+    soup = BeautifulSoup(html_consumo, 'html.parser')
     
     tabelas = soup.find_all("table", class_="tabela_azul")
     
@@ -47,13 +54,13 @@ def limpeza_tarifadas(lista_html):
     for html in lista_html:
         soup = BeautifulSoup(html, 'html.parser')
         tag = soup.find(id='total_registros_texto')
-        
         if tag:
-            import re
             numero = re.search(r'\d+', tag.get_text())
             resultados.append(numero.group() if numero else None)
-        else:
-            resultados.append(None)
+        if tag == None:
+            tag = 0
+            resultados.append(tag)
+
     return resultados
 
 def junta_clientes(tarifadas: list, resultado_custos: dict):
@@ -69,12 +76,12 @@ def junta_clientes(tarifadas: list, resultado_custos: dict):
     
 def limpeza_de_dados_base(json_clientes, html_custos):
     clientes_mapeados = mapeamento_clientes(json_clientes)
-    resultado_custos = limpeza_custo(html_custos)
+    consumo = limpeza_consumo(html_custos)
+    print("CLIENTES MAPEADOS: ", clientes_mapeados)
    
-    return clientes_mapeados, resultado_custos
+    return clientes_mapeados, consumo
 
-def limpeza_de_dados_final(lista_html, resultado_custos: dict):
+def limpeza_de_dados_final(lista_html):
     tarifadas = limpeza_tarifadas(lista_html)
-    dict_dados = junta_clientes(tarifadas, resultado_custos)
-    return dict_dados
+    return tarifadas
     

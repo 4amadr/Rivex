@@ -62,9 +62,9 @@ class SipClient:
     def execucao_pipeline_sip(self):
         url_de_login, url_filtragem, url_get_id,url_chamadas_tarifadas, url_a_toa, url_id_do_cliente = self.gerar_url()
         self.login(url_de_login=url_de_login)
-        custo_minutagem = self.filtrar_dados(url_filtragem)
+        consumo = self.filtrar_dados(url_filtragem)
         id_clientes = self.get_id_do_cliente(url_id_do_cliente)
-        return custo_minutagem, id_clientes
+        return consumo, id_clientes
 
 class SipCharged:
     def __init__(self, data, url_base, usuario, password):
@@ -96,9 +96,7 @@ class SipCharged:
         '''
         lista_ids_online = []
         for cliente in cliente_online:
-            for id_usuario in id_clients:                
-                if cliente["Cliente"] == id_usuario["Cliente"]:
-                    lista_ids_online.append(id_usuario["id"])
+                lista_ids_online.append(cliente["id"])
         return lista_ids_online
         
         

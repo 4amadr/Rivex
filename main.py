@@ -80,26 +80,24 @@ def main_agitel():
             password=os.getenv('AGITEL_PASSWORD'),
             
         )
-        ''' coleta que retorna:
-        consumo_cliente -> Clientes online, Minutagem e custo.
-        id_clientes -> Id de cada cliente, nome do cliente
-        '''
-        custo_minutagem_por_cliente, id_clientes = sc.execucao_pipeline_sip()
-        #print(id_clientes.text)
-        clientes_mapeados = mapeamento_clientes(id_clientes.text)
+        # execução
+        consumo_por_cliente, id_clientes = sc.execucao_pipeline_sip()
         
-        #Limpeza de dados
-        clientes_mapeados, resultado_custos = limpeza_de_dados_base(id_clientes.json(),
-                                                                    custo_minutagem_por_cliente.text
-                                                                                )
+        # limpeza
+        clientes_ativos = mapeamento_clientes(id_clientes.text) # list
+        #print("CONSUMO POR CLIENTE:       ", consumo_por_cliente.text)
+        print("IDS DO CLIENTE: ", id_clientes)
+        print("CONSUMO POR CLIENTE: ", clientes_ativos)
+        clientes, consumo = limpeza_de_dados_base(id_clientes.text, consumo_por_cliente.text)
+        print("CONSUMO AQUI: ",consumo)
         
-        '''
-        Desempacotando dicionários para usar na próxima função que retorna as chamadas tarifadas
-        ids_online é a lista de ids referente aos clientes que tiveram consumo no dia selecionado
-        '''
-        chamadas_tarifadas = sch.execucao_sip_tarifas(resultado_custos, clientes_mapeados)
-        lista_dados = limpeza_de_dados_final(chamadas_tarifadas, resultado_custos)
-        print(lista_dados)
+        tarifas = sch.execucao_sip_tarifas(clientes_ativos, id_clientes)
+                
+        tarifas_limpas = limpeza_de_dados_final(tarifas)
+        print("TARIFAS: ", tarifas_limpas)
+        
+        
+
 
 def main_pentagono():
     dc = DateConfig()

@@ -13,6 +13,29 @@ class DatabaseRivex:
     def __init__(self):
         load_dotenv()
         self._config = self._carrecar_banco()
+        self.criar_tabela_chamadas = """
+        CREATE TABLE IF NOT EXISTS dados_discador.chamadas_cliente (
+            tech_cliente INTEGER NOT NULL,
+            cliente_nome TEXT NOT NULL,
+            data DATE NOT NULL,
+            chamadas INTEGER NOT NULL,
+            completas INTEGER NOT NULL,
+            recusadas INTEGER NOT NULL,
+            abandonadas INTEGER NOT NULL,
+            agressividade FLOAT NOT NULL,
+            PRIMARY KEY (tech_cliente, data)
+        );
+        """
+        self.criar_tabela_agentes = """
+        CREATE TABLE IF NOT EXISTS dados_discador.chamadas_agente (
+            tech INTEGER NOT NULL,
+            cliente_nome TEXT NOT NULL,
+            data DATE NOT NULL,
+            nome_agente TEXT NOT NULL,
+            chamadas_agente INTEGER NOT NULL,
+            PRIMARY KEY (tech, data, nome_agente)
+        );
+        """
         self.query_chamadas = """
             INSERT INTO dados_discador.chamadas_cliente (tech_cliente, cliente_nome, data, chamadas, completas, recusadas, abandonadas, agressividade)
             VALUES (%(tech)s, %(Cliente)s, %(Data)s, %(Chamadas totais)s, %(Chamadas aceitas)s, %(Chamadas recusadas)s, %(Chamadas abandonadas)s, %(Agressividade)s)
@@ -31,8 +54,25 @@ class DatabaseRivex:
             DO UPDATE SET
             chamadas_agente = EXCLUDED.chamadas_agente;
             """
-        
-    
+        self.criar_tabela_operadora = """
+        CREATE TABLE IF NOT EXISTS dados_operadora.consumo_clientes (
+            tech INTEGER NOT NULL,
+            data DATE NOT NULL,
+            custo INTEGER NOT NULL,
+            minutagem INTEGER NOT NULL,
+            chamadas_tarifadas INTEGER NOT NULL,
+            PRIMARY KEY (tech, data)
+            );
+        """
+        self.inserir_consumo = """
+        INSERT INTO dados_operadora.consumo_clientes (tech, data, custo, minutagem, chamadas_tarifadas)
+            SELECT %(tech)s, %(data)s, %(custo)s, %(minutagem)s, %(chamadas_tarifadas)s
+            ON CONFLICT (tech, data)
+            DO UPDATE SET
+            custo = EXCLUDED.custo,
+            minutagem = EXCLUDED.minutagem,
+            chamadas_tarifadas = EXCLUDED.chamadas_tarifadas;
+        """
     def _carrecar_banco(self) -> dict:
         return {
             "host": os.getenv("HOST_DB"),
@@ -58,8 +98,15 @@ class DatabaseRivex:
     
     def envio_banco(self, chamadas: dict, desempenho_do_agente: list, cursor):
         try:
+            cursor.execute(self.criar_tabela_chamadas)
+            cursor.execute(self.criar_tabela_agentes)
+            self.connection.commit()
+        except psycopg2.Error as erro_criacao_tabela:
+            log.error(f"Erro ao criar tabelas: {erro_criacao_tabela}")
+            
+            
+        try:
             print("Enviando dados de chamadas para o banco de dados")
-            print(type(self.query_chamadas))
             cursor.execute(self.query_chamadas, chamadas)
             print("Chamadas enviadas para o banco de dados!")
             self.connection.commit()
@@ -67,13 +114,28 @@ class DatabaseRivex:
             print(f"Erro ao enviar chamadas para o banco de dados! {erro_de_envio_de_chamadas}")
         
         try:
-            print("Enviando dados de desempenho dos agentes para o banco de dados")
-            for desempenho in desempenho_do_agente:
-                cursor.execute(self.query_agentes, desempenho)
-                print("Dados de agentes enviados para o banco de dados!")
+            for agente in desempenho_do_agente:
+                cursor.execute(self.query_agentes, agente)
+            print("Dados de agentes enviados para o banco de dados!")
+            self.connection.commit()
         except psycopg2.Error as erro_envio_dados_agentes:
             print(f"Erro ao enviar dados de agentes para o banco de dados {erro_envio_dados_agentes}")
         return True
+    
+    def enviar_banco_operadoras(self, consumo, cursor):
+        try:
+            cursor.execute(self.criar_tabela_operadora)
+            self.connection.commit()
+        except psycopg2.Error as erro_banco:
+            log.error(f"ERRO! ao criar banco de dados das discadoras! {erro_banco}")
+        try:
+            print("Enviando dados de consumo de clientes para o banco de dados")
+            cursor.execute(self.inserir_consumo, consumo)
+            self.connection.commit()
+        except Exception as erro_envio:
+            log.error(f"Erro ao enviar o consumo para o banco de dados: {erro_envio}")
+        return True
+            
     
     def fechar_db(self, cursor, conexao):
         if conexao:

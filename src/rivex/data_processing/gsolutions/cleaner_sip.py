@@ -2,106 +2,89 @@ from bs4 import BeautifulSoup
 import json
 import re 
 import logging
-
 from pandas.io.formats.format import return_docstring
 
 log = logging.getLogger(__name__)
 
-def mapeamento_clientes(clientes_html):
-    dados = json.loads(clientes_html)
+class CleanerSip:
+    def __init__(self, consumo, id_clientes):
+        self.consumo = consumo
+        self.id_clientes = id_clientes
 
-    return [
-        {"Tech": re.sub(r"\D", "",dado["value"]),
-         "Cliente": dado["value"],
-         "id": dado["id"]
-         }
-        for dado in dados
-        ]
+    def gerar_tabela_consumo(self):
+        sopa = BeautifulSoup(self.consumo, "html.parser")
+        tabela = sopa.find("div", id="site")
+        return tabela
+
     
+    def gerar_clientes(self, tabela):
+        tr_dados = tabela.find_all("tr", class_=["cinza1", "cinza2"])
+        lista_clientes = []
+        for tr in tr_dados:
+            td_cliente = tr.find("td", attrs={"align": "left"})
+            if td_cliente:
+                lista_clientes.append(td_cliente.text.strip())
+        return lista_clientes
     
-def limpeza_consumo(html_consumo):
-    '''
-    Recebe o HTML da página e retorna uma lista de dicts:
-    tech, cliente, minutagem, custo.
+    def gerar_minutagem(self, tabela):
+        minutagem = [] 
 
-    O campo "Tech" é extraído por regex do próprio texto do cliente,
-    da mesma forma que mapeamento_clientes() faz — garantindo que
-    as duas fontes de dado possam ser combinadas por uma chave comum,
-    em vez de por posição na lista.
-    '''
-    soup = BeautifulSoup(html_consumo, 'html.parser')
-    tabelas = soup.find_all("table", class_="tabela_azul")
+        tr_dados = tabela.find_all("tr", class_=["cinza1", "cinza2"])
 
-    resultado = []
+        for tr in tr_dados:
+            tds = tr.find_all("td")
 
-    for tabela in tabelas:
-        linhas = tabela.find_all("tr")
+            if len(tds) >= 3:
+                valor = tds[2].text.strip()
 
-        for linha in linhas:
-            celulas = linha.find_all("td")
+                try:
+                    float(valor.replace(".", "").replace(",", "."))
+                    minutagem.append(valor)
+                except ValueError:
+                    log.warning("Alteração na coluna de minutagem na agitel. Requer modificação!")
+                    continue
+        return minutagem
 
-            if len(celulas) != 8:
-                log.warning(
-                    "Linha de consumo ignorada — esperado 8 células, "
-                    "encontrado %d. Conteúdo: %r",
-                    len(celulas), [c.get_text(strip=True) for c in celulas]
-                )
-                continue
+    def gerar_custos(self, tabela):
+        custos = []
 
-            cliente = celulas[0].get_text(strip=True)
-            minutagem = celulas[2].get_text(strip=True)
-            custo = celulas[4].get_text(strip=True)
+        tr_dados = tabela.find_all("tr", class_=["cinza1", "cinza2"])
 
-            resultado.append({
-                "Tech": re.sub(r"\D", "", cliente),
-                "Cliente": cliente,
-                "Minutagem": minutagem,
-                "Custo": custo,
-            })
+        for tr in tr_dados:
+            tds = tr.find_all("td")
 
-    return resultado
+            if len(tds) >= 4:
+                valor = tds[3].get_text(strip=True)
 
-def processar_tarifas_com_resiliencia(lista_chamadas_tarifadas: list) -> list[int]:
-    """
-    Processa a limpeza de tarifas de todos os clientes coletados.
+                try:
+                    float(valor.replace(".", "").replace(",", "."))
+                    custos.append(valor)
+                except ValueError:
+                    log.warning("Alteração na tabela de custos. Requer verificação no processamento de dados")
+                    continue
 
-    Cada cliente é processado de forma isolada: se um falhar,
-    os demais continuam sendo processados normalmente.
-    """
-    resultados = []
-
-    for indice, tarifa_html in enumerate(lista_chamadas_tarifadas):
-        try:
-            valor_limpo = limpeza_de_dados_final(tarifa_html)
-            resultados.append(valor_limpo)
-        except Exception as e:
-            log.error(
-                "Falha ao processar tarifa do cliente índice %d: %s",
-                indice, e, exc_info=True
-            )
-            resultados.append(0)
-
-    return resultados
-
-def junta_clientes(tarifadas: list, resultado_custos: dict):
-    list_dados = []
-    for i, cliente in enumerate(resultado_custos):
-        list_dados.append({
-        "Cliente": cliente.get("Cliente"),
-        "Chamadas Tarifadas": tarifadas[i] if i < len(tarifadas) else None,
-        "Minutagem": cliente.get("Minutagem"),
-        "Custo": cliente.get("Custo")
-    })
-    return list_dados
+        return custos
     
-def limpeza_de_dados_base(json_clientes, html_custos):
-    clientes_mapeados = mapeamento_clientes(json_clientes)
-    consumo = limpeza_consumo(html_custos)
-    print("CLIENTES MAPEADOS: ", clientes_mapeados)
-   
-    return clientes_mapeados, consumo
-
-def limpeza_de_dados_final(lista_html):
-    tarifadas = processar_tarifas_com_resiliencia(lista_html)
-    return tarifadas
+    def clean_id(self):
+        dados = json.loads(self.id_clientes)
+        lista_id = [identificador["id"] for identificador in dados if identificador]
+        lista_clientes = [identificador["value"] for identificador in dados if identificador]
     
+
+
+
+    
+    def limpar_consumo(self):
+        tabela = self.gerar_tabela_consumo()
+        cliente = self.gerar_clientes(tabela)
+        minutagem = self.gerar_minutagem(tabela)
+        custo = self.gerar_custos(tabela)
+
+        print(cliente)
+        print(minutagem)
+        print(custo)
+        return cliente, minutagem, custo
+    
+    def gerar_chamadas_tarifadas(self):
+        id_cliente = self.clean_id()
+

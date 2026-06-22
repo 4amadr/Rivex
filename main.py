@@ -84,31 +84,15 @@ def main_agitel():
         consumo_por_cliente, dict_id_clientes = sc.execucao_pipeline_sip()
         
         # limpeza
-        clientes_ativos = mapeamento_clientes(dict_id_clientes.text) # list
-        print("IDS DO CLIENTE: ", dict_id_clientes)
-        print("CONSUMO POR CLIENTE: ", clientes_ativos)
-        clientes, consumos = limpeza_de_dados_base(dict_id_clientes.text, consumo_por_cliente.text)
-        print("CONSUMO AQUI: ",consumos) # lista que está faltando a tech
-        
-        lista_chamadas_tarifadas = sch.lista_chamadas_tarifadas(clientes_ativos, dict_id_clientes.text)
-        tarifas_limpas = processar_tarifas_com_resiliencia(lista_chamadas_tarifadas) # lista
-        print(tarifas_limpas)
-        print("Dados limpos! Preparando dados para o banco de dados")
-        # empacotamento
-        for cliente_ativo, consumo, chamada_tarifada in zip(clientes_ativos, consumos, tarifas_limpas):
-            if not chamada_tarifada:
-                chamada_tarifada = 0
-            dict_pronto = {
-                "tech" : cliente_ativo["Tech"],
-                "Cliente" : cliente_ativo["Cliente"],
-                "Data" : data,
-                "Minutagem": consumo["Minutagem"],
-                "Custo": consumo["Custo"],
-                "Chamadas tarifadas": chamada_tarifada
-            }
-            print(dict_pronto)
+        limpar_sip = CleanerSip(consumo=consumo_por_cliente,
+                                id_clientes=dict_id_clientes)
+        limpar_sip.limpar_consumo()
+        limpar_sip.gerar_chamadas_tarifadas()
 
-
+        lista_id = limpar_sip.clean_id()
+        for cliente_id in lista_id:
+            lista_tarifadas = sch.get_chamadas_tarifadas(lista_id)
+            print(lista_tarifadas)
         
         
 

@@ -64,7 +64,7 @@ class SipClient:
         self.login(url_de_login=url_de_login)
         consumo = self.filtrar_dados(url_filtragem)
         id_clientes = self.get_id_do_cliente(url_id_do_cliente)
-        return consumo, id_clientes
+        return consumo.text, id_clientes.text
 
 class SipCharged:
     def __init__(self, data, url_base, usuario, password):

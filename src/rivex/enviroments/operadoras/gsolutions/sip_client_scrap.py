@@ -79,13 +79,11 @@ class SipCharged:
         
     def login(self):
         urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
-        
-        login = self.hr.requisicao_post_com_certificado(payload_post=payload_de_login(self.usuario, self.password),
+        return self.hr.requisicao_post_com_certificado(payload_post=payload_de_login(self.usuario, self.password),
                                         headers=header_geral(),
                                         url=self.url_login,
                                         verificacao=False
                                         )
-        return login
     
     def clientes_online(self, cliente_online: list, id_clients: dict):
         '''
@@ -100,22 +98,15 @@ class SipCharged:
         return lista_ids_online
         
         
-        
-    
     def get_chamadas_tarifadas(self, id_cliente):
-        lista_chamadas_tarifadas = []
-        for cliente in id_cliente:
-            chamadas_tarifadas = self.hr.requisicao_get_com_verificado(headers=header_geral(),
-                                                                        payload_get=payload_chamadas_tarifadas(cliente, self.data),
+        return self.hr.requisicao_get_com_verificado(headers=header_geral(),
+                                                                        payload_get=payload_chamadas_tarifadas(id_cliente, self.data),
                                                                         url=self.url_tarifadas,
-                                                                        verificacao=False)
-            convertidas = chamadas_tarifadas.text
-            lista_chamadas_tarifadas.append(convertidas)      
-        return lista_chamadas_tarifadas
+                                                                        verificacao=False)   
     
-    def execucao_sip_tarifas(self, cliente_online, id_cliente: dict):
+    
+    def lista_chamadas_tarifadas(self, cliente_online, id_cliente: dict):
         self.login()
         lista_ids_online = self.clientes_online(cliente_online, id_cliente)
-        chamadas_tarifadas = self.get_chamadas_tarifadas(lista_ids_online)
-        return chamadas_tarifadas
+        return [self.get_chamadas_tarifadas(identificador) for identificador in lista_ids_online]
         

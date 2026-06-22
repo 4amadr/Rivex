@@ -23,7 +23,6 @@ class HttpRequisitions:
         else:
             coleta = self.session.get(url, params=payload_get, headers=headers, verify=verificacao)
             # verificação se há erros nos status_code
-            print(coleta.status_code)
             analista_de_erros(coleta.status_code)
             return coleta
 

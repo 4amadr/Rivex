@@ -69,7 +69,7 @@ class CleanerSip:
         dados = json.loads(self.id_clientes)
         lista_id = [identificador["id"] for identificador in dados if identificador]
         lista_clientes = [identificador["value"] for identificador in dados if identificador]
-    
+
 
 
 

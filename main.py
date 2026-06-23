@@ -85,16 +85,15 @@ def main_agitel():
         
         # limpeza
         limpar_sip = CleanerSip(consumo=consumo_por_cliente,
-                                id_clientes=dict_id_clientes)
-        limpar_sip.limpar_consumo()
-        limpar_sip.gerar_chamadas_tarifadas()
-
-        lista_id = limpar_sip.clean_id()
-        for cliente_id in lista_id:
-            lista_tarifadas = sch.get_chamadas_tarifadas(lista_id)
-            print(lista_tarifadas)
+                             id_clientes=dict_id_clientes)
+        lista_cliente, lista_minutagem, lista_custo = limpar_sip.limpar_consumo()
         
-        
+        # segunda execução
+        lista_ids_online = limpar_sip.gerar_ids_tarifadas(lista_cliente)
+        lista_tarifadas_html = sch.lista_chamadas_tarifadas(lista_ids_online)
+        print("LISTA DE CHAMADAS TARIFADAS  ", lista_tarifadas_html)
+        # segunda limpeza
+        tarifa_limpa = [limpar_sip.limpar_chamadas_tarifadas(tarifa) for tarifa in lista_tarifadas_html]
 
 
 def main_pentagono():

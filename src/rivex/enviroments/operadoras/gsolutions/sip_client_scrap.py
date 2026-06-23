@@ -85,19 +85,8 @@ class SipCharged:
                                         verificacao=False
                                         )
     
-    def clientes_online(self, cliente_online: list, id_clients: dict):
-        '''
-        Função para verificar os clientes que tiveram consumo na operadora
-        ela vai comparar os dados gerais com os nomes dos clientes online e retornar
-        uma lista com os ids dos clientes que tiveram consumo
-        OBS: cliente_online é uma lista de dicionários e id_clientes é um dicionário
-        '''
-        lista_ids_online = []
-        for cliente in cliente_online:
-                lista_ids_online.append(cliente["id"])
-        return lista_ids_online
         
-        
+     
     def get_chamadas_tarifadas(self, id_cliente):
         return self.hr.requisicao_get_com_verificado(headers=header_geral(),
                                                                         payload_get=payload_chamadas_tarifadas(id_cliente, self.data),
@@ -105,8 +94,7 @@ class SipCharged:
                                                                         verificacao=False)   
     
     
-    def lista_chamadas_tarifadas(self, cliente_online, id_cliente: dict):
+    def lista_chamadas_tarifadas(self, id_cliente):
         self.login()
-        lista_ids_online = self.clientes_online(cliente_online, id_cliente)
-        return [self.get_chamadas_tarifadas(identificador) for identificador in lista_ids_online]
+        return [self.get_chamadas_tarifadas(identificador) for identificador in id_cliente]
         

@@ -41,7 +41,7 @@ def payload_chamadas_tarifadas(id_cliente, data):
         'sipcode': 200,
         'tipo_exibicao': 'tela',
         'checkbox_columns': '1',
-        'exibir_totais': 'Sim',
+        'exibir_totais': '1',
         'action': 'Buscar'
     }
     return payload

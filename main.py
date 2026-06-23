@@ -139,8 +139,8 @@ def main_callix():
     pipeline_callix.executar()
 
 #exec_ipbox = main_ipbox()
-#exec_pentagono = main_pentagono()
-exec_agitel = main_agitel()
+exec_pentagono = main_pentagono()
+#exec_agitel = main_agitel()
 #exec_gs = main_gs()
 #dados_vonix = main_vonix()
 #dados_callix = main_callix()

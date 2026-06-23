@@ -6,6 +6,19 @@ import requests
 import dotenv
 import os
 
+class PentagonoURL:
+    def __init__(self):
+        self.url_base = 'https://sip8.pentagonotelecom.com.br/'
+        
+    def url_login(self):
+        return f'{self.url_base}security/validate'
+    
+    def url_get_cdr(self):
+        return f'{self.url_base}/relatorioAgrupadoLinhas/data'
+    
+    def url_pagina_inicial(self):
+        return f'{self.url_base}inicial/'
+
 class pentagonoScrap:
     
     def __init__(self, usuario, senha, data):
@@ -13,18 +26,14 @@ class pentagonoScrap:
         self.senha = senha
         self.data = data
         self.hr = HttpRequisitions(session=requests.Session())
+        self.link = PentagonoURL()
         
-    def gerador_url(self):
-        url_login_pentagono = 'https://sip8.pentagonotelecom.com.br/security/validate'
-        url_cdr = 'https://sip8.pentagonotelecom.com.br/relatorioAgrupadoLinhas/data'
-        url_pagina_inicial = 'https://sip8.pentagonotelecom.com.br/inicial/'
-        return url_login_pentagono, url_cdr, url_pagina_inicial
 
-    def login_pentagono(self, url_login_pentagono):
+    def login_pentagono(self):
         
         login = self.hr.requisicao_post(payload_post=payload_login_pentagono(self.usuario, self.senha),
                                         headers=headers_pentagono(),
-                                        url=url_login_pentagono)
+                                        url=self.link.url_login)
         print("=== LOGIN ===")
         print(f"Status:   {login.status_code}")
         print(f"URL final (após redirects): {login.url}")
@@ -32,19 +41,18 @@ class pentagonoScrap:
         print(f"Resposta (primeiros 300 chars): {login.text[:300]}")
         return login
 
-    def get_pagina_inicial(self, url_pagina_inicial):
+    def get_pagina_inicial(self, ):
         '''Estabelece a conexão na pag inicial para poder prosseguir com a coleta de dados'''
 
-        url = f"{url_pagina_inicial}?{random.random()}"
         pagina_inicial = self.hr.requisicao_get(headers=headers_pentagono(),
                                                 payload_get={},
-                                                url=url)
+                                                url=f"{self.link.url_pagina_inicial}?{random.random()}")
         return pagina_inicial
 
-    def get_cdr(self, url_cdr):
+    def get_cdr(self):
         cache_buster = random.random()
         query_string = f"{cache_buster}&{urlencode(payloads_relatorio(self.data))}"
-        url = f"{url_cdr}?{query_string}"
+        url = f"{self.link.url_get_cdr}?{query_string}"
 
         relatorio_cdr = self.hr.requisicao_get(payload_get={},
                                                headers=headers_pentagono(),
@@ -52,10 +60,9 @@ class pentagonoScrap:
                                                )
         return relatorio_cdr
     def execucao_pentagono(self):
-        url_login, url_cdr, url_pagina_inicial = self.gerador_url()
-        login = self.login_pentagono(url_login)
-        pagina_inicial = self.get_pagina_inicial(url_pagina_inicial)
-        relatorio_html = self.get_cdr(url_cdr)
+        login = self.login_pentagono()
+        pagina_inicial = self.get_pagina_inicial()
+        relatorio_html = self.get_cdr()
 
         return login, pagina_inicial, relatorio_html
         

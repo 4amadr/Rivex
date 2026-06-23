@@ -39,7 +39,7 @@ class CleanerSip:
 
                 try:
                     float(valor.replace(".", "").replace(",", "."))
-                    minutagem.append(valor)
+                    minutagem.append(int(float(valor.replace(".", "").replace(",", "."))))
                 except ValueError:
                     log.warning("Alteração na coluna de minutagem na agitel. Requer modificação!")
                     continue
@@ -58,7 +58,7 @@ class CleanerSip:
 
                 try:
                     float(valor.replace(".", "").replace(",", "."))
-                    custos.append(valor)
+                    custos.append(int(float(valor.replace(".", "").replace(",", "."))))
                 except ValueError:
                     log.warning("Alteração na tabela de custos. Requer verificação no processamento de dados")
                     continue
@@ -66,13 +66,15 @@ class CleanerSip:
         return custos
     
     def get_tech(self, lista_clientes):
+        print("QUANTIDADE DE CLIENTES: ",len(lista_clientes))
         for cliente in lista_clientes:
-            tech = "".join(filter(str.isdigit, lista_clientes))
+            print("CLIENTE PARA SER FILTRADO! ", cliente)
+            tech = "".join(filter(str.isdigit, cliente))
             print(tech)
+        return tech
     
     def clean_id(self):
         dados = json.loads(self.id_clientes)
-        print(self.id_clientes)
         lista_id = [identificador["id"] for identificador in dados if identificador]
         lista_clientes = [identificador["value"] for identificador in dados if identificador]
         
@@ -96,6 +98,7 @@ class CleanerSip:
     def get_clientes_tarifados(self, lista_identificador, lista_clientes_online):
         """Função para filtrar apenas os clientes que tiveram consumo para diminuir a quantidade de requisições"""
         lista_identificadores_online = []
+
         for identificador in lista_identificador:
             if identificador["cliente"] in lista_clientes_online:
                 lista_identificadores_online.append(identificador["id"]) 
@@ -120,6 +123,8 @@ class CleanerSip:
         cliente = self.gerar_clientes(tabela)
         minutagem = self.gerar_minutagem(tabela)
         custo = self.gerar_custos(tabela)
+
+        
   
 
         return cliente, minutagem, custo
@@ -129,6 +134,7 @@ class CleanerSip:
         list_comparador = self.lista_comparadora(lista_id_cliente, lista_clientes_total)
         lista_ids_online = self.get_clientes_tarifados(list_comparador, lista_clientes_com_consumo)
         tech = self.get_tech(lista_clientes_com_consumo)
+
         
         return tech, lista_ids_online
     

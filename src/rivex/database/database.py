@@ -49,7 +49,7 @@ class DatabaseRivex:
             """
         self.query_agentes = """
             INSERT INTO dados_discador.chamadas_agente (tech, cliente_nome, data, nome_agente, chamadas_agente)
-            SELECT %(tech)s, %(Cliente)s, %(Data)s, %(Nome do agente)s, %(Chamadas aceitas do agente)s
+            SELECT %(tech)s, %(Cliente)s ,%(Data)s, %(Nome do agente)s, %(Chamadas aceitas do agente)s
             ON CONFLICT (tech, data, nome_agente)
             DO UPDATE SET
             chamadas_agente = EXCLUDED.chamadas_agente;
@@ -57,22 +57,44 @@ class DatabaseRivex:
         self.criar_tabela_operadora = """
         CREATE TABLE IF NOT EXISTS dados_operadora.consumo_clientes (
             tech INTEGER NOT NULL,
+            cliente TEXT NOT NULL,
+            operadora TEXT NOT NULL,
             data DATE NOT NULL,
-            custo INTEGER NOT NULL,
-            minutagem INTEGER NOT NULL,
+            custo DECIMAL NOT NULL,
+            minutagem DECIMAL NOT NULL,
             chamadas_tarifadas INTEGER NOT NULL,
             PRIMARY KEY (tech, data)
             );
         """
         self.inserir_consumo = """
-        INSERT INTO dados_operadora.consumo_clientes (tech, data, custo, minutagem, chamadas_tarifadas)
-            SELECT %(tech)s, %(data)s, %(custo)s, %(minutagem)s, %(chamadas_tarifadas)s
-            ON CONFLICT (tech, data)
-            DO UPDATE SET
-            custo = EXCLUDED.custo,
-            minutagem = EXCLUDED.minutagem,
-            chamadas_tarifadas = EXCLUDED.chamadas_tarifadas;
-        """
+INSERT INTO dados_operadora.consumo_clientes
+(
+    tech,
+    cliente,
+    operadora,
+    data,
+    custo,
+    minutagem,
+    chamadas_tarifadas
+)
+VALUES
+(
+    %(tech)s,
+    %(cliente)s,
+    %(operadora)s,
+    %(data)s,
+    %(custo)s,
+    %(minutagem)s,
+    %(chamadas_tarifadas)s
+)
+ON CONFLICT (tech, data)
+DO UPDATE SET
+    cliente = EXCLUDED.cliente,
+    operadora = EXCLUDED.operadora,
+    custo = EXCLUDED.custo,
+    minutagem = EXCLUDED.minutagem,
+    chamadas_tarifadas = EXCLUDED.chamadas_tarifadas;
+"""
     def _carrecar_banco(self) -> dict:
         return {
             "host": os.getenv("HOST_DB"),

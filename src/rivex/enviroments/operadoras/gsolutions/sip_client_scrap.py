@@ -97,4 +97,34 @@ class SipCharged:
     def lista_chamadas_tarifadas(self, id_cliente):
         self.login()
         return [self.get_chamadas_tarifadas(identificador) for identificador in id_cliente]
-        
+
+
+class EmpacotamentoAgitel:
+    def __init__(self, data_db, lista_tech, lista_clientes, lista_minutagem, lista_custo, lista_tarifadas):
+        self.data = data_db
+        self.techs = lista_tech
+        self.clientes = lista_clientes
+        self.operadoras="Agitel"
+        self.minutagens = lista_minutagem
+        self.custos = lista_custo
+        self.chamadas_tarifadas = lista_tarifadas
+
+    def preparar_dados(self):
+        """
+        Deve retornar uma lista de dicionários prontos para o banco de dados
+        """
+        lista_pronta = []
+        for tech, cliente, minutagem, custo, tarifa in zip(self.techs, self.clientes, self.minutagens, self.custos, self.chamadas_tarifadas):
+            print("GIRANDO LOOP")
+            dict_pronto = {
+                "tech": tech,
+                "cliente": cliente,
+                "operadora": self.operadoras,
+                "data": self.data,
+                "custo": custo,
+                "minutagem": minutagem,
+                "chamadas_tarifadas": tarifa
+            }
+            lista_pronta.append(dict_pronto)
+        print(lista_pronta)
+        return lista_pronta

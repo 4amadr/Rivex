@@ -38,8 +38,8 @@ class CleanerSip:
                 valor = tds[2].text.strip()
 
                 try:
-                    float(valor.replace(".", "").replace(",", "."))
-                    minutagem.append(int(float(valor.replace(".", "").replace(",", "."))))
+                    valor_decimal = float(valor.replace(".", "").replace(",", "."))
+                    minutagem.append(valor_decimal)
                 except ValueError:
                     log.warning("Alteração na coluna de minutagem na agitel. Requer modificação!")
                     continue
@@ -57,8 +57,8 @@ class CleanerSip:
                 valor = tds[3].get_text(strip=True)
 
                 try:
-                    float(valor.replace(".", "").replace(",", "."))
-                    custos.append(int(float(valor.replace(".", "").replace(",", "."))))
+                    valor_decimal = float(valor.replace(".", "").replace(",", "."))
+                    custos.append(valor_decimal)
                 except ValueError:
                     log.warning("Alteração na tabela de custos. Requer verificação no processamento de dados")
                     continue
@@ -67,11 +67,12 @@ class CleanerSip:
     
     def get_tech(self, lista_clientes):
         print("QUANTIDADE DE CLIENTES: ",len(lista_clientes))
+        lista_tech = []
         for cliente in lista_clientes:
             print("CLIENTE PARA SER FILTRADO! ", cliente)
             tech = "".join(filter(str.isdigit, cliente))
-            print(tech)
-        return tech
+            lista_tech.append(tech)
+        return lista_tech
     
     def clean_id(self):
         dados = json.loads(self.id_clientes)

@@ -114,10 +114,20 @@ class EmpacotamentoAgitel:
         Deve retornar uma lista de dicionários prontos para o banco de dados
         """
         lista_pronta = []
+        tamanhos = [
+            len(self.techs),
+            len(self.clientes),
+            len(self.minutagens),
+            len(self.custos),
+            len(self.chamadas_tarifadas)
+        ]
+
+        if len(set(tamanhos)) != 1:
+            raise ValueError(f"Listas com tamanhos diferentes: {tamanhos}")
         for tech, cliente, minutagem, custo, tarifa in zip(self.techs, self.clientes, self.minutagens, self.custos, self.chamadas_tarifadas):
             print("GIRANDO LOOP")
             dict_pronto = {
-                "tech": tech,
+                "tech": tech or -1,
                 "cliente": cliente,
                 "operadora": self.operadoras,
                 "data": self.data,

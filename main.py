@@ -20,10 +20,11 @@ from dotenv import load_dotenv
 from src.rivex.data_processing.pentagono.pentagono_cleaning import *
 from src.rivex.enviroments.discadores.IPBox.colect_ipbox import *
 from src.rivex.enviroments.discadores.IPBox.payloads_ipbox import *
+from src.rivex.pipeline.pipeline_operadora.pipeline_pentagono import *
 import logging
-from src.rivex.pipeline.pipeline_ipbox import *
-from src.rivex.pipeline.pipeline_callix import *
-from src.rivex.pipeline.pipeline_agitel import *
+from src.rivex.pipeline.pipeline_discador.pipeline_ipbox import *
+from src.rivex.pipeline.pipeline_discador.pipeline_callix import *
+from src.rivex.pipeline.pipeline_operadora.pipeline_agitel import *
 
 load_dotenv()
 logger = logging.getLogger(__name__)
@@ -70,21 +71,8 @@ def main_agitel():
     execucao.pipeline_agitel()
 
 def main_pentagono():
-    dc = DateConfig()
-    data = dc.data_selecionadas()
-    
-    ps = pentagonoScrap(
-    usuario=os.getenv('PENTAGONO_LOGIN'),
-    senha=os.getenv('PENTAGONO_PASSWORD'),
-    data=data
-    )
-    
-    # execução e coleta de dados sujos em formato HTML
-    login, pagina_inicial, relatorio_html = ps.execucao_pentagono()
-    
-    # limpeza de dados
-    dados = execucao_limpeza(relatorio_html)
-    print(dados)
+    execucao_pentagono = ExecucaoPentagono()
+    execucao_pentagono.main_pentagono()
     
 def main_ipbox():
    pipeline = PipelineIpbox()

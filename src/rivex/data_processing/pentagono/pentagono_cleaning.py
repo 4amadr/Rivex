@@ -32,7 +32,7 @@ def converter_minutagem(minutagens):
 
 def gerar_custos(elementos):
     return [
-    td.text.strip()
+    float(td.text.strip().replace(",","."))
     for td in elementos
     if re.fullmatch(r"\d+,\d+", td.text.strip())
 ]

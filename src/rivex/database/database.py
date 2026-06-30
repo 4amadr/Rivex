@@ -57,7 +57,7 @@ class DatabaseRivex:
         self.criar_tabela_operadora = """
         CREATE TABLE IF NOT EXISTS dados_operadora.consumo_clientes (
             tech INTEGER NOT NULL,
-            cliente TEXT NOT NULL,
+            cliente TEXT,
             operadora TEXT NOT NULL,
             data DATE NOT NULL,
             custo DECIMAL NOT NULL,
@@ -108,14 +108,15 @@ DO UPDATE SET
         try:
             self.connection = psycopg2.connect(**self._config)
             print("Conectado ao banco de dados")
+
             return self.connection.cursor(), self.connection
+        
         except OperationalError as erro_banco:
+
             log.error(f"Erro {erro_banco} ao conectar com o banco de dados, verifique as suas credenciais.")
+            raise
         except UnicodeDecodeError as erro_decode:
             log.error(f"Erro de encoding nas variaveis de ambiente: {erro_decode}")
-            raise
-        except psycopg2.OperationalError as erro_operacao:
-            log.error(f"Erro ao se conectar com o banco de dados: {erro_operacao}")
             raise
     
     def envio_banco(self, chamadas: dict, desempenho_do_agente: list, cursor):
@@ -148,12 +149,18 @@ DO UPDATE SET
         try:
             cursor.execute(self.criar_tabela_operadora)
             self.connection.commit()
+
         except psycopg2.Error as erro_banco:
             log.error(f"ERRO! ao criar banco de dados das discadoras! {erro_banco}")
+            self.connection.rollback()
+            print(erro_banco)
+
+
         try:
             print("Enviando dados de consumo de clientes para o banco de dados")
             cursor.execute(self.inserir_consumo, consumo)
             self.connection.commit()
+
         except Exception as erro_envio:
             log.error(f"Erro ao enviar o consumo para o banco de dados: {erro_envio}")
         return True

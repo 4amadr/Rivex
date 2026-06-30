@@ -17,9 +17,9 @@ class ExecucaoPentagono:
         data=data
         )
         
-        # execução e coleta de dados sujos em formato HTML
+        # Coleta
         login, pagina_inicial, relatorio_html = ps.execucao_pentagono()
         
-        # limpeza de dados
+        # limpeza
         dados = execucao_limpeza(relatorio_html)
         print(dados)

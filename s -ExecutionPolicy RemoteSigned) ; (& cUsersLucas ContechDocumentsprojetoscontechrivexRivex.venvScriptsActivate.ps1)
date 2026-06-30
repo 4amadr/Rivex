@@ -1,0 +1,177 @@
+[33mcommit 564c0dd9f85d29572c6d8ded740386c33baf4f1f[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmaster[m[33m, [m[1;31morigin/master[m[33m, [m[1;31morigin/HEAD[m[33m)[m
+Author: Victor <vitoramadorviegas@gmail.com>
+Date:   Wed Jun 24 16:24:43 2026 -0300
+
+    ajustes pipeline pentagono
+
+6	18	main.py
+0	0	src/rivex/pipeline/{ => pipeline_discador}/pipeline_callix.py
+0	0	src/rivex/pipeline/{ => pipeline_discador}/pipeline_ipbox.py
+0	0	src/rivex/pipeline/{ => pipeline_operadora}/pipeline_agitel.py
+25	0	src/rivex/pipeline/pipeline_operadora/pipeline_pentagono.py
+
+[33mcommit 158b63c99fb3e476231af11814665a0145d4c2ea[m
+Author: Victor <vitoramadorviegas@gmail.com>
+Date:   Tue Jun 23 17:59:14 2026 -0300
+
+    troca da lógica de url pentagono (classe separada)
+
+2	2	main.py
+23	16	src/rivex/enviroments/operadoras/pentagono/pentagono_scrap.py
+
+[33mcommit 696c3d81577036ca575ab55625eaef125e5b727d[m
+Author: Victor <vitoramadorviegas@gmail.com>
+Date:   Tue Jun 23 16:44:57 2026 -0300
+
+    add pipeline agitel
+
+3	52	main.py
+0	21	src/rivex/enviroments/operadoras/agitel/data_cleaning_agitel.py
+62	0	src/rivex/pipeline/pipeline_agitel.py
+
+[33mcommit 448319a9ca3b68a6d2143e6e8465b0d01f76ff6f[m
+Author: Victor <vitoramadorviegas@gmail.com>
+Date:   Tue Jun 23 16:38:04 2026 -0300
+
+    Custo Agitel pronto no DB
+
+7	6	src/rivex/data_processing/gsolutions/cleaner_sip.py
+11	1	src/rivex/enviroments/operadoras/gsolutions/sip_client_scrap.py
+
+[33mcommit 00badca74c7d049ce1f5697bfcc460a56eb5db74[m
+Author: Victor <vitoramadorviegas@gmail.com>
+Date:   Tue Jun 23 13:47:18 2026 -0300
+
+    Dados da agitel no db
+
+25	3	main.py
+10	4	src/rivex/data_processing/gsolutions/cleaner_sip.py
+33	11	src/rivex/database/database.py
+31	1	src/rivex/enviroments/operadoras/gsolutions/sip_client_scrap.py
+1	1	src/rivex/utils/infra_utils/date_config.py
+
+[33mcommit f1f4735db612adb22a29652dd06242dcd76010d3[m
+Author: 4amadr <vitoramadorviegas@gmail.com>
+Date:   Mon Jun 22 22:12:07 2026 -0300
+
+    coleta de dados da agitel + tech pronta
+
+8	9	main.py
+57	8	src/rivex/data_processing/gsolutions/cleaner_sip.py
+1	1	src/rivex/enviroments/operadoras/gsolutions/headers_payload.py
+3	15	src/rivex/enviroments/operadoras/gsolutions/sip_client_scrap.py
+
+[33mcommit 09e957b239b12b81934b004628162967245cb7f6[m
+Author: Victor <vitoramadorviegas@gmail.com>
+Date:   Mon Jun 22 17:38:15 2026 -0300
+
+    Ajuste na lógica de coleta agitel pt2
+
+1	1	src/rivex/data_processing/gsolutions/cleaner_sip.py
+
+[33mcommit c6c0021b71101cbc59a550327b839837b1974234[m
+Author: Victor <vitoramadorviegas@gmail.com>
+Date:   Mon Jun 22 17:37:22 2026 -0300
+
+    Ajuste na lógica de coleta agitel
+
+8	24	main.py
+78	95	src/rivex/data_processing/gsolutions/cleaner_sip.py
+1	1	src/rivex/enviroments/operadoras/gsolutions/sip_client_scrap.py
+1	1	src/rivex/utils/infra_utils/date_config.py
+
+[33mcommit d040727bc9e09c837436570b17e9ade2547ecf5b[m
+Author: 4amadr <vitoramadorviegas@gmail.com>
+Date:   Sun Jun 21 21:55:20 2026 -0300
+
+    Troca de lógica de coleta de consumo agitel (Adição da tech como ID obrigatório)
+
+24	10	main.py
+44	24	src/rivex/data_processing/gsolutions/cleaner_sip.py
+7	16	src/rivex/enviroments/operadoras/gsolutions/sip_client_scrap.py
+1	1	src/rivex/utils/infra_utils/date_config.py
+0	1	src/rivex/utils/requests_utils/requests.py
+
+[33mcommit 0cc64c9c228fdafb976d79c33e1f1147ee8bf62e[m
+Author: 4amadr <vitoramadorviegas@gmail.com>
+Date:   Fri Jun 19 23:19:12 2026 -0300
+
+    coleta da tech da operadora agitel
+
+16	18	main.py
+24	17	src/rivex/data_processing/gsolutions/cleaner_sip.py
+69	7	src/rivex/database/database.py
+0	15	src/rivex/enviroments/operadoras/agitel/agitel_requests.py
+21	0	src/rivex/enviroments/operadoras/agitel/data_cleaning_agitel.py
+1	1	src/rivex/enviroments/operadoras/gsolutions/headers_payload.py
+3	5	src/rivex/enviroments/operadoras/gsolutions/sip_client_scrap.py
+
+[33mcommit d320d8f639d22feb7c57b34aedc1a5c348617224[m
+Author: Victor <vitoramadorviegas@gmail.com>
+Date:   Thu Jun 18 17:25:35 2026 -0300
+
+    Ajustes de fluxo ipbox, pentagono e agitel
+
+4	3	main.py
+0	142	src/rivex/data_processing/IPBox/limpeza_ipbox.py
+7	2	src/rivex/data_processing/pentagono/pentagono_cleaning.py
+14	17	src/rivex/enviroments/discadores/IPBox/colect_ipbox.py
+7	11	src/rivex/pipeline/pipeline_ipbox.py
+1	1	src/rivex/utils/infra_utils/date_config.py
+
+[33mcommit 144433217e9bfa99eaf186dc7b2f92eea1f61270[m
+Author: Victor <vitoramadorviegas@gmail.com>
+Date:   Thu Jun 18 12:37:59 2026 -0300
+
+    Dados dos clientes e agentes do callix no banco junto ao ID + Dada(como PK)
+
+12	4	src/rivex/database/database.py
+2	2	src/rivex/pipeline/pipeline_callix.py
+
+[33mcommit c21ff1acb9dcf3c2bacd2bea121d8e5794484b69[m
+Author: Victor <vitoramadorviegas@gmail.com>
+Date:   Wed Jun 17 17:35:08 2026 -0300
+
+    Dados callix + id(PK) no banco de dados
+
+1	1	src/rivex/data_processing/Callix/cleaner_callix_req.py
+41	22	src/rivex/database/database.py
+5	1	src/rivex/enviroments/discadores/Callix/callix_client_package.py
+5	4	src/rivex/pipeline/pipeline_callix.py
+1	1	src/rivex/utils/database_utils/database_config.py
+
+[33mcommit 8985edaaa974980c5e9d45c442af2ebdc6f6e045[m
+Author: Victor <vitoramadorviegas@gmail.com>
+Date:   Tue Jun 16 17:45:06 2026 -0300
+
+    envio de dados do callix para o db
+
+50	39	src/rivex/database/database.py
+11	3	src/rivex/pipeline/pipeline_callix.py
+
+[33mcommit 45f85d8d8347bf6262b5c3ddbf602266b598fd71[m
+Author: Victor <vitoramadorviegas@gmail.com>
+Date:   Tue Jun 16 13:06:33 2026 -0300
+
+    Fluxo de dados do callix funcional. Restando apenas o envio de dados para o db
+
+0	65	main.py
+22	6	src/rivex/enviroments/discadores/Callix/callix_client_package.py
+0	2	src/rivex/enviroments/discadores/Callix/callix_get_clients.py
+0	7	src/rivex/enviroments/discadores/Callix/callix_req.py
+1	3	src/rivex/enviroments/discadores/Callix/payloads_callix.py
+3	8	src/rivex/pipeline/pipeline_callix.py
+2	2	src/rivex/utils/infra_utils/date_config.py
+1	1	src/rivex/utils/requests_utils/requests.py
+
+[33mcommit 965bae5fea63ef757837fe6c2d8aa56ebda31e3a[m
+Author: Victor <vitoramadorviegas@gmail.com>
+Date:   Mon Jun 15 17:31:13 2026 -0300
+
+    Coleta da tech dos clientes
+
+12	24	src/rivex/data_processing/Callix/cleaner_callix_req.py
+4	6	src/rivex/enviroments/discadores/Callix/callix_get_clients.py
+3	4	src/rivex/enviroments/discadores/Callix/callix_req.py
+11	105	src/rivex/enviroments/discadores/Callix/payloads_callix.py
+11	6	src/rivex/pipeline/pipeline_callix.py

@@ -1,3 +1,4 @@
+from random import random
 from src.rivex.utils.requests_utils.requests import HttpRequisitions
 from src.rivex.enviroments.operadoras.pentagono.payloads_pentagono import *
 import random
@@ -30,29 +31,25 @@ class pentagonoScrap:
         
 
     def login_pentagono(self):
-        
-        login = self.hr.requisicao_post(payload_post=payload_login_pentagono(self.usuario, self.senha),
+        return self.hr.requisicao_post(payload_post=payload_login_pentagono(self.usuario, self.senha),
                                         headers=headers_pentagono(),
-                                        url=self.link.url_login)
-        print("=== LOGIN ===")
-        print(f"Status:   {login.status_code}")
-        print(f"URL final (após redirects): {login.url}")
-        print(f"Cookies na sessão: {dict(self.hr.session.cookies)}")
-        print(f"Resposta (primeiros 300 chars): {login.text[:300]}")
-        return login
+                                        url=self.link.url_login())
+
 
     def get_pagina_inicial(self, ):
+
         '''Estabelece a conexão na pag inicial para poder prosseguir com a coleta de dados'''
+        url=str(f"{self.link.url_pagina_inicial()}?{random.random()}")
 
         pagina_inicial = self.hr.requisicao_get(headers=headers_pentagono(),
                                                 payload_get={},
-                                                url=f"{self.link.url_pagina_inicial}?{random.random()}")
+                                                url=f"{url}")
         return pagina_inicial
 
     def get_cdr(self):
         cache_buster = random.random()
         query_string = f"{cache_buster}&{urlencode(payloads_relatorio(self.data))}"
-        url = f"{self.link.url_get_cdr}?{query_string}"
+        url = f"{self.link.url_get_cdr()}?{query_string}"
 
         relatorio_cdr = self.hr.requisicao_get(payload_get={},
                                                headers=headers_pentagono(),

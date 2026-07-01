@@ -37,16 +37,12 @@ class PipelineIpbox:
             data=self.data_ipbox
         )
         
-        return ipbox_init.execucao_base_ipbox()
+        return ipbox_init.execucao_base_ipbox() # lista de clientes + sessão autenticada
     
     def processar_cliente(self, cliente, ipbox_client, id_cliente):
         '''Processa a extração e limpeza de dados em um cliente'''
         try:
-            nome_cliente = cliente
-            agressividade, chamadas, agentes = ipbox_client.execucao_ipbox(nome_cliente=nome_cliente, id_cliente=id_cliente)
-            print("Agressividade: ",agressividade)
-            print("Chamadas: ",chamadas)
-            print("Agentes: ", agentes)
+            agressividade, chamadas, agentes = ipbox_client.execucao_ipbox(nome_cliente=cliente, id_cliente=id_cliente)
         except Exception as e:
             logger.error(f"Erro ao procesar o cliente {cliente}: {e}", exc_info=True)
             
@@ -57,7 +53,7 @@ class PipelineIpbox:
 
         
         print('Iniciando a coleta de dados dos clientes...')
-        ipbox_client = IpboxClientConfig(
+        execucao_ipbox = IpboxClientConfig(
             url=self.url,
             login=self.login,
             senha=self.senha,
@@ -66,9 +62,10 @@ class PipelineIpbox:
             sessao_anterior=sessao_logada,
             token=self.token
         )
+        print("[LISTA DE CLIENTES]")
+        print(lista_clientes)
         for cliente in lista_clientes:
-            print(cliente)
-            
-            self.processar_cliente(cliente, ipbox_client, cliente)
+            # cliente limpo aqui
+            self.processar_cliente(cliente, execucao_ipbox, cliente)
             time.sleep(5)
             

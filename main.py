@@ -28,43 +28,6 @@ from src.rivex.pipeline.pipeline_operadora.pipeline_agitel import *
 
 load_dotenv()
 logger = logging.getLogger(__name__)
-
-
-def main_gs():
-    dc = DateConfig()
-    data = dc.data_selecionadas()
-    print(f"Coleta do dia {data} na Gsolutions")
-    sc = SipClient(usuario=os.getenv('GSOLUTIONS_LOGIN'),
-                   password=os.getenv('GSOLUTIONS_PASSWORD'),
-                   url=os.getenv('GSOLUTIONS_URL'),
-                   operadora='Gsolutions',
-                   data=data)
-    sch = SipCharged(
-        data=data,
-        url_base=os.getenv('GSOLUTIONS_URL'),
-        usuario=os.getenv('GSOLUTIONS_LOGIN'),
-        password=os.getenv('GSOLUTIONS_PASSWORD'),
-        
-    )
-    ''' coleta que retorna:
-    consumo_cliente -> Clientes online, Minutagem e custo.
-    id_clientes -> Id de cada cliente, nome do cliente
-    '''
-    custo_minutagem_por_cliente, id_clientes = sc.execucao_pipeline_sip()
-    clientes_mapeados = mapeamento_clientes(id_clientes.json())
-    
-    #Limpeza de dados
-    clientes_mapeados, resultado_custos = limpeza_de_dados_base(id_clientes.json(),
-                                                                custo_minutagem_por_cliente.text
-                                                                            )
-    
-    '''
-    Desempacotando dicionários para usar na próxima função que retorna as chamadas tarifadas
-    ids_online é a lista de ids referente aos clientes que tiveram consumo no dia selecionado
-    '''
-    chamadas_tarifadas = sch.execucao_sip_tarifas(resultado_custos, clientes_mapeados)
-    lista_dados = limpeza_de_dados_final(chamadas_tarifadas, resultado_custos)
-    print(lista_dados)
     
 def main_agitel():
     execucao = ExecAgitel()
@@ -126,8 +89,8 @@ def main_callix():
     pipeline_callix = PipelineCallix()
     pipeline_callix.executar()
 
-#exec_ipbox = main_ipbox()
-exec_pentagono = main_pentagono()
+exec_ipbox = main_ipbox()
+#exec_pentagono = main_pentagono()
 #exec_agitel = main_agitel()
 #exec_gs = main_gs()
 #dados_vonix = main_vonix()

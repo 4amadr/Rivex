@@ -54,14 +54,7 @@ def limpeza_sufixo_cliente(cliente):
 
 def payload_api_telefonia(data, cliente):
     cliente = limpeza_sufixo_cliente(cliente.strip())
-    
-    print('Cliente buscado: ', cliente)
-    operacao = quote(cliente.strip(), safe='#')
-    
-    payload = (
-        f'de={data}000000'
-        f'&ate={data}235959'
-        f'&operacao={operacao}'
-    )
-    
-    return payload
+    operacao = quote(cliente.strip(), safe="#")
+
+    # Retorna um dicionário puro em vez de uma string com '&'
+    return {"de": f"{data}000000", "ate": f"{data}235959", "operacao": operacao}

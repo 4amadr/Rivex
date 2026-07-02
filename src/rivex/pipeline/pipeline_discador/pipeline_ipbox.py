@@ -5,6 +5,7 @@ from src.rivex.enviroments.discadores.IPBox.payloads_ipbox import *
 from src.rivex.utils.infra_utils.date_config import DateConfig
 import logging
 from dotenv import load_dotenv
+from src.rivex.data_processing.IPBox.limpeza_ipbox import *
 
 load_dotenv()
 logger = logging.getLogger(__name__)
@@ -43,12 +44,16 @@ class PipelineIpbox:
         '''Processa a extração e limpeza de dados em um cliente'''
         try:
             agressividade, chamadas, agentes = ipbox_client.execucao_ipbox(nome_cliente=cliente, id_cliente=id_cliente)
+            print("[VALIDAÇÃO DE DADOS COLETADOS]")
+            agressividade_limpa = get_agressividade(agressividade)
+            print(agressividade_limpa)
+            
         except Exception as e:
             logger.error(f"Erro ao procesar o cliente {cliente}: {e}", exc_info=True)
             
     def executar(self):
         print('Iniciando a configuração do servidor IPBOX.....')
-        sessao_logada, lista_clientes = self.autenticar_e_listar_clientes()
+        sessao_logada, clientes_texto = self.autenticar_e_listar_clientes()
         
 
         
@@ -62,10 +67,21 @@ class PipelineIpbox:
             sessao_anterior=sessao_logada,
             token=self.token
         )
+
+        html_clientes = gerar_html(clientes_texto)
+        lista_clientes = gerar_lista_clientes(html_clientes)
         print("[LISTA DE CLIENTES]")
+
         print(lista_clientes)
+        print("FIM")
+        
+
         for cliente in lista_clientes:
+
+
             # cliente limpo aqui
-            self.processar_cliente(cliente, execucao_ipbox, cliente)
+            cliente_coletado = get_cliente(cliente)
+            id_cliente = get_identificador(cliente)
+            self.processar_cliente(cliente_coletado, execucao_ipbox, id_cliente)
             time.sleep(5)
             

@@ -44,9 +44,14 @@ class PipelineIpbox:
         '''Processa a extração e limpeza de dados em um cliente'''
         try:
             agressividade, chamadas, agentes = ipbox_client.execucao_ipbox(nome_cliente=cliente, id_cliente=id_cliente)
-            print("[VALIDAÇÃO DE DADOS COLETADOS]")
+
+            print(chamadas)
+            print(agentes)
+
+            print("[VALIDAÇÃO DE DADOS LIMPOS COLETADOS]")
             agressividade_limpa = get_agressividade(agressividade)
-            print(agressividade_limpa)
+
+
             
         except Exception as e:
             logger.error(f"Erro ao procesar o cliente {cliente}: {e}", exc_info=True)
@@ -54,9 +59,6 @@ class PipelineIpbox:
     def executar(self):
         print('Iniciando a configuração do servidor IPBOX.....')
         sessao_logada, clientes_texto = self.autenticar_e_listar_clientes()
-        
-
-        
         print('Iniciando a coleta de dados dos clientes...')
         execucao_ipbox = IpboxClientConfig(
             url=self.url,
@@ -70,14 +72,8 @@ class PipelineIpbox:
 
         html_clientes = gerar_html(clientes_texto)
         lista_clientes = gerar_lista_clientes(html_clientes)
-        print("[LISTA DE CLIENTES]")
-
-        print(lista_clientes)
-        print("FIM")
-        
 
         for cliente in lista_clientes:
-
 
             # cliente limpo aqui
             cliente_coletado = get_cliente(cliente)

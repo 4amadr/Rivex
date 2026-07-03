@@ -1,7 +1,7 @@
 import time
 import requests
 from src.rivex.utils.requests_utils.requests import HttpRequisitions
-from src.rivex.enviroments.discadores.Callix.payloads_callix import headers_callix, payload_callix
+from src.rivex.utils.enviroments_utils.discador.callix.payloads_callix import *
 
 class CallixAPICollector:
     def __init__(self, cliente, token, data):
@@ -18,6 +18,11 @@ class CallixAPICollector:
     def coletar(self, endpoint, data=None, filtro_ativar=None, filtro_setar=None, ativador_payload: bool=True):
         '''Vai ser usado para coletar todos os tipos de chamadas'''
         payload_config = payload_callix(endpoint, data, filtro_ativar, filtro_setar)
+        print("[DEBUG REQUISIÇÃO]")
+        print(f"TOKEN ENVIADO PARA O PAYLOAD: {self.token[0]}")
+        print(f"URL ENVIADA PARA O SERVIDOR: {self.url_tratada(endpoint)}")
+        print(f"PAYLOAD UTILIZADO NO SERVIDOR: {payload_config}")
+
         
         # verificador para automatizar campanhas sem data
         if ativador_payload == False:

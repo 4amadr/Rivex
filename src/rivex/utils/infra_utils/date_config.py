@@ -15,7 +15,7 @@ class DateConfig:
         print('Dia de coleta: ', data_formatada)
         return data_formatada
 
-    def data_ipbox(self, dias_atras=1):
+    def data_ipbox(self, dias_atras=2):
         data_ref = date.today() - timedelta(days=dias_atras)
 
         print(

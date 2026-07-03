@@ -53,8 +53,6 @@ def limpeza_sufixo_cliente(cliente):
     return re.sub(r'\s+\d+$', '', cliente).strip()
 
 def payload_api_telefonia(data, cliente):
-    cliente = limpeza_sufixo_cliente(cliente.strip())
-    operacao = quote(cliente.strip(), safe="#")
-
+    cliente = cliente.strip()
     # Retorna um dicionário puro em vez de uma string com '&'
-    return {"de": f"{data}000000", "ate": f"{data}235959", "operacao": operacao}
+    return {"de": f"{data}000000", "ate": f"{data}235959", "operacao": cliente}

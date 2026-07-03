@@ -15,5 +15,10 @@ def get_identificador(cliente_html):
     return parse_qs(urlparse(href).query)["obj_fila_id"][0]
 
 def get_agressividade(agressividade_html):
+    agressividade_html = gerar_html(agressividade_html)
     select = agressividade_html.find('select', id='obj_fila_valor_overdial')
-    return select.find("option", selected=True)
+    return select.find("option", selected=True).get_text()
+
+def get_chamadas_totais(chamadas_json):
+    dados = chamadas_json['data']
+

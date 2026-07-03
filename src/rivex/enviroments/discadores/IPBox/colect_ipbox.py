@@ -101,4 +101,4 @@ class IpboxClientConfig:
                                          url=self.url._gerar_url_relatorio_agentes())
 
     def execucao_ipbox(self, nome_cliente, id_cliente):
-        return self.get_agressividade(id_cliente).text, self.get_relatorio_chamadas(nome_cliente).text, self.get_relatorio_chamadas(nome_cliente).text
+        return self.get_agressividade(id_cliente).text, self.get_relatorio_chamadas(nome_cliente).json(), self.get_relatorio_agente().json()

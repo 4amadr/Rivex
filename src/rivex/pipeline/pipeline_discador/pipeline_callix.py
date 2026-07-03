@@ -1,6 +1,7 @@
 import logging
 from dotenv import load_dotenv
 from src.rivex.utils.infra_utils.date_config import DateConfig
+import time
 import os
 from src.rivex.enviroments.discadores.Callix.callix import CallixAPICollector
 from src.rivex.enviroments.discadores.Callix.callix_token_db import CallixDB
@@ -28,13 +29,17 @@ class PipelineCallix:
         Retorna as informações necessárias para requisições futuras
         '''
         get_infos = CallixGetClients()
-        url_clientes = get_infos.get_infos_callix()
+        tech_clientes, url_clientes = get_infos.get_infos_callix()
+        
+        print("Consultando clientes ativos no servidor")
         clientes_ativos = clientes_ativos_callix(url_clientes.json())
-        print('Clientes ativos no callix:  ',clientes_ativos)
+
         get_token = GetTokenCallix(clientes_ativos)
         lista_infos_clientes = get_token.fluxo_de_tokens()
-        
-        return lista_infos_clientes
+        print("[DEBUG LISTA DE INFORMAÇÕES DOS CLIENTES -> DEVE TER CLIENTE + TOKEN ABAIXO]")
+        print(lista_infos_clientes)
+        print(type(lista_infos_clientes))
+        return lista_infos_clientes # lista de dict
 
 
 
@@ -105,12 +110,17 @@ class PipelineCallix:
         logger.info("Iniciando callix")
         lista_tokens = self.get_ambiente()
         get_clients = CallixGetClients()
+        print("[DEBUG DA LISTA DE TOKENS]")
+        print(lista_tokens)
         
         if not lista_tokens:
             raise RuntimeError("Sem clientes ou tokens")
         
-        for info in lista_tokens:
-            tech = get_clients.teste_get_tech(info["Cliente"])
+        for info in lista_tokens: # lista tokens se tornou uma variável simples, e ela precisa ser uma lista
+            print("[DEBUG EXECUÇÃO]")
+            print(f"INFORMAÇÕES ENVIADAS PARA A EXECUÇÃO: {info}")
+            tech = get_clients.get_tech_clientes_callix()
+
 
             self.processar_cliente(info['Cliente'], info['Token'], tech, cursor)
         print("Fechando banco de dados")

@@ -1,0 +1,29 @@
+from dotenv import load_dotenv
+import os
+
+class UrlGetClients:
+    def __init__(self):
+        self.url_contech = os.getenv('URL_CALLIX_GERAL')
+        load_dotenv()
+        
+    def url_get_tech(self):
+        return f"{self.url_contech}/api/v4/entities/outbound-routes"
+    
+    def url_login_servidor_contech(self):
+        return f"{self.url_contech}/api/v4/auth/session"
+    
+    def url_get_clients(self):
+        return f'{self.url_contech}/api/v4/tenants/sub-accounts'
+    
+class UrlGetData:
+    def __init__(self, cliente):
+        self.cliente = cliente
+    
+    def login_cliente_header(self):
+        return f'https://{self.cliente}.callix.com.br/login'
+    
+    def login_cliente(self):
+        return f'https://{self.cliente}.callix.com.br/api/v4/auth/session'
+    
+    def url_tokens(self):
+        return f'https://{self.cliente}.callix.com.br/api/v4/entities/api-tokens'

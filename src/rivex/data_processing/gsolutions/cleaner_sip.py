@@ -38,8 +38,8 @@ class CleanerSip:
                 valor = tds[2].text.strip()
 
                 try:
-                    valor_decimal = float(valor.replace(".", "").replace(",", "."))
-                    minutagem.append(valor_decimal)
+                    float(valor.replace(".", "").replace(",", "."))
+                    minutagem.append(valor)
                 except ValueError:
                     log.warning("Alteração na coluna de minutagem na agitel. Requer modificação!")
                     continue
@@ -57,8 +57,8 @@ class CleanerSip:
                 valor = tds[3].get_text(strip=True)
 
                 try:
-                    valor_decimal = float(valor.replace(".", "").replace(",", "."))
-                    custos.append(valor_decimal)
+                    float(valor.replace(".", "").replace(",", "."))
+                    custos.append(valor)
                 except ValueError:
                     log.warning("Alteração na tabela de custos. Requer verificação no processamento de dados")
                     continue
@@ -66,16 +66,13 @@ class CleanerSip:
         return custos
     
     def get_tech(self, lista_clientes):
-        print("QUANTIDADE DE CLIENTES: ",len(lista_clientes))
-        lista_tech = []
         for cliente in lista_clientes:
-            print("CLIENTE PARA SER FILTRADO! ", cliente)
-            tech = "".join(filter(str.isdigit, cliente))
-            lista_tech.append(tech)
-        return lista_tech
+            tech = "".join(filter(str.isdigit, lista_clientes))
+            print(tech)
     
     def clean_id(self):
         dados = json.loads(self.id_clientes)
+        print(self.id_clientes)
         lista_id = [identificador["id"] for identificador in dados if identificador]
         lista_clientes = [identificador["value"] for identificador in dados if identificador]
         
@@ -99,7 +96,6 @@ class CleanerSip:
     def get_clientes_tarifados(self, lista_identificador, lista_clientes_online):
         """Função para filtrar apenas os clientes que tiveram consumo para diminuir a quantidade de requisições"""
         lista_identificadores_online = []
-
         for identificador in lista_identificador:
             if identificador["cliente"] in lista_clientes_online:
                 lista_identificadores_online.append(identificador["id"]) 
@@ -124,8 +120,6 @@ class CleanerSip:
         cliente = self.gerar_clientes(tabela)
         minutagem = self.gerar_minutagem(tabela)
         custo = self.gerar_custos(tabela)
-
-        
   
 
         return cliente, minutagem, custo
@@ -135,7 +129,6 @@ class CleanerSip:
         list_comparador = self.lista_comparadora(lista_id_cliente, lista_clientes_total)
         lista_ids_online = self.get_clientes_tarifados(list_comparador, lista_clientes_com_consumo)
         tech = self.get_tech(lista_clientes_com_consumo)
-
         
         return tech, lista_ids_online
     
@@ -143,4 +136,3 @@ class CleanerSip:
         elemento_html = self.limpar_html_tarifadas(html_tarifadas)
         chamadas_tarifadas = self.retornar_tarifadas(elemento_html)
         return chamadas_tarifadas
-

@@ -43,16 +43,10 @@ class PipelineIpbox:
     def processar_cliente(self, cliente, ipbox_client, id_cliente):
         '''Processa a extração e limpeza de dados em um cliente'''
         try:
-            agressividade, chamadas, agentes = ipbox_client.execucao_ipbox(nome_cliente=cliente, id_cliente=id_cliente)
+            agressividade, chamadas, = ipbox_client.execucao_ipbox(nome_cliente=cliente, id_cliente=id_cliente)       
+            print(f"Cliente atual: {cliente}")
+            dict_cliente = empacotar_dados_clientes(chamadas, cliente, self.data_ipbox, agressividade)
 
-            print(chamadas)
-            print(agentes)
-
-            print("[VALIDAÇÃO DE DADOS LIMPOS COLETADOS]")
-            agressividade_limpa = get_agressividade(agressividade)
-
-
-            
         except Exception as e:
             logger.error(f"Erro ao procesar o cliente {cliente}: {e}", exc_info=True)
             
@@ -71,13 +65,41 @@ class PipelineIpbox:
         )
 
         html_clientes = gerar_html(clientes_texto)
-        lista_clientes = gerar_lista_clientes(html_clientes)
+        lista_clientes = gerar_lista_clientes(html_clientes)     
+        
+        agentes_json = execucao_ipbox.get_relatorio_agente()  
+        agentes_json = agentes_json.json()
 
+        lista_clientes_limpa = []
         for cliente in lista_clientes:
 
             # cliente limpo aqui
             cliente_coletado = get_cliente(cliente)
+            lista_clientes_limpa.append(cliente_coletado)
             id_cliente = get_identificador(cliente)
             self.processar_cliente(cliente_coletado, execucao_ipbox, id_cliente)
             time.sleep(5)
+        
+        for cliente in lista_clientes_limpa:
+            lista_dados_agentes = []
             
+            for agente in agentes_json["data"]:
+                
+                if agente["agente"] == "TOTAIS":
+                    continue
+                
+                nome_cliente = limpar_nome_cliente(agente["times"][0])
+                
+                if nome_cliente not in cliente:
+                    continue
+                
+                lista_dados_agentes.append(
+                    empacotar_dados_agentes(
+                        agente,
+                        cliente,
+                        self.data_ipbox
+                    )
+                )
+
+            print(cliente)
+            print(lista_dados_agentes)

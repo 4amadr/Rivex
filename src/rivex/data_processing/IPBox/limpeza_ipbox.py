@@ -58,15 +58,15 @@ def get_chamadas_completas_agente(agentes_json):
 
 def empacotar_dados_clientes(chamadas_json, cliente, data, agressividade):
     return {
-        "cliente": cliente,
         "tech": get_tech_cliente(cliente),
-        "data": data,
-        "discador": "Vonix",
-        "chamadas totais": get_chamadas_totais_cliente(chamadas_json),
-        "chamadas completas": get_chamadas_completas_cliente(chamadas_json),
-        "chamadas recusadas": get_chamadas_recusadas_cliente(chamadas_json),
-        "chamadas abandonadas": get_chamadas_abandonadas_cliente(chamadas_json),
-        "agressividade": get_agressividade(agressividade)
+        "cliente": cliente,
+        "Data": data,
+        "Discador": "Vonix",
+        "Chamadas totais": get_chamadas_totais_cliente(chamadas_json),
+        "Chamadas aceitas": get_chamadas_completas_cliente(chamadas_json),
+        "Chamadas recusadas": get_chamadas_recusadas_cliente(chamadas_json),
+        "Chamadas abandonadas": get_chamadas_abandonadas_cliente(chamadas_json),
+        "Agressividade": get_agressividade(agressividade)
     }
     
 
@@ -74,10 +74,10 @@ def empacotar_dados_clientes(chamadas_json, cliente, data, agressividade):
 def empacotar_dados_agentes(agente, cliente, data):
     return {
         "tech": get_tech_cliente(cliente),
-        "cliente": cliente,
-        "data": data,
-        "nome agente": agente["agente"],
-        "chamadas do agente": agente["atendimentos"]
+        "Cliente": cliente,
+        "Data": data,
+        "Nome do agente": agente["agente"],
+        "Chamadas aceitas do agente": agente["atendimentos"]
     }
      
     

@@ -25,7 +25,7 @@ import logging
 from src.rivex.pipeline.pipeline_discador.pipeline_ipbox import *
 from src.rivex.pipeline.pipeline_discador.pipeline_callix import *
 from src.rivex.pipeline.pipeline_operadora.pipeline_agitel import *
-
+from src.rivex.pipeline.pipeline_discador.pipeline_vonix import *
 load_dotenv()
 logger = logging.getLogger(__name__)
     
@@ -42,56 +42,16 @@ def main_ipbox():
    pipeline.executar()
 
 def main_vonix():
-    print('Iniciando a coleta de dados no discador Vonix...')
-    ev = ExecucaoVonix()
-    lv = LimpezaVonix()
-    dc = DateConfig()
-    database_conf = DatabaseConfig()
-    conexao = database_conf.conect_database()
-    
-    data = dc.data_selecionadas()
-    url_vonix = os.getenv('LINK_VONIX6')
-
-    # lista com os dados para agregação
-    resultados = []
-
-    for equipes_vonix, times in dict_agentes.items():
-        print(f'Coletando dados do equipe ->', equipes_vonix)
-
-        for equipe in times:
-            # timer para não quebrar o servidor
-            time.sleep(15)
-            print('Executanto a fila ->',equipe)
-            # primeiro coletamos os dados em formato HTML
-
-            chamadas_totais, chamadas_completas, chamadas_recusadas, chamadas_abandonadas, html_agentes, html_agressividade = ev.execucao_vonix(data=data,
-                                                                                                                                                url=url_vonix, 
-                                                                                                                                                equipe=equipe)
-            print('Dados sujos coletados. Executando agora a limpeza de dados')
-
-            # agora a limpeza de dados para trazer apenas os dados limpos para o banco de dados
-            dict_vonix_dados = lv.limpeza_de_dados_vonix(chamadas_totais, chamadas_completas, chamadas_recusadas, chamadas_abandonadas, html_agentes, html_agressividade, equipe, data)
-           
-            # inserir os dados de agentes e suas chamadas no banco
-            DatabaseRivex.coleta_agentes(conexao, equipe, data, dict_vonix_dados)
-                
-            # inserir dados de chamadas no banco
-            DatabaseRivex.coleta_chamadas(conexao, dict_vonix_dados)
-            
-            resultados.append(dict_vonix_dados)
-    
-    # fechar o banco com os agentes após a execução do loop
-    DatabaseRivex.fechar_conexao_vonix(conexao)            
-    print('Execução do vonix finalizada')
-    return resultados
+    pipeline = PipelineVonix()
+    pipeline.execucao()
 
 def main_callix():
     pipeline_callix = PipelineCallix()
     pipeline_callix.executar()
 
-exec_ipbox = main_ipbox()
+#exec_ipbox = main_ipbox()
 #exec_pentagono = main_pentagono()
 #exec_agitel = main_agitel()
 #exec_gs = main_gs()
-#dados_vonix = main_vonix()
+dados_vonix = main_vonix()
 #dados_callix = main_callix()

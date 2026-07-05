@@ -18,6 +18,7 @@ class DatabaseRivex:
             tech_cliente INTEGER NOT NULL,
             cliente_nome TEXT NOT NULL,
             data DATE NOT NULL,
+            discador TEXT NOT NULL,
             chamadas INTEGER NOT NULL,
             completas INTEGER NOT NULL,
             recusadas INTEGER NOT NULL,
@@ -30,6 +31,7 @@ class DatabaseRivex:
         CREATE TABLE IF NOT EXISTS dados_discador.chamadas_agente (
             tech INTEGER NOT NULL,
             cliente_nome TEXT NOT NULL,
+            discador TEXT NOT NULL,
             data DATE NOT NULL,
             nome_agente TEXT NOT NULL,
             chamadas_agente INTEGER NOT NULL,
@@ -37,7 +39,7 @@ class DatabaseRivex:
         );
         """
         self.query_chamadas = """
-            INSERT INTO dados_discador.chamadas_cliente (tech_cliente, cliente_nome, data, chamadas, completas, recusadas, abandonadas, agressividade)
+            INSERT INTO dados_discador.chamadas_cliente (tech_cliente, cliente_nome, data, discador, chamadas, completas, recusadas, abandonadas, agressividade)
             VALUES (%(tech)s, %(Cliente)s, %(Data)s, %(Chamadas totais)s, %(Chamadas aceitas)s, %(Chamadas recusadas)s, %(Chamadas abandonadas)s, %(Agressividade)s)
             ON CONFLICT (tech_cliente, data)
             DO UPDATE SET
@@ -48,7 +50,7 @@ class DatabaseRivex:
             agressividade = EXCLUDED.agressividade;
             """
         self.query_agentes = """
-            INSERT INTO dados_discador.chamadas_agente (tech, cliente_nome, data, nome_agente, chamadas_agente)
+            INSERT INTO dados_discador.chamadas_agente (tech, cliente_nome, discador, data, nome_agente, chamadas_agente)
             SELECT %(tech)s, %(Cliente)s ,%(Data)s, %(Nome do agente)s, %(Chamadas aceitas do agente)s
             ON CONFLICT (tech, data, nome_agente)
             DO UPDATE SET
@@ -71,6 +73,7 @@ INSERT INTO dados_operadora.consumo_clientes
 (
     tech,
     cliente,
+    discador,
     operadora,
     data,
     custo,
@@ -81,6 +84,7 @@ VALUES
 (
     %(tech)s,
     %(cliente)s,
+    %(discador)s
     %(operadora)s,
     %(data)s,
     %(custo)s,
@@ -90,6 +94,7 @@ VALUES
 ON CONFLICT (tech, data)
 DO UPDATE SET
     cliente = EXCLUDED.cliente,
+    discador = EXCLUDED.cliente
     operadora = EXCLUDED.operadora,
     custo = EXCLUDED.custo,
     minutagem = EXCLUDED.minutagem,

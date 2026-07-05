@@ -22,6 +22,7 @@ class CallixClientData:
             "tech": self.tech,
             "Cliente": self.cliente,
             "Data": self.data,
+            "Discador": "Callix",
             "Chamadas totais": self.chamadas,
             "Chamadas aceitas": self.aceitas,
             "Chamadas recusadas": self.recusadas,
@@ -40,6 +41,7 @@ class CallixClientData:
             return [{
                 "tech": self.tech,
                 "Cliente": self.cliente,
+                "discador": "Callix",
                 "Data": self.data,
                 "Nome do agente": "Sem agente",
                 "Chamadas aceitas do agente": 0,
@@ -53,6 +55,7 @@ class CallixClientData:
                 dict_agentes = {
                     "tech": self.tech,
                     "Cliente": self.cliente,
+                    "discador": "Callix",
                     "Data": self.data,
                     "Nome do agente": dicionario_agente.get("agente"),
                     "Chamadas aceitas do agente": dicionario_agente.get("Chamadas atendidas", 0),

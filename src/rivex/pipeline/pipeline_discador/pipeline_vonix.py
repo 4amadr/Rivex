@@ -1,45 +1,27 @@
 from src.rivex.enviroments.discadores.vonix.fluxo_coleta import *
 from src.rivex.enviroments.discadores.vonix.fluxo_limpeza import *
+from src.rivex.data_processing.Vonix.cleaning_vonix import *
+import os
+from dotenv import load_dotenv
 
 class PipelineVonix:
     def __init__(self):
-        pass
-    
-    def execucao(self):
-        print('Iniciando a coleta de dados no discador Vonix...')
-        ev = ExecucaoVonix()
-        lv = LimpezaVonix()
-        dc = DateConfig()
-        database_conf = DatabaseConfig()
-        conexao = database_conf.conect_database()
+        load_dotenv()
+        self.data = DateConfig()
+        self.login = os.getenv('LOGIN_VONIX')
+        self.senha = os.getenv('SENHA_VONIX')
+        self.url = os.getenv('URL_BASE_VONIX6')
+
+    def inicial_config(self):
+        vonix_execucao = ExecucaoVonix(
+            login=self.login,
+            senha=self.senha,
+            data=self.data,
+            url_base=self.url
+        )
+
+        token_encontrado = vonix_execucao.execucao_vonix()
+        html_token = get_html(token_encontrado)
+        return get_token(html_token)
+
         
-        data = dc.data_selecionadas()
-        url_vonix = os.getenv('LINK_VONIX6')
-
-        # lista com os dados para agregação
-        resultados = []
-
-        for equipes_vonix, times in dict_agentes.items():
-            print(f'Coletando dados do equipe ->', equipes_vonix)
-
-            for equipe in times:
-                # timer para não quebrar o servidor
-                time.sleep(15)
-                print('Executanto a fila ->',equipe)
-                # primeiro coletamos os dados em formato HTML
-
-                chamadas_totais, chamadas_completas, chamadas_recusadas, chamadas_abandonadas, html_agentes, html_agressividade = ev.execucao_vonix(data=data,
-                                                                                                                                                    url=url_vonix, 
-                                                                                                                                                    equipe=equipe)
-                print('Dados sujos coletados. Executando agora a limpeza de dados')
-
-                # agora a limpeza de dados para trazer apenas os dados limpos para o banco de dados
-                dict_vonix_dados = lv.limpeza_de_dados_vonix(chamadas_totais, chamadas_completas, chamadas_recusadas, chamadas_abandonadas, html_agentes, html_agressividade, equipe, data)
-            
-                # inserir os dados de agentes e suas chamadas no banco
-                DatabaseRivex.coleta_agentes(conexao, equipe, data, dict_vonix_dados)
-                    
-                # inserir dados de chamadas no banco
-                DatabaseRivex.coleta_chamadas(conexao, dict_vonix_dados)
-                
-                resultados.append(dict_vonix_dados)

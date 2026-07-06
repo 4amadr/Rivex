@@ -1,6 +1,6 @@
 import os
 
-def payload_de_login(self, username, password, token):
+def payload_de_login(username, password, token):
     payload_login = {
         'authenticity_token': token,
         'return_to': '',
@@ -11,12 +11,7 @@ def payload_de_login(self, username, password, token):
 
     return payload_login
 
-def credenciais_vonix(self):
-    user = os.getenv('LOGIN_VONIX')
-    password = os.getenv('PASSWORD_VONIX')
-    return user, password
-
-def payload_de_filtragem(self, token, queue_client):
+def payload_de_filtragem(token, queue_client):
     # para aplicar o filtro
     payload_filtro = {
         'authenticity_token': token,
@@ -26,7 +21,12 @@ def payload_de_filtragem(self, token, queue_client):
     
     return payload_filtro 
 
-def payload_de_chamadas(self, data, tipo_de_chamada: str | None = None):
+def headers():
+    return {
+        "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36"
+    }
+
+def payload_de_chamadas(data, tipo_de_chamada: str | None = None):
 
     if tipo_de_chamada is None:
         tipo_de_chamada = ""
@@ -68,7 +68,7 @@ def payload_de_chamadas(self, data, tipo_de_chamada: str | None = None):
 
     return payload
 
-def payload_de_agentes(self, data):
+def payload_de_agentes(data):
     payload_agentes = {
         'interval[select]': 'custom',
         'interval[start_date]': data,
@@ -76,7 +76,7 @@ def payload_de_agentes(self, data):
     }
     return payload_agentes
     
-def payload_de_agressividade(self, token):
+def payload_de_agressividade(token):
     payload = {
         'authenticity_token': token
     }

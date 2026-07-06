@@ -3,9 +3,10 @@ import requests
 from dotenv import load_dotenv
 from src.rivex.utils.infra_utils.date_config import DateConfig
 from src.rivex.utils.requests_utils.requests import HttpRequisitions
-from src.rivex.enviroments.discadores.vonix.payloads_vonix import PayloadsVonix
+from src.rivex.enviroments.discadores.vonix.payloads_vonix import *
 from src.rivex.enviroments.discadores.vonix.equipes_vonix import dict_agentes
 from src.rivex.utils.infra_utils.vonix_processing import ClientSimulator
+from src.rivex.data_processing.Vonix.cleaning_vonix import *
 
 '''Classe feita para executar cada etapa do discador vonix contando com
 Login + TOKEN -> Filtragem + TOKEN -> Chamadas + TOKEN -> Agentes online + TOKEN -> Agressividade + TOKEN'''
@@ -41,11 +42,16 @@ class ExecucaoVonix:
         self.url_base = url_base
         self.session = requests.Session()
         self.url = GerarUrlVonix(url_base)
-        self.http_requisitions = HttpRequisitions(session)
-        self.real_client = ClientSimulator(session)
+        self.http_requisitions = HttpRequisitions(self.session)
+        self.real_client = ClientSimulator(self.session)
+
+    def get_cookie(self):
+        return self.session.get(self.url._url_login())
+
+
     
-    def login_vonix(self):
-        return self.http_requisitions.requisicao_post(payload_post=payload_de_login(self.login, self.senha), headers=headers_login, url=self.url._url_login())
+    def login_vonix(self, token):
+        return self.http_requisitions.requisicao_post(payload_post=payload_de_login(self.login, self.senha, token), headers=headers_login, url=self.url._url_login())
     
     def get_clientes(self):
         return self.http_requisitions.requisicao_get(payload_get=None,
@@ -56,6 +62,7 @@ class ExecucaoVonix:
     def get_filtragem(self,equipe, session):
         # função que executa todo o processo de filtragem do vonix
         return self.http_requisitions.requisicao_post(payload_de_filtragem(token_filtragem, equipe), headers_filtragem, self.url._url_filtragem())
+
 
     def get_chamadas(self, tipo_chamada: str | None = None):
         return self.http_requisitions.requisicao_get(payload_get=payload_de_chamadas(),
@@ -75,16 +82,17 @@ class ExecucaoVonix:
                                           headers=headers_agressividade, 
                                           url=url_agressividade)
 
-    def execucao_vonix(self, data, url, equipe):
+    def token_pronto(self):
         """
         FLUXO deve seguir uma ordem lógica, após o login a filtragem de clientes é fundamental
         caso contrário o ambiente retorna o HTML da página de login
         """
-        login = self.login_vonix()
-        clientes = self.get_clientes()
-        print("[DEBUG DE CLIENTES DO VONIX]")
-        print(clientes.text)
-        pass
+        tokens = self.get_cookie()
+        html_token = get_html(tokens.text)
+        token_vonix = get_token(html_token)
+        return token_vonix
         
+    def get_clientes(self, token):
+        login = self.login_vonix(token)
 
         

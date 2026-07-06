@@ -43,7 +43,7 @@ def main_ipbox():
 
 def main_vonix():
     pipeline = PipelineVonix()
-    pipeline.execucao()
+    pipeline.inicial_config()
 
 def main_callix():
     pipeline_callix = PipelineCallix()

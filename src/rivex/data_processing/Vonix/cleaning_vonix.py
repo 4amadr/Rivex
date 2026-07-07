@@ -6,3 +6,8 @@ def get_html(html):
 def get_token(html_token):
     token = html_token.find("input", attrs={"name": "authenticity_token"})["value"]
     return token
+
+def remover_javascript(pagina):
+    for script in pagina(['script', 'style']):
+        script.decompose()
+    return pagina

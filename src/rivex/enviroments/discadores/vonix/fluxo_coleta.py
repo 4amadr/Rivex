@@ -51,12 +51,13 @@ class ExecucaoVonix:
 
     
     def login_vonix(self, token):
-        return self.http_requisitions.requisicao_post(payload_post=payload_de_login(self.login, self.senha, token), headers=headers_login, url=self.url._url_login())
+        return self.http_requisitions.requisicao_post(payload_post=payload_de_login(self.login, self.senha, token), headers=headers(), url=self.url._url_login())
     
-    def get_clientes(self):
-        return self.http_requisitions.requisicao_get(payload_get=None,
-                                                     headers=None,
-                                                     url=self.url.url_base())
+
+    def get_clientes_ambiente(self):
+        return self.http_requisitions.requisicao_get(payload_get={},
+                                                     headers={},
+                                                     url=self.url.url_base)
         
     
     def get_filtragem(self,equipe, session):
@@ -94,5 +95,7 @@ class ExecucaoVonix:
         
     def get_clientes(self, token):
         login = self.login_vonix(token)
+        clientes = self.get_clientes_ambiente()
+        return clientes
 
         

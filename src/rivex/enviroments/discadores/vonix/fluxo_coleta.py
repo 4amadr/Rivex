@@ -60,28 +60,28 @@ class ExecucaoVonix:
                                                      url=self.url.url_base)
         
     
-    def get_filtragem(self,equipe, session):
+    def get_filtragem(self, equipe, token):
         # função que executa todo o processo de filtragem do vonix
-        return self.http_requisitions.requisicao_post(payload_de_filtragem(token_filtragem, equipe), headers_filtragem, self.url._url_filtragem())
+        return self.http_requisitions.requisicao_post(payload_de_filtragem(token, equipe), headers(), self.url._url_filtragem())
 
 
     def get_chamadas(self, tipo_chamada: str | None = None):
-        return self.http_requisitions.requisicao_get(payload_get=payload_de_chamadas(),
-                                                     headers=headers_chamadas,
+        return self.http_requisitions.requisicao_get(payload_get=payload_de_chamadas(self.data, tipo_chamada),
+                                                     headers=headers(),
                                                      url=self.url._url_get_chamadas()
                                                      )
 
     
-    def get_agentes(self, url_base, session):
-        return self.http_requisitions.requisicao_get(payload_get=payload_para_agentes,
-                                    headers=headers_agentes,
-                                    url=url_agentes)
+    def get_agentes(self):
+        return self.http_requisitions.requisicao_get(payload_get=payload_de_agentes(self.data),
+                                    headers=headers(),
+                                    url=self.url._url_get_agentes())
     
-    def coleta_de_agressividade_vonix(self, cliente, url_base, session):
+    def coleta_de_agressividade_vonix(self, cliente, token):
         # função para coletar informações de agressividade por equipe     
-        return self.http_requisitions.requisicao_get(payload_get=payload_para_agressividade,
-                                          headers=headers_agressividade, 
-                                          url=url_agressividade)
+        return self.http_requisitions.requisicao_get(payload_get=payload_de_agressividade(token),
+                                          headers=headers(), 
+                                          url=f"{self.url._url_get_agressividade()}{cliente}")
 
     def token_pronto(self):
         """
@@ -97,5 +97,6 @@ class ExecucaoVonix:
         login = self.login_vonix(token)
         clientes = self.get_clientes_ambiente()
         return clientes.text
+    
 
         

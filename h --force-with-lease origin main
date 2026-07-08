@@ -1,0 +1,20 @@
+* [33m9e2cbe4[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m)[m Remove arquivos desnecessários
+* [33mf572a7b[m Adicionar callix
+* [33mc486771[m add database
+* [33mb445b97[m[33m ([m[1;31morigin/master[m[33m, [m[1;31morigin/HEAD[m[33m, [m[1;32mmaster[m[33m)[m Listas de clientes do ambiente coletada
+* [33mb9aecbb[m Coleta de clientes do ambiente em HTML
+* [33mc33b51c[m get tokens do vonix funcional para outras requisições
+* [33m86ad79f[m[33m ([m[1;31morigin/testes[m[33m)[m Alteração do fluxo vonix (remoção de clientes hardcoded)
+* [33mab69b8c[m[33m ([m[1;31morigin/main[m[33m)[m Dados ipbox + id(tech) empacotados
+* [33m5e62cd2[m Coleta de dados IPBox
+* [33ma30e6c0[m Inicio da manutenção ipbox
+* [33md97f056[m Reestruturação do ipbox (código mais limpo e fluxo mais organizado. Apenas coleta, sem limpeza)
+* [33m74b160f[m Dados pentagono no DB
+* [33maa2f74d[m Coleta e limpeza da pentagono pronta
+* [33m564c0dd[m ajustes pipeline pentagono
+* [33m158b63c[m troca da lógica de url pentagono (classe separada)
+* [33m696c3d8[m add pipeline agitel
+* [33m448319a[m Custo Agitel pronto no DB
+* [33m00badca[m Dados da agitel no db
+* [33mf1f4735[m coleta de dados da agitel + tech pronta
+* [33m09e957b[m Ajuste na lógica de coleta agitel pt2

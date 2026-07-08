@@ -11,26 +11,22 @@ class PipelineVonix:
         self.login = os.getenv('LOGIN_VONIX')
         self.senha = os.getenv('SENHA_VONIX')
         self.url = os.getenv('URL_BASE_VONIX6')
-
-    def inicial_config(self):
-        vonix_execucao = ExecucaoVonix(
+        self.vonix_execucao = ExecucaoVonix(
             login=self.login,
             senha=self.senha,
             data=self.data,
             url_base=self.url
         )
 
-        token_encontrado = vonix_execucao.token_pronto()
-        html_token = get_html(token_encontrado)
-        clientes = vonix_execucao.get_clientes(html_token)
-        print("[RESPOSTA DA REQUISIÇÃO DE CLIENTES]")
-        html_clientes = get_html(clientes.text)
-        print(clientes)
-        html_clientes_pronto = remover_javascript(html_clientes)
-        print(html_clientes_pronto)
-
+    def inicial_config(self):
+        token_encontrado = self.vonix_execucao.token_pronto()
+        return gerar_lista_de_clientes(html=self.vonix_execucao.get_clientes(token_encontrado)), token_encontrado
     
-    def get_dados_sujos(self):
+    def get_dados_sujos(self, cliente, token):
+        
+
+
+
         pass
 
         

@@ -96,6 +96,6 @@ class ExecucaoVonix:
     def get_clientes(self, token):
         login = self.login_vonix(token)
         clientes = self.get_clientes_ambiente()
-        return clientes
+        return clientes.text
 
         

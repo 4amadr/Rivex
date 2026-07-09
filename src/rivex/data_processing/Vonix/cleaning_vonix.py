@@ -69,4 +69,21 @@ def get_tech(html):
     tech_selecionada_texto = get_tech_selecionada(techs_texto)
     return get_tech_numerico(tech_selecionada_texto)
 
+def tr_agentes(pagina_agentes):
+    return pagina_agentes.find_all("tr", class_=["shaded", "item"])
+
+def td_agentes(td_agentes):
+    return td_agentes.find_all("td", class_="item")
+    
+def lista_agentes(html_agentes):
+    pagina_agentes = get_html(html_agentes)
+    lista_marcacoes_clientes = tr_agentes(pagina_agentes)
+    lista = []
+    for marcacao in lista_marcacoes_clientes:
+        agente = td_agentes(marcacao)
+        lista.append(agente)
+    return lista
+
+
+
 

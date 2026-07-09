@@ -30,16 +30,37 @@ class PipelineVonix:
             "Abandonadas": self.vonix_execucao.get_chamadas("abandon"),
             "Recusadas": self.vonix_execucao.get_chamadas("discard"),
             "Agentes": self.vonix_execucao.get_agentes(),
-            "Agressividade": self.vonix_execucao.coleta_de_agressividade_vonix(cliente, token)
+            "config": self.vonix_execucao.coleta_de_agressividade_vonix(cliente, token)
         }
     
-    def execucao_limpeza(self):
-        pass
+    def execucao_limpeza(self, totais, aceitas, abandonadas, recusadas, config):
+        chamadas_totais = limpar_chamadas(totais.text)
+        chamadas_aceitas = limpar_chamadas(aceitas.text)
+        chamadas_abandonadas = limpar_chamadas(abandonadas.text)
+        chamadas_recusadas = limpar_chamadas(recusadas.text)
+        agressividade = get_agressividade(config.text)
+        tech = get_tech(config.text)
+        return {
+            "Tech": tech,
+            "Data": self.data,
+            "chamadas": chamadas_totais,
+            "aceitas": chamadas_aceitas,
+            "recusadas": chamadas_recusadas,
+            "abandonadas": chamadas_abandonadas,
+            "agressividade": agressividade
+        }
 
     def execucao_vonix(self):
         lista_clientes, token = self.inicial_config()
         for cliente in lista_clientes:
-            self.get_dados_sujos(cliente, token)
-            time.sleep(30)
+            response_dict = self.get_dados_sujos(cliente, token)
+            aceitas = self.execucao_limpeza(response_dict["Totais"], 
+                                  response_dict["Aceitas"],
+                                  response_dict["Abandonadas"],
+                                  response_dict["Recusadas"],
+                                  response_dict["config"],
+            )
+
+            time.sleep(4)
 
         

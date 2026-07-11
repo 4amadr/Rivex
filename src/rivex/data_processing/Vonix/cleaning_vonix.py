@@ -69,4 +69,32 @@ def get_tech(html):
     tech_selecionada_texto = get_tech_selecionada(techs_texto)
     return get_tech_numerico(tech_selecionada_texto)
 
+def encontrar_tabela_agentes(html):
+    tabela_html = get_html(html)
+    return tabela_html.find('table', class_="grid")
+
+def gerar_lista_infos_agentes(tabela):
+    return tabela.find_all('tr', class_=["item", "shaded"])
+
+def gerar_dados_agentes(infos_agentes):
+    
+    dados_agentes = []
+    for agente in infos_agentes:
+        dict_agentes = {
+            "agente": agente.find('td', class_="item").get_text(strip=True),
+            "chamadas": agente.find('td', id=lambda x: x and x.startswith("call_counter_AUTO")
+                                    ).a.get_text(strip=True)
+        }
+        
+        dados_agentes.append(dict_agentes)
+    return dados_agentes
+        
+    
+
+def dict_agentes(html):
+    tabela = encontrar_tabela_agentes(html)
+    lista_infos = gerar_lista_infos_agentes(tabela)
+    return gerar_dados_agentes(lista_infos)
+    
+
 

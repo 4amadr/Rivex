@@ -15,7 +15,7 @@ class PipelineVonix:
         self.vonix_execucao = ExecucaoVonix(
             login=self.login,
             senha=self.senha,
-            data=self.data,
+            data=self.data.data_selecionadas(),
             url_base=self.url
         )
 
@@ -33,7 +33,7 @@ class PipelineVonix:
             "config": self.vonix_execucao.coleta_de_agressividade_vonix(cliente, token)
         }
     
-    def execucao_limpeza(self, totais, aceitas, abandonadas, recusadas, config):
+    def execucao_limpeza_chamadas_vonix(self, totais, aceitas, abandonadas, recusadas, config):
         chamadas_totais = limpar_chamadas(totais.text)
         chamadas_aceitas = limpar_chamadas(aceitas.text)
         chamadas_abandonadas = limpar_chamadas(abandonadas.text)
@@ -49,18 +49,25 @@ class PipelineVonix:
             "abandonadas": chamadas_abandonadas,
             "agressividade": agressividade
         }
+        
+    def execucao_limpeza_agentes_vonix(self, agentes):
+        tabela = dict_agentes(agentes.text)
+        print(tabela)
+        return tabela
+        
+        
 
     def execucao_vonix(self):
         lista_clientes, token = self.inicial_config()
         for cliente in lista_clientes:
             response_dict = self.get_dados_sujos(cliente, token)
-            aceitas = self.execucao_limpeza(response_dict["Totais"], 
+            aceitas = self.execucao_limpeza_chamadas_vonix(response_dict["Totais"], 
                                   response_dict["Aceitas"],
                                   response_dict["Abandonadas"],
                                   response_dict["Recusadas"],
                                   response_dict["config"],
             )
-
+            tabela = self.execucao_limpeza_agentes_vonix(response_dict["Agentes"])
             time.sleep(4)
 
         

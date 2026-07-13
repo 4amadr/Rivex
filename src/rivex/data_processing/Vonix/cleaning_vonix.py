@@ -57,7 +57,9 @@ def get_techs_texto(tech_html):
     return tech_html.find("select", id="queue_lcr_profile_id")
 
 def get_tech_selecionada(tech_texto):
-    return tech_texto.find('option', selected='selected').get_text(strip=True)
+    tech = tech_texto.find('option', selected='selected').get_text(strip=True)
+    print(f"teste tech com nome: {tech}")
+    return tech
 
 def get_tech_numerico(tech_selecionada):
     return re.sub(r"\D", "", tech_selecionada.split(" - ")[0])

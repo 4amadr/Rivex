@@ -24,25 +24,29 @@ class PipelineVonix:
         return gerar_lista_de_clientes(html=self.vonix_execucao.get_clientes(token_encontrado)), token_encontrado
     
     def get_dados_sujos(self, cliente, token):
+        self.vonix_execucao.get_filtragem(cliente, token)
         return {
             "Totais": self.vonix_execucao.get_chamadas(),
             "Aceitas": self.vonix_execucao.get_chamadas("completed"),
             "Abandonadas": self.vonix_execucao.get_chamadas("abandon"),
             "Recusadas": self.vonix_execucao.get_chamadas("discard"),
             "Agentes": self.vonix_execucao.get_agentes(),
-            "config": self.vonix_execucao.coleta_de_agressividade_vonix(cliente, token)
+            "config": self.vonix_execucao.coleta_de_agressividade_vonix(cliente, token),
+            "Tech": self.vonix_execucao.get_techs()
         }
     
-    def execucao_limpeza_chamadas_vonix(self, totais, aceitas, abandonadas, recusadas, config):
+    def execucao_limpeza_chamadas_vonix(self, cliente, totais, aceitas, abandonadas, recusadas, config, tech):
         chamadas_totais = limpar_chamadas(totais.text)
         chamadas_aceitas = limpar_chamadas(aceitas.text)
         chamadas_abandonadas = limpar_chamadas(abandonadas.text)
         chamadas_recusadas = limpar_chamadas(recusadas.text)
         agressividade = get_agressividade(config.text)
-        tech = get_tech(config.text)
+        lista_techs = get_lista_techs(tech.text)
+        print("LISTA DE TECHS COLETADAS: " ,lista_techs)
         return {
             "Tech": tech,
             "Data": self.data,
+            "Cliente": cliente,
             "chamadas": chamadas_totais,
             "aceitas": chamadas_aceitas,
             "recusadas": chamadas_recusadas,
@@ -50,8 +54,9 @@ class PipelineVonix:
             "agressividade": agressividade
         }
         
-    def execucao_limpeza_agentes_vonix(self, agentes):
+    def execucao_limpeza_agentes_vonix(self, cliente, agentes):
         tabela = dict_agentes(agentes.text)
+        print(cliente)
         print(tabela)
         return tabela
         
@@ -59,15 +64,35 @@ class PipelineVonix:
 
     def execucao_vonix(self):
         lista_clientes, token = self.inicial_config()
-        for cliente in lista_clientes:
-            response_dict = self.get_dados_sujos(cliente, token)
-            aceitas = self.execucao_limpeza_chamadas_vonix(response_dict["Totais"], 
+        clientes_validos = [
+        cliente
+        for cliente in lista_clientes
+        if "itelink" not in cliente.lower()
+        and not cliente.lower().endswith("manual")
+        ]
+        print(f"Clientes ativos e válidos (Sem filas manuais): {clientes_validos}")
+
+        for cliente_selecionado in clientes_validos:
+
+
+            response_dict = self.get_dados_sujos(cliente_selecionado, token)
+
+            print(f"Cliente atual: {cliente_selecionado}")
+
+
+            cliente = self.execucao_limpeza_chamadas_vonix(cliente_selecionado, response_dict["Totais"], 
                                   response_dict["Aceitas"],
                                   response_dict["Abandonadas"],
                                   response_dict["Recusadas"],
                                   response_dict["config"],
+                                  response_dict["Tech"]
             )
-            tabela = self.execucao_limpeza_agentes_vonix(response_dict["Agentes"])
-            time.sleep(4)
+
+            agentes = self.execucao_limpeza_agentes_vonix(cliente, response_dict["Agentes"])
+
+            
+            print(f"Dados dos clientes: {cliente}")
+            print(f"Dados dos agentes: {agentes}")
+            time.sleep(30)
 
         

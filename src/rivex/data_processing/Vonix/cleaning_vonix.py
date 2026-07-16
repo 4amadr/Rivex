@@ -58,7 +58,6 @@ def get_techs_texto(tech_html):
 
 def get_tech_selecionada(tech_texto):
     tech = tech_texto.find('option', selected='selected').get_text(strip=True)
-    print(f"teste tech com nome: {tech}")
     return tech
 
 def get_tech_numerico(tech_selecionada):
@@ -76,27 +75,76 @@ def encontrar_tabela_agentes(html):
     return tabela_html.find('table', class_="grid")
 
 def gerar_lista_infos_agentes(tabela):
+    if tabela is None:
+        return None
     return tabela.find_all('tr', class_=["item", "shaded"])
 
 def gerar_dados_agentes(infos_agentes):
-    
     dados_agentes = []
-    for agente in infos_agentes:
-        dict_agentes = {
-            "agente": agente.find('td', class_="item").get_text(strip=True),
-            "chamadas": agente.find('td', id=lambda x: x and x.startswith("call_counter_AUTO")
-                                    ).a.get_text(strip=True)
-        }
-        
-        dados_agentes.append(dict_agentes)
+    if not infos_agentes:
+        dados_agentes.append({
+            "agente": "Sem agente",
+            "chamadas": 0,
+        })
+    else:
+        for agente in infos_agentes:
+            td_nome = agente.find("td", class_="item")
+
+            td_chamadas = agente.find(
+                "td",
+                id=lambda x: x and x.startswith("call_counter_AUTO")
+            )
+
+            nome = td_nome.get_text(strip=True) if td_nome else "Desconhecido"
+
+            if td_chamadas:
+                if td_chamadas.a:
+                    chamadas = td_chamadas.a.get_text(strip=True)
+                else:
+                    chamadas = td_chamadas.get_text(strip=True)
+            else:
+                chamadas = "0"
+
+            dados_agentes.append({
+                "agente": nome,
+                "chamadas": chamadas
+            })
     return dados_agentes
-        
-    
 
 def dict_agentes(html):
     tabela = encontrar_tabela_agentes(html)
     lista_infos = gerar_lista_infos_agentes(tabela)
     return gerar_dados_agentes(lista_infos)
+
+def find_name(html_cliente):
+    elemento = html_cliente.find('input', id='queue_name')
+    return elemento['value'] if elemento else None
+
+def get_cliente_nome(html):
+    html_cliente = get_html(html)
+    cliente = find_name(html_cliente)
+    return cliente
+
+def find_html_tech(tech_convertida):
+    return [tech.get_text(strip=True) for tech in tech_convertida]
+
+def get_lista_techs(tech_html):
+    tech_convertida = get_html(tech_html)
+    select = tech_convertida.find("select", {"id": "lcr_profile"})
+
+    clientes = []
+    
+    for option in select.find_all("option"):
+        value = option['value']
+        text = option.get_text(strip=True)
+        match = re.match(r"^(\d{4}#\d{2})\s*[-–]\s*(.+)$", text)
+        if match:
+            clientes.append({
+                "lcr_profile_id": value,  # ID interno do sistema
+                "tech": match.group(1),   # Ex: "1010#01" — IDENTIFICADOR ÚNICO
+                "nome": match.group(2).strip()
+            })
+    return clientes
     
 
 

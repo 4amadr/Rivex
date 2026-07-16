@@ -33,6 +33,9 @@ class GerarUrlVonix:
     def _url_get_chamadas(self):
         return f"{self.url_base}/calls"
     
+    def _url_techs(self):
+        return f"{self.url_base}/admin/routes"
+    
 
 class ExecucaoVonix:
     def __init__(self, login, senha, data, url_base):
@@ -70,6 +73,11 @@ class ExecucaoVonix:
                                                      headers=headers(),
                                                      url=self.url._url_get_chamadas()
                                                      )
+
+    def get_techs(self):
+        return self.http_requisitions.requisicao_get(payload_get={},
+                                                     headers=headers(),
+                                                     url=self.url._url_techs())
 
     
     def get_agentes(self):

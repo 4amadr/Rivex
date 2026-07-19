@@ -43,9 +43,16 @@ class PipelineVonix:
         agressividade = get_agressividade(config.text)
         lista_techs = get_lista_techs(tech.text)
         print("LISTA DE TECHS COLETADAS: " ,lista_techs)
-        return {
+        """
+        Lista de techs tem o nome um pouco diferente
+        precisa criar uma função para tratar, comparar e se o nome do cliente
+        for igual ao dict vai retornar a tech daquele dado
+        """
+        tech = get_tech_vez(lista_techs, cliente)
+
+        dados_cliente = {
             "Tech": tech,
-            "Data": self.data,
+            "Data": self.data.data_selecionadas(),
             "Cliente": cliente,
             "chamadas": chamadas_totais,
             "aceitas": chamadas_aceitas,
@@ -53,6 +60,9 @@ class PipelineVonix:
             "abandonadas": chamadas_abandonadas,
             "agressividade": agressividade
         }
+
+        print(dados_cliente)
+        return dados_cliente
         
     def execucao_limpeza_agentes_vonix(self, cliente, agentes):
         tabela = dict_agentes(agentes.text)

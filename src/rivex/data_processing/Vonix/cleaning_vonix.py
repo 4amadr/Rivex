@@ -1,5 +1,6 @@
 from bs4 import BeautifulSoup
 import re
+import unicodedata
 
 def get_html(html):
     return BeautifulSoup(html, "html.parser")
@@ -145,6 +146,39 @@ def get_lista_techs(tech_html):
                 "nome": match.group(2).strip()
             })
     return clientes
-    
 
+def tratar_nome_cliente(cliente: str):
+    cliente = cliente.lower()
+
+    # Remove acentos
+    cliente = ''.join(
+        c for c in unicodedata.normalize("NFD", cliente)
+        if unicodedata.category(c) != "Mn"
+    )
+
+    cliente = cliente.replace("tarifado", "")
+    cliente = cliente.replace("manual", "")
+    cliente = cliente.replace(" e ", "")
+
+    # Remove caracteres especiais
+    cliente = re.sub(r'[^a-z0-9]', "", cliente)
+
+    # Remove números do final
+    cliente = re.sub(r'\d+$', "", cliente)
+
+    return cliente
+
+
+def get_tech_vez(lista_techs, cliente):
+    cliente = tratar_nome_cliente(cliente)
+
+    for tech in lista_techs:
+        nome_tech = tratar_nome_cliente(tech["nome"])
+
+        if cliente == nome_tech:
+            return tech["tech"].replace("#", "")
+
+        if cliente in nome_tech or nome_tech in cliente:
+            return tech["tech"].replace("#", "")
+    return None
 

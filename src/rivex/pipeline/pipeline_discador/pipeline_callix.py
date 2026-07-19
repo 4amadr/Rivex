@@ -22,7 +22,7 @@ class PipelineCallix:
         self.data=DateConfig()
         self.login=os.getenv("USUARIO_CALLIX_GERAL")
         self.senha=os.getenv("SENHA_CALLIX_GERAL")
-        self.banco_callix=DatabaseRivex()
+        self.banco_callix=DatabaseCallix()
 
     def get_ambiente(self):
         '''
@@ -43,7 +43,7 @@ class PipelineCallix:
 
 
 
-    def processar_cliente(self, cliente:str, token: str, json_tech: str, cursor):
+    def processar(self, cliente:str, token: str, json_tech: str):
         """
         Processa a coleta, limpeza e carga de um liente
         """
@@ -91,40 +91,36 @@ class PipelineCallix:
                 data=data_selecionada,
                 agentes_info=chamadas_limpas
             )
+            lista_chamadas = []
             dict_chamadas = empacotamento_callix.pacote_chamadas()
+            lista_chamadas.append(dict_chamadas)
             lista_agentes = empacotamento_callix.pacote_agentes()
             
+            return lista_chamadas, lista_agentes
+            
+            
 
-            # carregar
-            logger.info("Enviando dados estruturados para o banco de dados")
-            self.banco_callix.envio_banco(chamadas=dict_chamadas, desempenho_do_agente=lista_agentes, cursor=cursor)
 
         except Exception as e:
             logger.error(f"Falha ao processar o cliente {cliente_formatado}. Erro {e}", exc_info=True)
 
     def executar(self):
-        print("Abrindo banco de dados")
-        cursor, conexao = self.banco_callix.abrir_banco()
-
 
         logger.info("Iniciando callix")
         lista_tokens = self.get_ambiente()
         get_clients = CallixGetClients()
-        print("[DEBUG DA LISTA DE TOKENS]")
-        print(lista_tokens)
         
         if not lista_tokens:
             raise RuntimeError("Sem clientes ou tokens")
         
+        lista_clientes = []
         for info in lista_tokens: # lista tokens se tornou uma variável simples, e ela precisa ser uma lista
-            print("[DEBUG EXECUÇÃO]")
-            print(f"INFORMAÇÕES ENVIADAS PARA A EXECUÇÃO: {info}")
             tech = get_clients.get_tech_clientes_callix()
 
 
-            self.processar_cliente(info['Cliente'], info['Token'], tech, cursor)
-        print("Fechando banco de dados")
-        self.banco_callix.fechar_db(cursor=cursor, conexao=conexao)
+            cliente, agente = self.processar(info['Cliente'], info['Token'], tech, cursor)
+            self.DatabaseCallix.db_callix(cliente, agente)
+        self.DatabaseCallix.fechar_db_callix()
 
 
 

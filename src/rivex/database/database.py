@@ -1,4 +1,3 @@
-from src.rivex.utils.database_utils.database_config import DatabaseConfig
 import psycopg2
 from psycopg2 import OperationalError
 from dotenv import load_dotenv
@@ -9,16 +8,51 @@ log = logging.getLogger(__name__)
 
 
 
-class DatabaseRivex:
+class ConexaoDatabaseRivex:
     def __init__(self):
         load_dotenv()
-        self._config = self._carrecar_banco()
-        self.criar_tabela_chamadas = """
-        CREATE TABLE IF NOT EXISTS dados_discador.chamadas_cliente (
+        self._config = self.carregar_banco()
+        
+        
+    def carregar_banco(self):
+        return {
+        "host": os.getenv("HOST_DB"),
+        "database": os.getenv("DATABASE_CONTECH"),
+        "user": os.getenv("USER_DB"),
+        "password": os.getenv("SENHA_DB"),
+        "port": os.getenv("PORT_DB"),
+    }
+    
+    def abrir_banco(self):
+        try:
+            self.connection = psycopg2.connect(**self._config)
+            print("Estabelecendo conexão com o banco de dados...")
+            return self.connection.cursor(), self.connection
+        
+        except OperationalError as erro_abrir_banco:
+            log.error(f"Ocorreu um erro ao tentar abrir o banco de dados {erro_abrir_banco}")
+            raise
+        except UnicodeDecodeError as erro_decode:
+            log.error(f"Erro de decode nas variaveis de ambiente: {erro_decode}")
+            raise
+    
+    def fechar_db(self, cursor, conexao):
+        if conexao:
+            cursor.close()
+            conexao.close()
+            print("Conexão com o DB fechada!")
+        
+class DatabaseCallix:
+
+    def __init__(self):
+        self.db = ConexaoDatabaseRivex()
+        self.cursor, self.conexao = self.db.abrir_banco()
+
+        self.query_criar_tabela_chamadas = """
+        CREATE TABLE IF NOT EXISTS dados_discador.chamadas_cliente_callix (
             tech_cliente INTEGER NOT NULL,
             cliente_nome TEXT NOT NULL,
             data DATE NOT NULL,
-            discador TEXT NOT NULL,
             chamadas INTEGER NOT NULL,
             completas INTEGER NOT NULL,
             recusadas INTEGER NOT NULL,
@@ -27,157 +61,140 @@ class DatabaseRivex:
             PRIMARY KEY (tech_cliente, data)
         );
         """
-        self.criar_tabela_agentes = """
-        CREATE TABLE IF NOT EXISTS dados_discador.chamadas_agente (
+
+        self.query_criar_tabela_agentes = """
+        CREATE TABLE IF NOT EXISTS dados_discador.chamadas_agente_callix (
             tech INTEGER NOT NULL,
             cliente_nome TEXT NOT NULL,
-            discador TEXT NOT NULL,
             data DATE NOT NULL,
             nome_agente TEXT NOT NULL,
             chamadas_agente INTEGER NOT NULL,
             PRIMARY KEY (tech, data, nome_agente)
         );
         """
+
         self.query_chamadas = """
-            INSERT INTO dados_discador.chamadas_cliente (tech_cliente, cliente_nome, data, discador, chamadas, completas, recusadas, abandonadas, agressividade)
-            VALUES (%(tech)s, %(Cliente)s, %(Data)s, %(Chamadas totais)s, %(Chamadas aceitas)s, %(Chamadas recusadas)s, %(Chamadas abandonadas)s, %(Agressividade)s)
-            ON CONFLICT (tech_cliente, data)
-            DO UPDATE SET
+        INSERT INTO dados_discador.chamadas_cliente_callix
+        (
+            tech_cliente,
+            cliente_nome,
+            data,
+            chamadas,
+            completas,
+            recusadas,
+            abandonadas,
+            agressividade
+        )
+        VALUES
+        (
+            %(tech)s,
+            %(Cliente)s,
+            %(Data)s,
+            %(Chamadas totais)s,
+            %(Chamadas aceitas)s,
+            %(Chamadas recusadas)s,
+            %(Chamadas abandonadas)s,
+            %(Agressividade)s
+        )
+        ON CONFLICT (tech_cliente, data)
+        DO UPDATE SET
             chamadas = EXCLUDED.chamadas,
             completas = EXCLUDED.completas,
             recusadas = EXCLUDED.recusadas,
             abandonadas = EXCLUDED.abandonadas,
             agressividade = EXCLUDED.agressividade;
-            """
-        self.query_agentes = """
-            INSERT INTO dados_discador.chamadas_agente (tech, cliente_nome, discador, data, nome_agente, chamadas_agente)
-            SELECT %(tech)s, %(Cliente)s ,%(Data)s, %(Nome do agente)s, %(Chamadas aceitas do agente)s
-            ON CONFLICT (tech, data, nome_agente)
-            DO UPDATE SET
-            chamadas_agente = EXCLUDED.chamadas_agente;
-            """
-        self.criar_tabela_operadora = """
-        CREATE TABLE IF NOT EXISTS dados_operadora.consumo_clientes (
-            tech INTEGER NOT NULL,
-            cliente TEXT,
-            operadora TEXT NOT NULL,
-            data DATE NOT NULL,
-            custo DECIMAL NOT NULL,
-            minutagem DECIMAL NOT NULL,
-            chamadas_tarifadas INTEGER NOT NULL,
-            PRIMARY KEY (tech, data)
-            );
         """
-        self.inserir_consumo = """
-INSERT INTO dados_operadora.consumo_clientes
-(
-    tech,
-    cliente,
-    discador,
-    operadora,
-    data,
-    custo,
-    minutagem,
-    chamadas_tarifadas
-)
-VALUES
-(
-    %(tech)s,
-    %(cliente)s,
-    %(discador)s
-    %(operadora)s,
-    %(data)s,
-    %(custo)s,
-    %(minutagem)s,
-    %(chamadas_tarifadas)s
-)
-ON CONFLICT (tech, data)
-DO UPDATE SET
-    cliente = EXCLUDED.cliente,
-    discador = EXCLUDED.cliente
-    operadora = EXCLUDED.operadora,
-    custo = EXCLUDED.custo,
-    minutagem = EXCLUDED.minutagem,
-    chamadas_tarifadas = EXCLUDED.chamadas_tarifadas;
-"""
-    def _carrecar_banco(self) -> dict:
-        return {
-            "host": os.getenv("HOST_DB"),
-            "database": os.getenv("DATABASE_CONTECH"),
-            "user": os.getenv("USER_DB"),
-            "password": os.getenv("SENHA_DB"),
-            "port": os.getenv("PORT_DB")
-        }
 
-    def abrir_banco(self):
+        self.query_agentes = """
+        INSERT INTO dados_discador.chamadas_agente_callix
+        (
+            tech,
+            cliente_nome,
+            data,
+            nome_agente,
+            chamadas_agente
+        )
+        VALUES
+        (
+            %(tech)s,
+            %(Cliente)s,
+            %(Data)s,
+            %(Nome do agente)s,
+            %(Chamadas aceitas do agente)s
+        )
+        ON CONFLICT (tech, data, nome_agente)
+        DO UPDATE SET
+            chamadas_agente = EXCLUDED.chamadas_agente;
+        """
+
+        self.criar_tabelas()
+
+    def criar_tabelas(self):
         try:
-            self.connection = psycopg2.connect(**self._config)
-            print("Conectado ao banco de dados")
+            self.cursor.execute(self.query_criar_tabela_chamadas)
+            self.cursor.execute(self.query_criar_tabela_agentes)
+            self.conexao.commit()
 
-            return self.connection.cursor(), self.connection
-        
-        except OperationalError as erro_banco:
-
-            log.error(f"Erro {erro_banco} ao conectar com o banco de dados, verifique as suas credenciais.")
+        except psycopg2.Error as erro:
+            self.conexao.rollback()
+            log.error(f"Erro ao criar tabelas: {erro}")
             raise
-        except UnicodeDecodeError as erro_decode:
-            log.error(f"Erro de encoding nas variaveis de ambiente: {erro_decode}")
-            raise
-    
-    def envio_banco(self, chamadas: dict, desempenho_do_agente: list, cursor):
-        try:
-            cursor.execute(self.criar_tabela_chamadas)
-            cursor.execute(self.criar_tabela_agentes)
-            self.connection.commit()
-        except psycopg2.Error as erro_criacao_tabela:
-            log.error(f"Erro ao criar tabelas: {erro_criacao_tabela}")
-            
-            
-        try:
-            print("Enviando dados de chamadas para o banco de dados")
-            cursor.execute(self.query_chamadas, chamadas)
-            print("Chamadas enviadas para o banco de dados!")
-            self.connection.commit()
-        except psycopg2.Error as erro_de_envio_de_chamadas:
-            print(f"Erro ao enviar chamadas para o banco de dados! {erro_de_envio_de_chamadas}")
+
+    def envio_banco_chamadas(self, dados_cliente):
+
+        for cliente in dados_cliente:
+
+            try:
+                self.cursor.execute(self.query_chamadas, cliente)
+                self.conexao.commit()
+
+                log.info(
+                    "Cliente %s enviado.",
+                    cliente["Cliente"]
+                )
+
+            except psycopg2.Error as erro:
+
+                self.conexao.rollback()
+
+                log.error(
+                    "Erro ao enviar cliente %s: %s",
+                    cliente["Cliente"],
+                    erro
+                )
+
+    def envio_banco_agentes(self, dados_operador):
+
+        for operador in dados_operador:
+
+            try:
+                self.cursor.execute(self.query_agentes, operador)
+                self.conexao.commit()
+
+            except psycopg2.Error as erro:
+
+                self.conexao.rollback()
+
+                log.error(
+                    "Erro ao enviar operador %s: %s",
+                    operador["Nome do agente"],
+                    erro
+                )
+
+    def db_callix(self, dados_cliente, dados_operador):
+
+        self.envio_banco_chamadas(dados_cliente)
+        self.envio_banco_agentes(dados_operador)
+
+    def fechar_db_callix(self):
+
+        self.db.fechar_db(
+            self.cursor,
+            self.conexao
+        )
+class DatabaseVonix:
+    def __init__(self):
+        self.db = ConexaoDatabaseRivex()
+        self.cursor, self.conexao = self.db.abrir_banco()
         
-        try:
-            for agente in desempenho_do_agente:
-                cursor.execute(self.query_agentes, agente)
-            print("Dados de agentes enviados para o banco de dados!")
-            self.connection.commit()
-        except psycopg2.Error as erro_envio_dados_agentes:
-            print(f"Erro ao enviar dados de agentes para o banco de dados {erro_envio_dados_agentes}")
-        return True
-    
-    def enviar_banco_operadoras(self, consumo, cursor):
-        try:
-            cursor.execute(self.criar_tabela_operadora)
-            self.connection.commit()
-
-        except psycopg2.Error as erro_banco:
-            log.error(f"ERRO! ao criar banco de dados das discadoras! {erro_banco}")
-            self.connection.rollback()
-            print(erro_banco)
-
-
-        try:
-            print("Enviando dados de consumo de clientes para o banco de dados")
-            cursor.execute(self.inserir_consumo, consumo)
-            self.connection.commit()
-
-        except Exception as erro_envio:
-            log.error(f"Erro ao enviar o consumo para o banco de dados: {erro_envio}")
-        return True
-            
-    
-    def fechar_db(self, cursor, conexao):
-        if conexao:
-            cursor.close()
-            conexao.close()
-            print("Conexão fechada com o DB")
-    
-
-
-            
-            
+        

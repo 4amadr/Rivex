@@ -224,7 +224,6 @@ class DatabaseVonix:
         (
             tech_cliente,
             cliente_nome,
-            fila,
             data,
             chamadas,
             completas,
@@ -235,14 +234,13 @@ class DatabaseVonix:
         VALUES
         (
             %(tech)s,
-            %(Cliente)s,
-            %(Fila)s,
-            %(Data)s,
-            %(Chamadas totais)s,
-            %(Chamadas aceitas)s,
-            %(Chamadas recusadas)s,
-            %(Chamadas abandonadas)s,
-            %(Agressividade)s
+            %(cliente)s,
+            %(data)s,
+            %(chamadas)s,
+            %(completas)s,
+            %(recusadas)s,
+            %(abandonadas)s,
+            %(agressividade)s
         );
         """
 
@@ -251,7 +249,6 @@ class DatabaseVonix:
         (
             tech,
             cliente_nome,
-            fila,
             data,
             nome_agente,
             chamadas_agente
@@ -259,11 +256,10 @@ class DatabaseVonix:
         VALUES
         (
             %(tech)s,
-            %(Cliente)s,
-            %(Fila)s,
-            %(Data)s,
-            %(Nome do agente)s,
-            %(Chamadas aceitas do agente)s
+            %(cliente_nome)s,
+            %(data)s,
+            %(agente)s,
+            %(chamadas)s
         );
         """
 
@@ -278,8 +274,7 @@ class DatabaseVonix:
         )
 
     def db_vonix(self, dados_chamadas, agentes):
-        try:
             self.db.enviar_dados(dados_chamadas, agentes)
-
-        finally:
+            
+    def fechar_db_vonix(self):
             self.db.fechar_db()

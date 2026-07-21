@@ -80,10 +80,13 @@ def gerar_lista_infos_agentes(tabela):
         return None
     return tabela.find_all('tr', class_=["item", "shaded"])
 
-def gerar_dados_agentes(infos_agentes):
+def gerar_dados_agentes(infos_agentes, tech, cliente, data):
     dados_agentes = []
     if not infos_agentes:
         dados_agentes.append({
+            "tech": tech,
+            "cliente_nome": cliente,
+            "data": data,
             "agente": "Sem agente",
             "chamadas": 0,
         })
@@ -107,15 +110,18 @@ def gerar_dados_agentes(infos_agentes):
                 chamadas = "0"
 
             dados_agentes.append({
+                "tech": tech,
+                "cliente_nome": cliente,
+                "data": data,
                 "agente": nome,
                 "chamadas": chamadas
             })
     return dados_agentes
 
-def dict_agentes(html):
+def dict_agentes(html, tech, cliente, data):
     tabela = encontrar_tabela_agentes(html)
     lista_infos = gerar_lista_infos_agentes(tabela)
-    return gerar_dados_agentes(lista_infos)
+    return gerar_dados_agentes(lista_infos, tech, cliente, data)
 
 def find_name(html_cliente):
     elemento = html_cliente.find('input', id='queue_name')
@@ -180,5 +186,5 @@ def get_tech_vez(lista_techs, cliente):
 
         if cliente in nome_tech or nome_tech in cliente:
             return tech["tech"].replace("#", "")
-    return None
+    return 0
 

@@ -1,6 +1,7 @@
 from src.rivex.enviroments.discadores.vonix.fluxo_coleta import *
 from src.rivex.enviroments.discadores.vonix.fluxo_limpeza import *
 from src.rivex.data_processing.Vonix.cleaning_vonix import *
+from src.rivex.database.database import DatabaseVonix
 import os
 from dotenv import load_dotenv
 import time
@@ -18,6 +19,7 @@ class PipelineVonix:
             data=self.data.data_selecionadas(),
             url_base=self.url
         )
+        self.db = DatabaseVonix()
 
     def inicial_config(self):
         token_encontrado = self.vonix_execucao.token_pronto()
@@ -42,7 +44,6 @@ class PipelineVonix:
         chamadas_recusadas = limpar_chamadas(recusadas.text)
         agressividade = get_agressividade(config.text)
         lista_techs = get_lista_techs(tech.text)
-        print("LISTA DE TECHS COLETADAS: " ,lista_techs)
         """
         Lista de techs tem o nome um pouco diferente
         precisa criar uma função para tratar, comparar e se o nome do cliente
@@ -51,11 +52,11 @@ class PipelineVonix:
         tech = get_tech_vez(lista_techs, cliente)
 
         dados_cliente = {
-            "Tech": tech,
-            "Data": self.data.data_selecionadas(),
-            "Cliente": cliente,
+            "tech": tech,
+            "data": self.data.data_selecionadas(),
+            "cliente": cliente,
             "chamadas": chamadas_totais,
-            "aceitas": chamadas_aceitas,
+            "completas": chamadas_aceitas,
             "recusadas": chamadas_recusadas,
             "abandonadas": chamadas_abandonadas,
             "agressividade": agressividade
@@ -64,13 +65,8 @@ class PipelineVonix:
         print(dados_cliente)
         return dados_cliente
         
-    def execucao_limpeza_agentes_vonix(self, cliente, agentes):
-        tabela = dict_agentes(agentes.text)
-        print(cliente)
-        print(tabela)
-        return tabela
-        
-        
+    def execucao_limpeza_agentes_vonix(self, cliente, agentes, tech, data):
+        return dict_agentes(agentes.text, tech, cliente, data)        
 
     def execucao_vonix(self):
         lista_clientes, token = self.inicial_config()
@@ -98,11 +94,12 @@ class PipelineVonix:
                                   response_dict["Tech"]
             )
 
-            agentes = self.execucao_limpeza_agentes_vonix(cliente, response_dict["Agentes"])
-
+            agentes = self.execucao_limpeza_agentes_vonix(cliente["cliente"], response_dict["Agentes"], cliente["tech"], cliente["data"])
             
             print(f"Dados dos clientes: {cliente}")
             print(f"Dados dos agentes: {agentes}")
+            self.db.db_vonix(cliente, agentes)
             time.sleep(30)
+        self.db.fechar_db_vonix()
 
         

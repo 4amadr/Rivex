@@ -9,7 +9,6 @@ from src.rivex.utils.csv_utils.callix_csv.callix_converter import CallixCSVConve
 from src.rivex.utils.infra_utils.date_config import DateConfig
 from src.rivex.enviroments.discadores.vonix.fluxo_coleta import ExecucaoVonix
 from src.rivex.enviroments.discadores.vonix.fluxo_limpeza import LimpezaVonix
-from src.rivex.database.database import DatabaseRivex
 from src.rivex.enviroments.discadores.Callix.callix_req import CAllixRequisition
 from src.rivex.data_processing.Callix.cleaner_callix_req import *
 from src.rivex.utils.database_utils.database_config import DatabaseConfig
@@ -54,5 +53,5 @@ def main_callix():
 #exec_pentagono = main_pentagono()
 #exec_agitel = main_agitel()
 #exec_gs = main_gs()
-dados_vonix = main_vonix()
-#dados_callix = main_callix()
+#dados_vonix = main_vonix()
+dados_callix = main_callix()

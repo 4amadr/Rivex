@@ -16,14 +16,12 @@ class UrlGetClients:
         return f'{self.url_contech}/api/v4/tenants/sub-accounts'
     
 class UrlGetData:
-    def __init__(self, cliente):
-        self.cliente = cliente
     
-    def login_cliente_header(self):
-        return f'https://{self.cliente}.callix.com.br/login'
+    def login_cliente_header(self, cliente):
+        return f'https://{cliente}contech.callix.com.br/login'
     
-    def login_cliente(self):
-        return f'https://{self.cliente}.callix.com.br/api/v4/auth/session'
+    def login_cliente(self, cliente):
+        return f'https://{cliente}.callix.com.br/api/v4/auth/session'
     
-    def url_tokens(self):
-        return f'https://{self.cliente}.callix.com.br/api/v4/entities/api-tokens'
+    def url_tokens(self, cliente):
+        return f'https://{cliente}.callix.com.br/api/v4/entities/api-tokens'

@@ -1,16 +1,14 @@
 import logging
 from dotenv import load_dotenv
 from src.rivex.utils.infra_utils.date_config import DateConfig
-import time
 import os
 from src.rivex.enviroments.discadores.Callix.callix import CallixAPICollector
-from src.rivex.enviroments.discadores.Callix.callix_token_db import CallixDB
 from src.rivex.data_processing.Callix.cleaner_callix_api import *
 from src.rivex.enviroments.discadores.Callix.callix_req import CAllixRequisition
 from src.rivex.data_processing.Callix.cleaner_callix_req import *
-from src.rivex.database.database import DatabaseRivex
 from src.rivex.enviroments.discadores.Callix.callix_client_package import *
 from src.rivex.enviroments.discadores.Callix.callix_get_clients import *
+from src.rivex.database.database import DatabaseCallix
 from src.rivex.data_processing.Callix.callix_clients import *
 load_dotenv()
 logger = logging.getLogger(__name__)
@@ -29,24 +27,21 @@ class PipelineCallix:
         Retorna as informações necessárias para requisições futuras
         '''
         get_infos = CallixGetClients()
-        tech_clientes, url_clientes = get_infos.get_infos_callix()
+        tech_clientes, nome_clientes_ativos = get_infos.get_infos_callix()
         
         print("Consultando clientes ativos no servidor")
-        clientes_ativos = clientes_ativos_callix(url_clientes.json())
+        lista_cliente = clientes_ativos_callix(nome_clientes_ativos.json())
 
-        get_token = GetTokenCallix(clientes_ativos)
-        lista_infos_clientes = get_token.fluxo_de_tokens()
-        print("[DEBUG LISTA DE INFORMAÇÕES DOS CLIENTES -> DEVE TER CLIENTE + TOKEN ABAIXO]")
-        print(lista_infos_clientes)
-        print(type(lista_infos_clientes))
-        return lista_infos_clientes # lista de dict
+        get_token = GetTokenCallix(lista_cliente)
+        
+        return get_token.fluxo_de_tokens()
 
-
-
-    def processar(self, cliente:str, token: str, json_tech: str):
+    def processar(self, cliente:str, token: str, json_tech):
         """
         Processa a coleta, limpeza e carga de um liente
         """
+
+
         cliente_formatado=cliente.removeprefix("contech.callix.com.br")
         logger.info(f"Coletando dados do cliente: {cliente_formatado}")
 
@@ -91,36 +86,50 @@ class PipelineCallix:
                 data=data_selecionada,
                 agentes_info=chamadas_limpas
             )
-            lista_chamadas = []
+
             dict_chamadas = empacotamento_callix.pacote_chamadas()
-            lista_chamadas.append(dict_chamadas)
             lista_agentes = empacotamento_callix.pacote_agentes()
             
-            return lista_chamadas, lista_agentes
+            return dict_chamadas, lista_agentes
             
             
 
 
         except Exception as e:
             logger.error(f"Falha ao processar o cliente {cliente_formatado}. Erro {e}", exc_info=True)
+            return None, None
 
     def executar(self):
 
         logger.info("Iniciando callix")
+
         lista_tokens = self.get_ambiente()
-        get_clients = CallixGetClients()
         
         if not lista_tokens:
             raise RuntimeError("Sem clientes ou tokens")
         
-        lista_clientes = []
-        for info in lista_tokens: # lista tokens se tornou uma variável simples, e ela precisa ser uma lista
-            tech = get_clients.get_tech_clientes_callix()
+        get_clients = CallixGetClients()
+        techs = get_clients.get_tech_clientes_callix()
+        try:
+            for info in lista_tokens:
 
 
-            cliente, agente = self.processar(info['Cliente'], info['Token'], tech, cursor)
-            self.DatabaseCallix.db_callix(cliente, agente)
-        self.DatabaseCallix.fechar_db_callix()
+                dados_cliente, dados_agente = self.processar(
+                    info['Cliente'],
+                    info['Token'],
+                    techs)
+                
+                if dados_cliente is None:
+                    logger.warning(
+            "Cliente %s ignorado por erro no processamento.",
+            info["Cliente"]
+        )
+                    continue
+                self.banco_callix.db_callix(dados_cliente, dados_agente)
+        finally:
+            self.banco_callix.fechar()
+
+
 
 
 

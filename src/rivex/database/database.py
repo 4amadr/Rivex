@@ -37,24 +37,6 @@ class ConexaoDatabaseRivex:
             log.error(f"Erro de decode nas variaveis de ambiente: {erro_decode}")
             raise
     
-    def envio_banco_agentes(self, dados_operador: list, query_agentes):
-
-        for operador in dados_operador:
-
-            try:
-                self.cursor.execute(query_agentes, operador)
-                self.conexao.commit()
-
-            except psycopg2.Error as erro:
-
-                self.conexao.rollback()
-
-                log.error(
-                    "Erro ao enviar operador %s: %s",
-                    operador["Nome do agente"],
-                    erro
-                )
-    
     def fechar_db(self, cursor, conexao):
         if conexao:
             cursor.close()
@@ -62,58 +44,57 @@ class ConexaoDatabaseRivex:
             print("Conexão com o DB fechada!")
         
 class DatabaseBase:
-    def __init__(self, query_tabela_chamada, query_tabela_operador):
-        self.db_rivex = ConexaoDatabaseRivex()
-        self.cursor = self.db_rivex.cursor
-        self.conexao = self.db_rivex.conexao
-        self.query_tabela_chamada = query_tabela_chamada
-        self.query_tabela_operador = query_tabela_operador
-
-    def _criar_tabelas(self, criar_tabela_chamadas, criar_tabela_agentes):
-        try:
-            self.cursor.execute(criar_tabela_chamadas)
-            self.cursor.execute(criar_tabela_agentes)
-
-        except psycopg2.Error as erro:
-            self.conexao.rollback()
-            log.error(f"Erro ao criar tabelas: {erro}")
-            raise
-
-
-    def enviar_operador(self, dados_operador):
-        try: 
-            self.cursor.execute(self.query_tabela_operador, dados_operador)
-            log.info("Enviando dados do agente para o Banco de dados", dados_operador["Agente"])
-        except psycopg2.Error as erro:
-            self.conexao.rollback()
-
-            log.error(f"Erro ao enviar o agente para o banco de dados. Erro {erro}")
-    
-    def enviar_cliente(self, dados_cliente):
-        try:
-            self.cursor.execute(self.query_tabela_chamada, dados_cliente)
-            log.info("Enviando dados do cliente para o banco de dados", dados_cliente["Cliente"])
-        except psycopg2.Error as erro_cliente:
-            self.conexao.rollback()
-
-            log.error(f"Erro ao enviar o clienente para o banco de dados. Erro {erro_cliente}")
-
-    def commitar_db(self):
-        self.conexao.commit()
-
-
-
-
-
-class DatabaseCallix:
-
-    def __init__(self):
+    def __init__(self, query_insert_chamada, query_insert_operador):
         self.db = ConexaoDatabaseRivex()
-
         self.cursor = self.db.cursor
-
         self.conexao = self.db.conexao
 
+        self.query_insert_chamada = query_insert_chamada
+        self.query_insert_operador = query_insert_operador
+
+    def criar_tabelas(self, query_tabela_chamadas, query_tabela_agentes):
+        try:
+            self.cursor.execute(query_tabela_chamadas)
+            self.cursor.execute(query_tabela_agentes)
+            self.conexao.commit()
+
+            log.info("Tabelas verificadas/criadas com sucesso.")
+
+        except psycopg2.Error as erro:
+            self.conexao.rollback()
+            log.error("Erro ao criar tabelas: %s", erro)
+            raise
+
+    def enviar_cliente(self, dados_cliente):
+        self.cursor.execute(self.query_insert_chamada, dados_cliente)
+
+    def enviar_operador(self, dados_operador):
+        self.cursor.execute(self.query_insert_operador, dados_operador)
+
+    def enviar_dados(self, dados_cliente, agentes):
+        try:
+            self.enviar_cliente(dados_cliente)
+
+            for agente in agentes:
+                self.enviar_operador(agente)
+
+            self.conexao.commit()
+
+            log.info("Dados enviados com sucesso.")
+
+        except psycopg2.Error as erro:
+            self.conexao.rollback()
+            log.error("Erro ao enviar dados para o banco: %s", erro)
+            raise
+
+    def fechar_db(self):
+        self.db.fechar_db(
+            self.cursor,
+            self.conexao
+        )
+
+class DatabaseCallix:
+    def __init__(self):
         self.query_criar_tabela_chamadas = """
         CREATE TABLE IF NOT EXISTS dados_discador.chamadas_cliente_callix (
             tech_cliente INTEGER NOT NULL,
@@ -193,66 +174,24 @@ class DatabaseCallix:
             chamadas_agente = EXCLUDED.chamadas_agente;
         """
 
-        self.db.criar_tabelas(self.query_criar_tabela_chamadas, self.query_criar_tabela_agentes)
-
-    def envio_banco_chamadas(self, dados_cliente):
-
-        for cliente in dados_cliente:
-
-            try:
-                self.cursor.execute(self.query_chamadas, cliente)
-                self.conexao.commit()
-
-                log.info(
-                    "Cliente %s enviado.",
-                    cliente["Cliente"]
-                )
-
-            except psycopg2.Error as erro:
-
-                self.conexao.rollback()
-
-                log.error(
-                    "Erro ao enviar cliente %s: %s",
-                    cliente["Cliente"],
-                    erro
-                )
-
-    def envio_banco_agentes(self, dados_operador):
-
-        for operador in dados_operador:
-
-            try:
-                self.cursor.execute(self.query_agentes, operador)
-                self.conexao.commit()
-
-            except psycopg2.Error as erro:
-
-                self.conexao.rollback()
-
-                log.error(
-                    "Erro ao enviar operador %s: %s",
-                    operador["Nome do agente"],
-                    erro
-                )
-
-    def db_callix(self, dados_cliente, dados_operador):
-
-        self.envio_banco_chamadas(dados_cliente)
-        self.envio_banco_agentes(dados_operador)
-
-    def fechar_db_callix(self):
-
-        self.db.fechar_db(
-            self.cursor,
-            self.conexao
+        self.db = DatabaseBase(
+            query_insert_chamada=self.query_chamadas,
+            query_insert_operador=self.query_agentes
         )
 
+        self.db.criar_tabelas(
+            query_tabela_chamadas=self.query_criar_tabela_chamadas,
+            query_tabela_agentes=self.query_criar_tabela_agentes
+        )
+
+    def db_callix(self, dados_chamadas, agentes):
+        self.db.enviar_dados(dados_chamadas, agentes)
+
+    def fechar(self):
+        self.db.fechar_db()
+
 class DatabaseVonix:
-    def __init__(self, dados_operador):
-        self.dados_operador = dados_operador
-        self.db = ConexaoDatabaseRivex()
-        self.cursor, self.conexao = self.db.abrir_banco()
+    def __init__(self):
         self.query_criar_tabela_chamadas = """
         CREATE TABLE IF NOT EXISTS dados_discador.chamadas_cliente_vonix (
             id SERIAL PRIMARY KEY,
@@ -267,6 +206,7 @@ class DatabaseVonix:
             agressividade FLOAT NOT NULL
         );
         """
+
         self.query_criar_tabela_agentes = """
         CREATE TABLE IF NOT EXISTS dados_discador.chamadas_agente_vonix (
             id SERIAL PRIMARY KEY,
@@ -278,6 +218,7 @@ class DatabaseVonix:
             chamadas_agente INTEGER NOT NULL
         );
         """
+
         self.query_chamadas = """
         INSERT INTO dados_discador.chamadas_cliente_vonix
         (
@@ -304,6 +245,7 @@ class DatabaseVonix:
             %(Agressividade)s
         );
         """
+
         self.query_agentes = """
         INSERT INTO dados_discador.chamadas_agente_vonix
         (
@@ -324,9 +266,20 @@ class DatabaseVonix:
             %(Chamadas aceitas do agente)s
         );
         """
-        self.db.criar_tabelas(self.query_criar_tabela_chamadas, self.query_criar_tabela_agentes)
 
+        self.db = DatabaseBase(
+            query_insert_chamada=self.query_chamadas,
+            query_insert_operador=self.query_agentes
+        )
 
-    
+        self.db.criar_tabelas(
+            self.query_criar_tabela_chamadas,
+            self.query_criar_tabela_agentes
+        )
 
-    
+    def db_vonix(self, dados_chamadas, agentes):
+        try:
+            self.db.enviar_dados(dados_chamadas, agentes)
+
+        finally:
+            self.db.fechar_db()

@@ -23,14 +23,14 @@ class CAllixRequisition:
         
     def url_callix(self):
         # vai tratar e gerar todas as URL de requisições limpas para serem usadas
-        url_base = f'https://{self.cliente}.callix.com.br/login'
-        url_login = f'https://{self.cliente}.callix.com.br/api/v4/auth/session'
-        url_chamadas_agentes = f'https://{self.cliente}.callix.com.br/api/v4/entities/user-performance-histories'
-        url_get_tech = f'https://{self.cliente}.callix.com.br/api/v4/entities/accounts'
+        url_base = f'https://{self.cliente}contech.callix.com.br/login'
+        url_login = f'https://{self.cliente}contech.callix.com.br/api/v4/auth/session'
+        url_chamadas_agentes = f'https://{self.cliente}contech.callix.com.br/api/v4/entities/user-performance-histories'
+        url_get_tech = f'https://{self.cliente}contech.callix.com.br/api/v4/entities/accounts'
         
         lista_de_urls_de_agressividade = []
         for campanha in self.id_campanha:
-            url_agressividade = f'https://{self.cliente}.callix.com.br/api/v4/entities/campaigns/{campanha}'
+            url_agressividade = f'https://{self.cliente}contech.callix.com.br/api/v4/entities/campaigns/{campanha}'
             lista_de_urls_de_agressividade.append(url_agressividade)
         return url_login, url_chamadas_agentes, lista_de_urls_de_agressividade, url_base, url_get_tech
     

@@ -21,10 +21,13 @@ def get_identificador(cliente_html):
     href = cliente_html.find("a")["href"]
     return parse_qs(urlparse(href).query)["obj_fila_id"][0]
 
+def select_agressividade(select):
+    return select.find("option", selected=True).get_text()
+
 def get_agressividade(agressividade_html):
     agressividade_html = gerar_html(agressividade_html)
     select = agressividade_html.find('select', id='obj_fila_valor_overdial')
-    return select.find("option", selected=True).get_text()
+    return select_agressividade(select)
 
 def get_chamadas_totais_cliente(chamadas_json):
     return chamadas_json.get('data', {}).get('resultado', {}).get('total', {}).get('qtd', 0)
@@ -59,14 +62,13 @@ def get_chamadas_completas_agente(agentes_json):
 def empacotar_dados_clientes(chamadas_json, cliente, data, agressividade):
     return {
         "tech": get_tech_cliente(cliente),
-        "cliente": cliente,
-        "Data": data,
-        "Discador": "Vonix",
-        "Chamadas totais": get_chamadas_totais_cliente(chamadas_json),
-        "Chamadas aceitas": get_chamadas_completas_cliente(chamadas_json),
-        "Chamadas recusadas": get_chamadas_recusadas_cliente(chamadas_json),
-        "Chamadas abandonadas": get_chamadas_abandonadas_cliente(chamadas_json),
-        "Agressividade": get_agressividade(agressividade)
+        "cliente_nome": cliente,
+        "data": data,
+        "chamadas": get_chamadas_totais_cliente(chamadas_json),
+        "completas": get_chamadas_completas_cliente(chamadas_json),
+        "recusadas": get_chamadas_recusadas_cliente(chamadas_json),
+        "abandonadas": get_chamadas_abandonadas_cliente(chamadas_json),
+        "agressividade": get_agressividade(agressividade)
     }
     
 
@@ -74,10 +76,10 @@ def empacotar_dados_clientes(chamadas_json, cliente, data, agressividade):
 def empacotar_dados_agentes(agente, cliente, data):
     return {
         "tech": get_tech_cliente(cliente),
-        "Cliente": cliente,
-        "Data": data,
-        "Nome do agente": agente["agente"],
-        "Chamadas aceitas do agente": agente["atendimentos"]
+        "cliente_nome": cliente,
+        "data": data,
+        "nome_agente": agente["agente"],
+        "chamadas_agente": agente["atendimentos"]
     }
      
     

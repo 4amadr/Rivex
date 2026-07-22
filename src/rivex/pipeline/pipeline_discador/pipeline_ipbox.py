@@ -3,6 +3,7 @@ import time
 from src.rivex.enviroments.discadores.IPBox.colect_ipbox import *
 from src.rivex.enviroments.discadores.IPBox.payloads_ipbox import *
 from src.rivex.utils.infra_utils.date_config import DateConfig
+from src.rivex.database.database import DatabaseIpbox
 import logging
 from dotenv import load_dotenv
 from src.rivex.data_processing.IPBox.limpeza_ipbox import *
@@ -25,6 +26,7 @@ class PipelineIpbox:
         self.login = os.getenv('IPBOX_LOGIN')
         self.senha = os.getenv('IPBOX_PASSWORD')
         self.token = os.getenv('IPBOX_TOKEN')
+        self.banco_ipbox = DatabaseIpbox()
         
         
     def autenticar_e_listar_clientes(self):
@@ -46,14 +48,18 @@ class PipelineIpbox:
             agressividade, chamadas, = ipbox_client.execucao_ipbox(nome_cliente=cliente, id_cliente=id_cliente)       
             print(f"Cliente atual: {cliente}")
             dict_cliente = empacotar_dados_clientes(chamadas, cliente, self.data_ipbox, agressividade)
+            return dict_cliente
 
         except Exception as e:
             logger.error(f"Erro ao procesar o cliente {cliente}: {e}", exc_info=True)
             
     def executar(self):
         print('Iniciando a configuração do servidor IPBOX.....')
+
         sessao_logada, clientes_texto = self.autenticar_e_listar_clientes()
+
         print('Iniciando a coleta de dados dos clientes...')
+
         execucao_ipbox = IpboxClientConfig(
             url=self.url,
             login=self.login,
@@ -67,39 +73,55 @@ class PipelineIpbox:
         html_clientes = gerar_html(clientes_texto)
         lista_clientes = gerar_lista_clientes(html_clientes)     
         
-        agentes_json = execucao_ipbox.get_relatorio_agente()  
-        agentes_json = agentes_json.json()
+        agentes_json = execucao_ipbox.get_relatorio_agente().json()
 
-        lista_clientes_limpa = []
         for cliente in lista_clientes:
 
             # cliente limpo aqui
             cliente_coletado = get_cliente(cliente)
-            lista_clientes_limpa.append(cliente_coletado)
             id_cliente = get_identificador(cliente)
-            self.processar_cliente(cliente_coletado, execucao_ipbox, id_cliente)
-            time.sleep(5)
-        
-        for cliente in lista_clientes_limpa:
-            lista_dados_agentes = []
+
+
+            dados_cliente = self.processar_cliente(
+                cliente_coletado,
+                execucao_ipbox,
+                id_cliente
+                )
             
+
+            if dados_cliente is None:
+                continue
+
+            lista_agentes = []
+
             for agente in agentes_json["data"]:
-                
+
                 if agente["agente"] == "TOTAIS":
                     continue
-                
-                nome_cliente = limpar_nome_cliente(agente["times"][0])
-                
-                if nome_cliente not in cliente:
+
+                nome_cliente = limpar_nome_cliente(
+                    agente["times"][0]
+                )
+
+                if nome_cliente not in cliente_coletado:
                     continue
-                
-                lista_dados_agentes.append(
+
+                lista_agentes.append(
                     empacotar_dados_agentes(
                         agente,
-                        cliente,
+                        cliente_coletado,
                         self.data_ipbox
                     )
                 )
 
-            print(cliente)
-            print(lista_dados_agentes)
+                logger.debug("Cliente: %s", dados_cliente)
+                logger.debug("Agentes: %s", lista_agentes)
+
+            # carregamento
+            self.banco_ipbox.db_ipbox(
+                dados_cliente,
+                lista_agentes
+            )
+
+            time.sleep(5)
+        self.banco_ipbox.fechar_db_ipbox()

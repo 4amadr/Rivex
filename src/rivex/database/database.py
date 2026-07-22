@@ -42,7 +42,37 @@ class ConexaoDatabaseRivex:
             cursor.close()
             conexao.close()
             print("Conexão com o DB fechada!")
-        
+
+
+class DatabaseTelefonia:
+    def __init__(self, query_insert_telefonia):
+         self.db = ConexaoDatabaseRivex()
+         self.cursor = self.db.cursor
+         self.conexao = self.db.conexao
+         self.query_insert_telefonia = query_insert_telefonia
+
+    def criar_tabelas(self, query_tabela_telefonia):
+        try:
+            self.cursor.execute(query_tabela_telefonia)
+            self.conexao.commit()
+
+            log.info("Tabela de telefpmoa verificada/criada com sucesso.")
+
+        except psycopg2.Error as erro:
+            self.conexao.rollback()
+            log.error("Erro ao criar tabela: %s", erro)
+            raise
+
+    def enviar_dados_telefonia(self, dict_telefonia):
+        self.cursor.execute(self.query_insert_telefonia, dict_telefonia)
+
+    def fechar_db(self):
+        self.db.fechar_db(
+            self.cursor,
+            self.conexao
+        )
+
+
 class DatabaseBase:
     def __init__(self, query_insert_chamada, query_insert_operador):
         self.db = ConexaoDatabaseRivex()
@@ -373,3 +403,89 @@ DO UPDATE SET
             
     def fechar_db_ipbox(self):
             self.db.fechar_db()
+
+class DatabasePentagono():
+    def __init__(self):
+        self.query_criar_tabela_telefonia = """
+    CREATE TABLE IF NOT EXISTS dados_operadora.dados_operadora_pentagono
+    (
+            tech INTEGER NOT NULL,
+            data DATE NOT NULL,
+            custo NUMERIC(12,2) NOT NULL,
+            minutagem NUMERIC(10,2) NOT NULL,
+            chamadas_tarifadas INTEGER NOT NULL,
+            PRIMARY KEY (tech, data)
+        );
+        """
+        self.query_inserir_dados_telefonia = """
+INSERT INTO dados_operadora.dados_operadora_pentagono
+        (
+            tech,
+            data,
+            custo,
+            minutagem,
+            chamadas_tarifadas
+        )
+        VALUES
+        (
+            %(tech)s,
+            %(data)s,
+            %(custo)s,
+            %(minutagem)s,
+            %(chamadas_tarifadas)s
+        )
+        ON CONFLICT (tech, data)
+        DO UPDATE SET
+            dados_operadora_pentagono = EXCLUDED.dados_operadora_pentagono;
+"""
+        self.db = DatabaseTelefonia(self.query_criar_tabela_telefonia)
+        self.db.criar_tabelas(query_tabela_telefonia=self.query_criar_tabela_telefonia)
+
+    def enviar_dados_db_pentagono(self, dados):
+        self.db.enviar_dados_telefonia(dados)
+
+    def fechar_db_telefonia(self):
+        self.db.fechar_db()
+            
+class DatabaseGerax():
+    def __init__(self):
+        self.query_criar_tabela_telefonia = """
+    CREATE TABLE IF NOT EXISTS dados_operadora.dados_operadora_gerax
+    (
+            tech INTEGER NOT NULL,
+            data DATE NOT NULL,
+            custo NUMERIC(12,2) NOT NULL,
+            minutagem NUMERIC(10,2) NOT NULL,
+            chamadas_tarifadas INTEGER NOT NULL,
+            PRIMARY KEY (tech, data)
+        );
+        """
+        self.query_inserir_dados_telefonia = """
+INSERT INTO dados_operadora.dados_operadora_gerax
+        (
+            tech,
+            data,
+            custo,
+            minutagem,
+            chamadas_tarifadas
+        )
+        VALUES
+        (
+            %(tech)s,
+            %(data)s,
+            %(custo)s,
+            %(minutagem)s,
+            %(chamadas_tarifadas)s
+        )
+        ON CONFLICT (tech, data)
+        DO UPDATE SET
+            dados_operadora_gerax = EXCLUDED.dados_operadora_gerax;
+"""
+        self.db = DatabaseTelefonia(self.query_criar_tabela_telefonia)
+        self.db.criar_tabelas(query_tabela_telefonia=self.query_criar_tabela_telefonia)
+
+    def enviar_dados_db_gerax(self, dados):
+        self.db.enviar_dados_telefonia(dados)
+
+    def fechar_db_telefonia(self):
+        self.db.fechar_db()

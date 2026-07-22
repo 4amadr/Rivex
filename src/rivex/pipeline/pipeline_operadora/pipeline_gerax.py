@@ -6,19 +6,20 @@ from src.rivex.database.database import *
 from dotenv import load_dotenv
 import os
 
-class ExecucaoPentagono:
+class ExecucaoGerax:
     def __init__(self):
         self.dc = DateConfig()
         self.data = self.dc.data_selecionadas()
-        self.db = DatabasePentagono()
+        self.db = DatabaseGerax()
         self.ps = pentagonoScrap(
-        usuario=os.getenv('PENTAGONO_LOGIN'),
-        senha=os.getenv('PENTAGONO_PASSWORD'),
-        data=self.data
+        usuario=os.getenv('GERAX_URL'),
+        senha=os.getenv('GERAX_PASSWORD'),
+        data=self.data,
+        url_base=os.getenv('GERAX_URL')
         )
 
 
-    def main_pentagono(self):
+    def main_gerax(self):
         # Coleta
         login, pagina_inicial, relatorio_html = self.ps.execucao_pentagono()
         
@@ -36,5 +37,5 @@ class ExecucaoPentagono:
         }   
             print("Dados que serão enviados")
             print(dict_dados_pentagono)
-            self.db.enviar_dados_db_pentagono(dict_dados_pentagono)
+            self.db.enviar_dados_db_gerax(dict_dados_pentagono)
         self.db.fechar_db_telefonia()

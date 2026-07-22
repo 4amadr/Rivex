@@ -8,26 +8,26 @@ import dotenv
 import os
 
 class PentagonoURL:
-    def __init__(self):
-        self.url_base = 'https://sip8.pentagonotelecom.com.br/'
+    def __init__(self, url_base):
+        self.url_base = url_base
         
     def url_login(self):
         return f'{self.url_base}security/validate'
     
     def url_get_cdr(self):
-        return f'{self.url_base}/relatorioAgrupadoLinhas/data'
+        return f'{self.url_base}/relatorioAgrupadoLinhas/view'
     
     def url_pagina_inicial(self):
-        return f'{self.url_base}inicial/'
+        return f'{self.url_base}/dashboard/customer/index'
 
 class pentagonoScrap:
     
-    def __init__(self, usuario, senha, data):
+    def __init__(self, usuario, senha, data, url_base):
         self.usuario = usuario
         self.senha = senha
         self.data = data
         self.hr = HttpRequisitions(session=requests.Session())
-        self.link = PentagonoURL()
+        self.link = PentagonoURL(url_base)
         
 
     def login_pentagono(self):
@@ -36,7 +36,7 @@ class pentagonoScrap:
                                         url=self.link.url_login())
 
 
-    def get_pagina_inicial(self, ):
+    def get_pagina_inicial(self):
 
         '''Estabelece a conexão na pag inicial para poder prosseguir com a coleta de dados'''
         url=str(f"{self.link.url_pagina_inicial()}?{random.random()}")
@@ -44,6 +44,10 @@ class pentagonoScrap:
         pagina_inicial = self.hr.requisicao_get(headers=headers_pentagono(),
                                                 payload_get={},
                                                 url=f"{url}")
+        print("[DEBUG PÁGINA INICIAL]")
+        print(f"[DEBUG PÁGINA INICIAL (URL)]: ", url )
+        print(f"[DEBUG PÁGINA INICIAL] (PAYLOAD): ",headers_pentagono())
+
         return pagina_inicial
 
     def get_cdr(self):
@@ -58,8 +62,11 @@ class pentagonoScrap:
         return relatorio_cdr
     def execucao_pentagono(self):
         login = self.login_pentagono()
+        print("[DEBUG LOGIN]: ", login)
         pagina_inicial = self.get_pagina_inicial()
+        print("PÁGINA INICIAL: ",pagina_inicial.text)
         relatorio_html = self.get_cdr()
+        print("[relatório html]", relatorio_html.text)
 
         return login, pagina_inicial, relatorio_html
         

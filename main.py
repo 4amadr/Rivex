@@ -25,6 +25,7 @@ from src.rivex.pipeline.pipeline_discador.pipeline_ipbox import *
 from src.rivex.pipeline.pipeline_discador.pipeline_callix import *
 from src.rivex.pipeline.pipeline_operadora.pipeline_agitel import *
 from src.rivex.pipeline.pipeline_discador.pipeline_vonix import *
+from src.rivex.pipeline.pipeline_operadora.pipeline_gerax import *
 load_dotenv()
 logger = logging.getLogger(__name__)
     
@@ -48,10 +49,15 @@ def main_callix():
     pipeline_callix = PipelineCallix()
     pipeline_callix.executar()
 
+def main_gerax():
+    pipeline_gerax = ExecucaoGerax()
+    pipeline_gerax.main_gerax()
 
-exec_ipbox = main_ipbox()
+
+#exec_ipbox = main_ipbox()
 #exec_pentagono = main_pentagono()
 #exec_agitel = main_agitel()
 #exec_gs = main_gs()
 #dados_vonix = main_vonix()
 #dados_callix = main_callix()
+dados_gerax = main_gerax()

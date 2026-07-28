@@ -1,5 +1,5 @@
 from src.rivex.utils.infra_utils.date_config import DateConfig
-from src.rivex.enviroments.operadoras.pentagono.pentagono_scrap import *
+from src.rivex.enviroments.operadoras.pentagono.nextbiling_scrap import *
 from src.rivex.data_processing.pentagono.pentagono_cleaning import *
 from src.rivex.utils.infra_utils.date_config import *
 from src.rivex.database.database import *
@@ -11,8 +11,8 @@ class ExecucaoGerax:
         self.dc = DateConfig()
         self.data = self.dc.data_selecionadas()
         self.db = DatabaseGerax()
-        self.ps = pentagonoScrap(
-        usuario=os.getenv('GERAX_URL'),
+        self.ps = NextBillingScrap(
+        usuario=os.getenv('GERAX_LOGIN'),
         senha=os.getenv('GERAX_PASSWORD'),
         data=self.data,
         url_base=os.getenv('GERAX_URL')
@@ -21,7 +21,7 @@ class ExecucaoGerax:
 
     def main_gerax(self):
         # Coleta
-        login, pagina_inicial, relatorio_html = self.ps.execucao_pentagono()
+        login, pagina_inicial, relatorio_html = self.ps.execucao_nextbiling()
         
         # limpeza
         dados = execucao_limpeza(relatorio_html)

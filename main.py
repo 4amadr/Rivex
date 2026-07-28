@@ -14,7 +14,6 @@ from src.rivex.data_processing.Callix.cleaner_callix_req import *
 from src.rivex.utils.database_utils.database_config import DatabaseConfig
 from src.rivex.enviroments.operadoras.gsolutions.sip_client_scrap import *
 from src.rivex.data_processing.gsolutions.cleaner_sip import *
-from src.rivex.enviroments.operadoras.pentagono.pentagono_scrap import pentagonoScrap
 from dotenv import load_dotenv
 from src.rivex.data_processing.pentagono.pentagono_cleaning import *
 from src.rivex.enviroments.discadores.IPBox.colect_ipbox import *

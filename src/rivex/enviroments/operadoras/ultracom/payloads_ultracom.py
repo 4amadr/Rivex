@@ -14,7 +14,7 @@ def header_sippulse():
         "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36 Edg/150.0.0.0"
     }
 
-def payload_chamadas_tarifadas(data):
+def payload_chamadas_tarifadas(data, viewstate):
 
     data_obj = datetime.strptime(data, "%d/%m/%Y")
     mes_ano = data_obj.strftime("%m/%Y")
@@ -31,11 +31,11 @@ def payload_chamadas_tarifadas(data):
         "frmAsrSub:callId": "",
         "frmAsrSub": "frmAsrSub",
         "autoScroll": "",
-        "javax.faces.ViewState": "j_id4",
+        "javax.faces.ViewState": viewstate,
         "frmAsrSub:j_id117": "frmAsrSub:j_id117"
     }
 
-def payload_dados_monetarios(data):
+def payload_dados_monetarios(data, viewstate):
 
     mes_ano = datetime.strptime(data, "%d/%m/%Y").strftime("%m/%Y")
 
@@ -49,10 +49,10 @@ def payload_dados_monetarios(data):
         "frmCdrDid0800:pagination": "50",
         "frmCdrDid0800:filterData": "",
         "frmCdrDid0800:j_id100": "Gerar Relatório",
-        "javax.faces.ViewState": "j_id5",
+        "javax.faces.ViewState": viewstate,
     }
 
-def payload_pagina_inicial():
+def payload_pagina_inicial(viewstate):
     return {
         "frmMenu": "frmMenu",
         "panelMenuStatefrmMenu:j_id37": "opened",
@@ -74,5 +74,5 @@ def payload_pagina_inicial():
         "panelMenuActionfrmMenu:j_id53": "",
         "panelMenuActionfrmMenu:j_id54": "",
         "frmMenu:j_id36selectedItemName": "j_id39",
-        "javax.faces.ViewState": "j_id7",
+        "javax.faces.ViewState": viewstate,
     }

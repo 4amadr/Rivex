@@ -18,7 +18,7 @@ class SipPulseUrl:
         return f"{self.url}/SipPulsePortal/pages/reports/asrsubscriber.jsf"
 
     def relatorio_monetario(self):
-        return f"{self.url}/SipPulsePortal/pages/reports/usercalldid0800.jsf"
+        return f"{self.url}/SipPulsePortal/pages/reports/usercall.jsf"
 
 class SipPulseScrap:
     def __init__(self, url_base, usuario, senha, data):
@@ -28,6 +28,7 @@ class SipPulseScrap:
         self.data = data
         self.url = SipPulseUrl(self.url_sistema)
         self.http_request = HttpRequisitions(session=requests.Session())
+        self.viewstate = None
 
     def get_login(self):
         return self.http_request.requisicao_get(
@@ -36,50 +37,60 @@ class SipPulseScrap:
             url=self.url.login_ultracom()
         )
 
-    def login(self, viewstate):
-        print("Logando...")
-        print("URL: ",self.url.login_ultracom())
-        print("HEADER: ",header_sippulse())
-        print("PAYLOAD: ", payload_login(self.usuario, self.senha, viewstate))
+    def login(self):
+
+        resposta_login = self.get_login()
+        self.get_viewstate(resposta_login.text)
+
         login = self.http_request.requisicao_post(
-            payload_post=payload_login(self.usuario, self.senha, viewstate),
+            payload_post=payload_login(self.usuario, self.senha, self.viewstate),
             headers=header_sippulse(),
             url=self.url.login_ultracom()
         )
-        print(login.status_code)
-        print(login)
-        print(login.text)
+
+        self.get_viewstate(login.text)
+
         return login
 
     def pagina_inicial(self):
         return self.http_request.requisicao_get(
-            payload_get=payload_pagina_inicial(),
+            payload_get={},#payload_pagina_inicial(self.viewstate),
             headers=header_sippulse(),
             url=self.url.pagina_inicial()
         )
 
     def chamadads_tarifadas(self):
-        return self.http_request.requisicao_get(
-            payload_get=payload_chamadas_tarifadas(self.data),
+        return self.http_request.requisicao_post(
+            payload_post=payload_chamadas_tarifadas(self.data, self.viewstate),
             headers=header_sippulse(),
             url=self.url.chamadas_tarifadas()
         )
 
     def dados_monetarios(self):
-        return self.http_request.requisicao_get(
-            payload_get=payload_dados_monetarios(self.data),
+        return self.http_request.requisicao_post(
+            payload_post=payload_dados_monetarios(self.data, self.viewstate),
             headers=header_sippulse(),
             url=self.url.relatorio_monetario()
         )
 
-    def get_viewstate(self):
-        login_get = self.get_login()
-        return extrair_viewstate(login_get.text)
+    def get_viewstate(self, html):
+        self.viewstate = extrair_viewstate(html)
+        return self.viewstate
 
     def execucao_ultracom(self):
-        login = self.login(self.get_viewstate())
-        print(login)
-        print(login.status_code)
-        print(login.text)
-        print(login.headers)
+        login = self.login()
+
+
+        pagina_inicial = self.pagina_inicial()
+
+        print("HOME STATUS:", pagina_inicial.status_code)
+        print("HOME URL:", pagina_inicial.url)
+        print("VIEWSTATE HOME:", self.viewstate)
+        self.get_viewstate(pagina_inicial.text)
+
+        chamadas = self.chamadads_tarifadas()
+        self.get_viewstate(chamadas.text)
+
+        monetarios = self.dados_monetarios()
+        self.get_viewstate(monetarios.text)
         

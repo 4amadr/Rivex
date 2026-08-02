@@ -28,7 +28,6 @@ class SipPulseScrap:
         self.data = data
         self.url = SipPulseUrl(self.url_sistema)
         self.http_request = HttpRequisitions(session=requests.Session())
-        self.viewstate = None
 
     def get_login(self):
         return self.http_request.requisicao_get(
@@ -37,60 +36,76 @@ class SipPulseScrap:
             url=self.url.login_ultracom()
         )
 
-    def login(self):
-
-        resposta_login = self.get_login()
-        self.get_viewstate(resposta_login.text)
-
-        login = self.http_request.requisicao_post(
-            payload_post=payload_login(self.usuario, self.senha, self.viewstate),
+    def post_login(self, viewstate):
+        return self.http_request.requisicao_post(
+            payload_post=payload_login(self.usuario, self.senha, viewstate),
             headers=header_sippulse(),
             url=self.url.login_ultracom()
         )
+        
+    def login(self):
+        html_login = self.get_login()
+        viewstate = extrair_viewstate(html_login.text)
+        return self.post_login(viewstate)
 
-        self.get_viewstate(login.text)
 
-        return login
-
-    def pagina_inicial(self):
+    def get_home(self):
         return self.http_request.requisicao_get(
-            payload_get={},#payload_pagina_inicial(self.viewstate),
+            payload_get={},
             headers=header_sippulse(),
             url=self.url.pagina_inicial()
         )
-
-    def chamadads_tarifadas(self):
+        
+    def post_home(self):
         return self.http_request.requisicao_post(
-            payload_post=payload_chamadas_tarifadas(self.data, self.viewstate),
+            payload_post={},
+            headers=header_sippulse(),
+            url=self.url.pagina_inicial()
+        )
+    
+    def get_chamadas_tarifadas(self):
+        return self.http_request.requisicao_get(
+            payload_get={},
+            headers=header_sippulse(),
+            url=self.url.chamadas_tarifadas()   
+        )
+    
+    def post_chamadas_tarifadas(self, viewstate):
+        return self.http_request.requisicao_post(
+            payload_post=payload_chamadas_tarifadas(self.data, viewstate),
             headers=header_sippulse(),
             url=self.url.chamadas_tarifadas()
         )
-
-    def dados_monetarios(self):
-        return self.http_request.requisicao_post(
-            payload_post=payload_dados_monetarios(self.data, self.viewstate),
+        
+    def chamadas_tarifadas(self):
+        get_tarifadas = self.get_chamadas_tarifadas()
+        viewstate = extrair_viewstate(get_tarifadas.text)
+        return self.post_chamadas_tarifadas(viewstate)
+        
+    def get_dados_monetarios(self):
+        return self.http_request.requisicao_get(
+            payload_get={},
             headers=header_sippulse(),
             url=self.url.relatorio_monetario()
         )
-
-    def get_viewstate(self, html):
-        self.viewstate = extrair_viewstate(html)
-        return self.viewstate
-
-    def execucao_ultracom(self):
+        
+    def post_dados_monetarios(self, viewstate):
+        return self.http_request.requisicao_post(
+            payload_post=payload_dados_monetarios(self.data, viewstate),
+            headers=header_sippulse(),
+            url=self.url.relatorio_monetario()
+        )
+        
+    def dados_monetarios(self):
+        get_dados = self.get_dados_monetarios()
+        viewstate = extrair_viewstate(get_dados.text)
+        return self.post_dados_monetarios(viewstate)
+    
+    def execucao_sippulse(self):
         login = self.login()
-
-
-        pagina_inicial = self.pagina_inicial()
-
-        print("HOME STATUS:", pagina_inicial.status_code)
-        print("HOME URL:", pagina_inicial.url)
-        print("VIEWSTATE HOME:", self.viewstate)
-        self.get_viewstate(pagina_inicial.text)
-
-        chamadas = self.chamadads_tarifadas()
-        self.get_viewstate(chamadas.text)
-
-        monetarios = self.dados_monetarios()
-        self.get_viewstate(monetarios.text)
+        html_tarifadas = self.chamadas_tarifadas()
+        dados_monetarios = self.dados_monetarios()
+        return login, html_tarifadas, dados_monetarios
+        
+    
         

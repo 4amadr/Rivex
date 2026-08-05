@@ -1,6 +1,7 @@
 from src.rivex.enviroments.operadoras.ultracom.sippulse_scrap import SipPulseScrap
 from src.rivex.utils.infra_utils.date_config import DateConfig
 from src.rivex.data_processing.ultracom.ultracon_cleaning import *
+from src.rivex.database.database import DatabaseUltracom
 from dotenv import load_dotenv
 import os
 
@@ -9,28 +10,39 @@ class PipelineUltracom:
         self.usuario = os.getenv("ULTRACOM_LOGIN")
         self.senha = os.getenv("ULTRACOM_PASSWORD")
         self.url = os.getenv("ULTRACOM_URL")
+        self.data = DateConfig.data_selecionadas()
         self.sip_scrap = SipPulseScrap(
             url_base=self.url,
             usuario=self.usuario,
             senha=self.senha,
-            data=DateConfig.data_selecionadas()
+            data=self.data
         )
+        self.db = DatabaseUltracom()
 
     def execucao(self):
         login, html_tarifadas, dados_monetarios = self.sip_scrap.execucao_sippulse()
-        minutos = minutagem_pronta(dados_monetarios)
-        custos = custos_prontos(dados_monetarios)
         return html_tarifadas, dados_monetarios
 
     def limpeza(self, html_tarifadas, html_relatorio):
         chamadas_tarifadas = obter_chamadas_tarifadas(html_tarifadas)
         minutos = minutagem_pronta(html_relatorio)
         custos = custos_prontos(html_relatorio)
-        return chamadas_tarifadas, minutos, custos
+
+        return {
+            "data": self.data,
+            "custo": custos,
+            "minutagem": minutos,
+            "chamadas_tarifadas": chamadas_tarifadas
+        }
+    
 
     def execucao_sippulse(self):
         html_tarifadas, html_asr = self.execucao()
-        chamadas_tarifadas, minutos, custos_prontos = self.limpeza(html_tarifadas, html_asr)
+        dict_dados = self.limpeza(html_tarifadas, html_asr)
+        print(f"[DADOS ULTRACON] enviados para o DB {dict_dados}")
+        self.db.enviar_dados_db_ultracon(dict_dados)
+        self.db.fechar_db_telefonia()
+
 
 
 

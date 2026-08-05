@@ -463,7 +463,6 @@ class DatabaseGerax():
         self.query_inserir_dados_telefonia = """
 INSERT INTO dados_operadora.dados_operadora_gerax
         (
-            tech,
             data,
             custo,
             minutagem,
@@ -471,7 +470,6 @@ INSERT INTO dados_operadora.dados_operadora_gerax
         )
         VALUES
         (
-            %(tech)s,
             %(data)s,
             %(custo)s,
             %(minutagem)s,
@@ -485,6 +483,46 @@ INSERT INTO dados_operadora.dados_operadora_gerax
         self.db.criar_tabelas(query_tabela_telefonia=self.query_criar_tabela_telefonia)
 
     def enviar_dados_db_gerax(self, dados):
+        self.db.enviar_dados_telefonia(dados)
+
+    def fechar_db_telefonia(self):
+        self.db.fechar_db()
+
+class DatabaseUltracom:
+    def __init__(self):
+        self.query_criar_tabela_telefonia = """
+            CREATE TABLE IF NOT EXISTS dados_operadora.dados_operadora_ultracom
+            (
+                    data DATE NOT NULL,
+                    custo NUMERIC(12,2) NOT NULL,
+                    minutagem NUMERIC(10,2) NOT NULL,
+                    chamadas_tarifadas INTEGER NOT NULL,
+                    PRIMARY KEY (data)
+                );
+                """
+        self.query_inserir_dados_telefonia = """
+        INSERT INTO dados_operadora.dados_operadora_ultracom
+                (
+                    data,
+                    custo,
+                    minutagem,
+                    chamadas_tarifadas
+                )
+                VALUES
+                (
+                    %(data)s,
+                    %(custo)s,
+                    %(minutagem)s,
+                    %(chamadas_tarifadas)s
+                )
+                ON CONFLICT (tech, data)
+                DO UPDATE SET
+                    dados_operadora_pentagono = EXCLUDED.dados_operadora_pentagono;
+        """
+        self.db = DatabaseTelefonia(self.query_criar_tabela_telefonia)
+        self.db.criar_tabelas(query_tabela_telefonia=self.query_criar_tabela_telefonia)
+
+    def enviar_dados_db_ultracon(self, dados):
         self.db.enviar_dados_telefonia(dados)
 
     def fechar_db_telefonia(self):

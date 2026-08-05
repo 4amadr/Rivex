@@ -55,7 +55,7 @@ def main_gerax():
 
 def main_ultracom():
     pipeline_ultracom = PipelineUltracom()
-    pipeline_ultracom.execucao()
+    pipeline_ultracom.execucao_sippulse()
 
 
 

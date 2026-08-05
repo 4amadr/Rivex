@@ -105,7 +105,7 @@ class SipPulseScrap:
         login = self.login()
         html_tarifadas = self.chamadas_tarifadas()
         dados_monetarios = self.dados_monetarios()
-        return login, html_tarifadas, dados_monetarios
+        return login, html_tarifadas.text, dados_monetarios.text
         
     
         

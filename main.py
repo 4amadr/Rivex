@@ -59,11 +59,15 @@ def main_ultracom():
 
 
 
-#exec_ipbox = main_ipbox()
-#exec_pentagono = main_pentagono()
+exec_ipbox = main_ipbox()
+dados_vonix = main_vonix()
+dados_callix = main_callix()
+dados_gerax = main_gerax()
+dados_ultracom = main_ultracom()
+
+
+# operadoras inativas
 #exec_agitel = main_agitel()
 #exec_gs = main_gs()
-#dados_vonix = main_vonix()
-#dados_callix = main_callix()
-#dados_gerax = main_gerax()
-dados_ultracom = main_ultracom()
+#exec_pentagono = main_pentagono()
+

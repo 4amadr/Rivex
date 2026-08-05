@@ -63,8 +63,16 @@ class DatabaseTelefonia:
             log.error("Erro ao criar tabela: %s", erro)
             raise
 
-    def enviar_dados_telefonia(self, dict_telefonia):
-        self.cursor.execute(self.query_insert_telefonia, dict_telefonia)
+    def enviar_dados_telefonia(self, dados):
+        try:
+            self.cursor.execute(self.query_insert_telefonia, dados)
+            self.conexao.commit()
+            log.info("Dados enviados com sucesso.")
+
+        except psycopg2.Error as erro:
+            self.conexao.rollback()
+            log.error("Erro ao enviar dados: %s", erro)
+            raise
 
     def fechar_db(self):
         self.db.fechar_db(
@@ -436,7 +444,9 @@ INSERT INTO dados_operadora.dados_operadora_pentagono
         )
         ON CONFLICT (tech, data)
         DO UPDATE SET
-            dados_operadora_pentagono = EXCLUDED.dados_operadora_pentagono;
+    custo = EXCLUDED.custo,
+    minutagem = EXCLUDED.minutagem,
+    chamadas_tarifadas = EXCLUDED.chamadas_tarifadas;       
 """
         self.db = DatabaseTelefonia(self.query_criar_tabela_telefonia)
         self.db.criar_tabelas(query_tabela_telefonia=self.query_criar_tabela_telefonia)
@@ -463,6 +473,7 @@ class DatabaseGerax():
         self.query_inserir_dados_telefonia = """
 INSERT INTO dados_operadora.dados_operadora_gerax
         (
+            tech
             data,
             custo,
             minutagem,
@@ -470,6 +481,7 @@ INSERT INTO dados_operadora.dados_operadora_gerax
         )
         VALUES
         (
+            %(tech)s,
             %(data)s,
             %(custo)s,
             %(minutagem)s,
@@ -515,11 +527,13 @@ class DatabaseUltracom:
                     %(minutagem)s,
                     %(chamadas_tarifadas)s
                 )
-                ON CONFLICT (tech, data)
+                ON CONFLICT (data)
                 DO UPDATE SET
-                    dados_operadora_pentagono = EXCLUDED.dados_operadora_pentagono;
-        """
-        self.db = DatabaseTelefonia(self.query_criar_tabela_telefonia)
+                    custo = EXCLUDED.custo,
+                    minutagem = EXCLUDED.minutagem,
+                    chamadas_tarifadas = EXCLUDED.chamadas_tarifadas;
+"""
+        self.db = DatabaseTelefonia(self.query_inserir_dados_telefonia)
         self.db.criar_tabelas(query_tabela_telefonia=self.query_criar_tabela_telefonia)
 
     def enviar_dados_db_ultracon(self, dados):

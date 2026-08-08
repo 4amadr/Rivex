@@ -27,7 +27,7 @@ class PipelineCallix:
         Retorna as informações necessárias para requisições futuras
         '''
         get_infos = CallixGetClients()
-        tech_clientes, nome_clientes_ativos = get_infos.get_infos_callix()
+        nome_clientes_ativos = get_infos.get_infos_callix()
         
         print("Consultando clientes ativos no servidor")
         lista_cliente = clientes_ativos_callix(nome_clientes_ativos.json())
@@ -36,7 +36,7 @@ class PipelineCallix:
         
         return get_token.fluxo_de_tokens()
 
-    def processar(self, cliente:str, token: str, json_tech):
+    def processar(self, cliente:str, token: str):
         """
         Processa a coleta, limpeza e carga de um liente
         """
@@ -56,9 +56,10 @@ class PipelineCallix:
             req = CAllixRequisition(
                 login=self.login, senha=self.senha,
                 cliente=cliente_formatado, data=data_selecionada,
-                id_campanha=dados_brutos_api['Campanha']
+                id_campanha=dados_brutos_api['Campanha'],
+                token=token
             )
-            chamadas_brutas, agressividade_bruta = req.requisicao_callix()
+            chamadas_brutas, agressividade_bruta, tech_bruta = req.requisicao_callix()
 
             # limpeza
             dict_limpeza = processar_dados(
@@ -71,7 +72,7 @@ class PipelineCallix:
             agressividade_limpa, chamadas_limpas, tech_limpa = limpeza_req_callix(
                 json_agentes=chamadas_brutas,
                 json_agressividade=agressividade_bruta,
-                techs_json=json_tech
+                techs_json=tech_bruta
             )
 
             # emcapsulando
@@ -91,9 +92,6 @@ class PipelineCallix:
             lista_agentes = empacotamento_callix.pacote_agentes()
             
             return dict_chamadas, lista_agentes
-            
-            
-
 
         except Exception as e:
             logger.error(f"Falha ao processar o cliente {cliente_formatado}. Erro {e}", exc_info=True)
@@ -109,7 +107,6 @@ class PipelineCallix:
             raise RuntimeError("Sem clientes ou tokens")
         
         get_clients = CallixGetClients()
-        techs = get_clients.get_tech_clientes_callix()
         try:
             for info in lista_tokens:
 
@@ -117,7 +114,7 @@ class PipelineCallix:
                 dados_cliente, dados_agente = self.processar(
                     info['Cliente'],
                     info['Token'],
-                    techs)
+                    )
                 
                 if dados_cliente is None:
                     logger.warning(

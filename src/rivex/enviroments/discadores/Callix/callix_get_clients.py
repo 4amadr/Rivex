@@ -29,14 +29,6 @@ class CallixGetClients:
                                               )
         return self.http_requisition.session
     
-    def get_tech_clientes_callix(self):
-        self.login_ambiente_padrao()
-        techs_clientes = self.http_requisition.requisicao_get(headers=headers_servidor_callix(),
-                                                          url=self.url.url_get_tech(),
-                                                          payload_get={})
-
-        return techs_clientes.json()
-    
     def get_cliente_nome(self):
         self.login_ambiente_padrao()
         cliente_ativo = self.http_requisition.requisicao_get(headers=headers_servidor_callix(),
@@ -46,9 +38,8 @@ class CallixGetClients:
     
     def get_infos_callix(self):
         self.login_ambiente_padrao()
-        tech_clientes = self.get_tech_clientes_callix()
         nome_clientes_ativos = self.get_cliente_nome()
-        return tech_clientes, nome_clientes_ativos
+        return nome_clientes_ativos
     
 class GetTokenCallix:
     """

@@ -2,6 +2,7 @@ from dis import print_instructions
 import pandas as pd
 from src.rivex.enviroments.discadores.Callix.callix_req import CAllixRequisition
 from collections import namedtuple
+import re
 
 '''
 Modulo para limpar os dados que vem de requisições do callix.
@@ -56,18 +57,57 @@ def limpar_agressividade(json_agressividade): # por enquanto vai retornar a medi
 
     return media
 
-def  limpeza_techs_callix(techs_json):
-    '''
-    Vai isolar o valor da tech de um arquivo json
-    '''
+def _rota_valida(name: str) -> bool:
+    """
+    Verifica se a rota pode ser utilizada para extrair a Tech.
 
-    for valor in techs_json["data"]:
-        tech = valor["attributes"].get("techPrefix")
+    Rotas contendo #Geral, Manual ou MaximaVoip são ignoradas.
+    """
+    nome = name.lower()
+
+    termos_ignorados = (
+        "#geral",
+        "manual",
+        "maximavoip",
+    )
+
+    return not any(termo in nome for termo in termos_ignorados)
+
+def _extrair_tech(name: str) -> str | None:
+    """
+    Extrai o valor da Tech presente no nome da rota.
+
+    Exemplo:
+        '1036#01 - Pentagono (Tech: 103601)'
+        -> '103601'
+    """
+    match = re.search(r"\(Tech:\s*(\d+)\)", name)
+
+    if match:
+        return match.group(1)
+
+    return None
+
+def limpeza_techs_callix(outbound_routes: dict) -> str:
+    """
+    Recebe o JSON de outbound-routes e retorna a Tech
+    apropriada para ser enviada ao banco de dados.
+    """
+
+    for rota in outbound_routes.get("data", []):
+
+        attributes = rota.get("attributes", {})
+        name = attributes.get("name", "")
+
+        if not _rota_valida(name):
+            continue
+
+        tech = _extrair_tech(name)
 
         if tech:
-            print("TECH DO CLIENTE: ",tech)
             return tech
-    return None
+
+    raise ValueError("Nenhuma Tech válida foi encontrada no JSON.")
 
 
 

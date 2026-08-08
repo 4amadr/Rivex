@@ -1,6 +1,7 @@
 import requests
 from src.rivex.utils.requests_utils.requests import HttpRequisitions
 from src.rivex.utils.enviroments_utils.discador.callix.payloads_callix import *
+from src.rivex.utils.enviroments_utils.discador.callix.get_url_callix import *
 import urllib.parse
 
 
@@ -11,14 +12,16 @@ class CAllixRequisition:
     A classe vai coletar os dados com requests
     '''
     
-    def __init__(self, login, senha, cliente, data, id_campanha):
+    def __init__(self, login, senha, cliente, data, id_campanha, token):
         self.login = login
         self.senha = senha
         self.cliente = cliente
         self.data = data
         self.session = requests.Session()
         self.id_campanha = id_campanha
+        self.token = token
         self.http_request = HttpRequisitions(session=self.session)
+        self.url = UrlGetData()
 
         
     def url_callix(self):
@@ -73,7 +76,12 @@ class CAllixRequisition:
             lista_json_agressividade.append(agressividade)
         return lista_json_agressividade
 
-        
+    def get_tech_cliente(self):
+        return self.http_request.requisicao_get(
+            headers=headers_callix(self.token),
+            url=self.url.url_get_tech(self.cliente),
+            payload_get=payload_get_tech()
+            ).json()
 
     def requisicao_callix(self):
         url_login, url_chamadas_agentes, url_agressividade, url_base, url_get_tech = self.url_callix()
@@ -83,5 +91,6 @@ class CAllixRequisition:
         url_final = self.conversor_de_url(url_chamadas_agentes)
         chamadas_por_agentes = self.get_chamadas_agentes(url_final, url_chamadas_agentes, login)
         agressividade = self.agressividade(url_agressividade, login) # lista
+        tech = self.get_tech_cliente()
         
-        return chamadas_por_agentes, agressividade
+        return chamadas_por_agentes, agressividade, tech

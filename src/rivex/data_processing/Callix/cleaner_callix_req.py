@@ -2,6 +2,7 @@ from dis import print_instructions
 import pandas as pd
 from src.rivex.enviroments.discadores.Callix.callix_req import CAllixRequisition
 from collections import namedtuple
+import unicodedata
 import re
 
 '''
@@ -57,13 +58,22 @@ def limpar_agressividade(json_agressividade): # por enquanto vai retornar a medi
 
     return media
 
+def _normalizar_texto(texto: str) -> str:
+    texto = unicodedata.normalize("NFD", texto)
+    
+    return "".join(
+        caractere
+        for caractere in texto
+        if unicodedata.category(caractere) != "Mn"
+    ).lower()
+
 def _rota_valida(name: str) -> bool:
     """
     Verifica se a rota pode ser utilizada para extrair a Tech.
 
     Rotas contendo #Geral, Manual ou MaximaVoip são ignoradas.
     """
-    nome = name.lower()
+    nome = _normalizar_texto(name)
 
     termos_ignorados = (
         "#geral",
@@ -93,6 +103,7 @@ def limpeza_techs_callix(outbound_routes: dict) -> str:
     Recebe o JSON de outbound-routes e retorna a Tech
     apropriada para ser enviada ao banco de dados.
     """
+    print("[DEBUG JSON DAS TECHS]: ", outbound_routes)
 
     for rota in outbound_routes.get("data", []):
 

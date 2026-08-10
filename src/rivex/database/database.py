@@ -80,6 +80,39 @@ class DatabaseTelefonia:
             self.conexao
         )
 
+class DatabaseClientesCallix:
+    def __init__(self, query_insert_cliente):
+        self.db = ConexaoDatabaseRivex()
+        self.cursor = self.db.cursor
+        self.conexao = self.db.conexao
+        self.query_insert_clientes_callix = query_insert_cliente
+
+    def criar_tabela_cliente(self, query_criar_tabela):
+        try:
+            self.cursor.execute(query_criar_tabela)
+            log.info("Tabela de informações de clientes criadas")
+            self.conexao.commit()
+        except psycopg2.Error as erro:
+            self.conexao.rollback()
+            log.error("Erro ao criar tabelas: %s", erro)
+            raise
+
+    def enviar_info_cliente(self, dados_cliente):
+        try:
+            self.cursor.execute(
+                self.query_insert_clientes_callix,
+                dados_cliente
+            )
+
+            self.conexao.commit()
+
+        except psycopg2.Error as erro:
+            self.conexao.rollback()
+            log.error(
+                "Erro ao inserir cliente Callix: %s",
+                erro
+            )
+            raise
 
 class DatabaseBase:
     def __init__(self, query_insert_chamada, query_insert_operador):
@@ -137,33 +170,39 @@ class ClientesCallix:
         CREATE TABLE IF NOT EXISTS clientes_contech.clientes_ativos_callix (
             cliente_nome TEXT NOT NULL,
             cliente_token TEXT NOT NULL,
+            ativo BOOLEAN NOT NULL DEFAULT TRUE,
             PRIMARY KEY (cliente_nome)
             );
             """
-        self.query_enviar_agentes_db = """
+        self.query_enviar_clientes_db = """
         INSERT INTO clientes_contech.clientes_ativos_callix (
             cliente_nome,
-            cliente_token
+            cliente_token,
+            ativo
             )
             VALUES
             (
                 %(cliente)s,
                 %(token)s,
-                ON CONFLIT (cliente, token)
-                DO UPDATE SET)
+                %(estado)s,
+                TRUE
+                ON CONFLIT (cliente_nome)
+                DO UPDATE SET
                 cliente = EXCLUDED.cliente,
-                token = EXCLUDED.token,"""
+                token = EXCLUDED.token,
+                ativo = TRUE;
+                """
                 
-        self.db = DatabaseBase(
-            query_insert_chamada=self.query_enviar_agentes_db,
+        self.db = DatabaseClientesCallix(
+            query_insert_cliente=self.query_enviar_clientes_db,
         )
 
-    self.db.criar_tabelas(
-            query_tabela_chamadas=self.query_criar_tabela_clientes,
+        self.db.criar_tabela_cliente(
+            query_criar_tabela=self.query_criar_tabela_clientes,
         )
         
     def db_clientes_callix(self, dict_clientes):
-        pass
+        self.db.enviar_info_cliente(dict_clientes)
                 
             
             

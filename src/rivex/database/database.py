@@ -130,7 +130,43 @@ class DatabaseBase:
             self.cursor,
             self.conexao
         )
+        
+class ClientesCallix:
+    def __init__(self):
+        self.query_criar_tabela_clientes = """
+        CREATE TABLE IF NOT EXISTS clientes_contech.clientes_ativos_callix (
+            cliente_nome TEXT NOT NULL,
+            cliente_token TEXT NOT NULL,
+            PRIMARY KEY (cliente_nome)
+            );
+            """
+        self.query_enviar_agentes_db = """
+        INSERT INTO clientes_contech.clientes_ativos_callix (
+            cliente_nome,
+            cliente_token
+            )
+            VALUES
+            (
+                %(cliente)s,
+                %(token)s,
+                ON CONFLIT (cliente, token)
+                DO UPDATE SET)
+                cliente = EXCLUDED.cliente,
+                token = EXCLUDED.token,"""
+                
+        self.db = DatabaseBase(
+            query_insert_chamada=self.query_enviar_agentes_db,
+        )
 
+    self.db.criar_tabelas(
+            query_tabela_chamadas=self.query_criar_tabela_clientes,
+        )
+        
+    def db_clientes_callix(self, dict_clientes):
+        pass
+                
+            
+            
 class DatabaseCallix:
     def __init__(self):
         self.query_criar_tabela_chamadas = """

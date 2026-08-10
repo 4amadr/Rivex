@@ -102,6 +102,7 @@ class PipelineCallix:
         logger.info("Iniciando callix")
 
         lista_tokens = self.get_ambiente()
+        print("[DEBUG: lista_tokens]: ", lista_tokens)
         
         if not lista_tokens:
             raise RuntimeError("Sem clientes ou tokens")
@@ -112,8 +113,8 @@ class PipelineCallix:
 
 
                 dados_cliente, dados_agente = self.processar(
-                    info['Cliente'],
-                    info['Token'],
+                    info['cliente'],
+                    info['token'],
                     )
                 
                 if dados_cliente is None:

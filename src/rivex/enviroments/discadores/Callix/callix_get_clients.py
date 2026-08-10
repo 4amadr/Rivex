@@ -87,8 +87,8 @@ class GetTokenCallix:
             token = [token_cliente['attributes']['token'] for token_cliente in tokens_api['data']]
             
             dict_infos_cliente = {
-                "Cliente": selecao_cliente.replace("contech", ""),
-                "Token": token
+                "cliente": selecao_cliente.replace("contech", ""),
+                "token": token
             }
             lista_tokens.append(dict_infos_cliente)
         return lista_tokens

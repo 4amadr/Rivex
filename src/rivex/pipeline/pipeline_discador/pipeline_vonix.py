@@ -3,6 +3,7 @@ from src.rivex.enviroments.discadores.vonix.fluxo_limpeza import *
 from src.rivex.data_processing.Vonix.cleaning_vonix import *
 from src.rivex.database.database import DatabaseVonix
 import os
+import logging
 from dotenv import load_dotenv
 import time
 
@@ -13,6 +14,7 @@ class PipelineVonix:
         self.login = os.getenv('LOGIN_VONIX')
         self.senha = os.getenv('SENHA_VONIX')
         self.url = os.getenv('URL_BASE_VONIX6')
+        self.tempo_espera = os.getenv('TEMPO_VONIX')
         self.vonix_execucao = ExecucaoVonix(
             login=self.login,
             senha=self.senha,
@@ -76,7 +78,7 @@ class PipelineVonix:
         if "itelink" not in cliente.lower()
         and not cliente.lower().endswith("manual")
         ]
-        print(f"Clientes ativos e válidos (Sem filas manuais): {clientes_validos}")
+        logging.info(f"Clientes ativos e válidos (Sem filas manuais): {clientes_validos}")
 
         for cliente_selecionado in clientes_validos:
 
@@ -99,7 +101,7 @@ class PipelineVonix:
             print(f"Dados dos clientes: {cliente}")
             print(f"Dados dos agentes: {agentes}")
             self.db.db_vonix(cliente, agentes)
-            time.sleep(30)
+            time.sleep(self.tempo_espera)
         self.db.fechar_db_vonix()
 
         

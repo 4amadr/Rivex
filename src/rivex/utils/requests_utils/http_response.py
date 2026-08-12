@@ -12,7 +12,7 @@ def analista_de_erros(response):
         case 500:
             raise ConnectionError('Erro de servidor')
         case 200:
-            print()
+            return True
             
             
     

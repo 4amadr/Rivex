@@ -14,7 +14,6 @@ class CallixClientData:
         self.agressividade = agressividade
         self.data = data
         self.agentes_info = agentes_info
-        self.data = data
 
 
     def pacote_chamadas(self):
@@ -50,9 +49,7 @@ class CallixClientData:
         for dicionario_agente in self.agentes_info:
 
 
-            for agente, chamada_aceita in dicionario_agente.items():
-
-                dict_agentes = {
+            dict_agentes = {
                     "tech": self.tech,
                     "Cliente": self.cliente,
                     "discador": "Callix",
@@ -62,7 +59,7 @@ class CallixClientData:
                 }
 
 
-                lista_agentes.append(dict_agentes)
+            lista_agentes.append(dict_agentes)
 
         print("Dicionário dos agentes: ", lista_agentes)
         return lista_agentes

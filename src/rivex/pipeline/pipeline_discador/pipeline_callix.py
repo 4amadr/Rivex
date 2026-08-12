@@ -29,7 +29,7 @@ class PipelineCallix:
         get_infos = CallixGetClients()
         nome_clientes_ativos = get_infos.get_infos_callix()
         
-        print("Consultando clientes ativos no servidor")
+        logger.info("Consultando clientes ativos no servidor")
         lista_cliente = clientes_ativos_callix(nome_clientes_ativos.json())
 
         get_token = GetTokenCallix(lista_cliente)
@@ -102,7 +102,6 @@ class PipelineCallix:
         logger.info("Iniciando callix")
 
         lista_tokens = self.get_ambiente()
-        print("[DEBUG: lista_tokens]: ", lista_tokens)
         
         if not lista_tokens:
             raise RuntimeError("Sem clientes ou tokens")

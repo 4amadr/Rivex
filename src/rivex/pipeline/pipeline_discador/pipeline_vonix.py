@@ -7,6 +7,8 @@ import logging
 from dotenv import load_dotenv
 import time
 
+logger = logging.getLogger(__name__)
+
 class PipelineVonix:
     def __init__(self):
         load_dotenv()
@@ -64,7 +66,7 @@ class PipelineVonix:
             "agressividade": agressividade
         }
 
-        print(dados_cliente)
+        logger.info(f"Dados do cliente {dados_cliente["cliente"]}: \n{dados_cliente}")
         return dados_cliente
         
     def execucao_limpeza_agentes_vonix(self, cliente, agentes, tech, data):
@@ -85,7 +87,7 @@ class PipelineVonix:
 
             response_dict = self.get_dados_sujos(cliente_selecionado, token)
 
-            print(f"Cliente atual: {cliente_selecionado}")
+            logger.info(f"Iniciando a coleta do cliente: {cliente_selecionado}")
 
 
             cliente = self.execucao_limpeza_chamadas_vonix(cliente_selecionado, response_dict["Totais"], 
@@ -98,8 +100,9 @@ class PipelineVonix:
 
             agentes = self.execucao_limpeza_agentes_vonix(cliente["cliente"], response_dict["Agentes"], cliente["tech"], cliente["data"])
             
-            print(f"Dados dos clientes: {cliente}")
-            print(f"Dados dos agentes: {agentes}")
+            logger.info(f"Dados dos cliente {cliente["cliente"]} após a coleta e processamento de dados: {cliente}")
+            logger.info(f"Dados dos agentes após coleta e processamento de dados: {agentes}")
+            
             self.db.db_vonix(cliente, agentes)
             time.sleep(self.tempo_espera)
         self.db.fechar_db_vonix()

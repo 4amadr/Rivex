@@ -3,7 +3,10 @@ from src.rivex.utils.infra_utils.date_config import DateConfig
 from src.rivex.data_processing.ultracom.ultracon_cleaning import *
 from src.rivex.database.database import DatabaseUltracom
 from dotenv import load_dotenv
+import logging
 import os
+
+logger = logging.getLogger(__name__)
 
 class PipelineUltracom:
     def __init__(self):
@@ -39,7 +42,7 @@ class PipelineUltracom:
     def execucao_sippulse(self):
         html_tarifadas, html_asr = self.execucao()
         dict_dados = self.limpeza(html_tarifadas, html_asr)
-        print(f"[DADOS ULTRACON] enviados para o DB {dict_dados}")
+        logger.info(f"[DADOS ULTRACON] enviados para o DB {dict_dados}")
         self.db.enviar_dados_db_ultracon(dict_dados)
         self.db.fechar_db_telefonia()
 

@@ -77,47 +77,6 @@ class DatabaseClientesCallix:
                 erro
             )
             raise
-
-class ClientesCallix:
-    def __init__(self):
-        self.query_criar_tabela_clientes = """
-        CREATE TABLE IF NOT EXISTS clientes_contech.clientes_ativos_callix (
-            cliente_nome TEXT NOT NULL,
-            cliente_token TEXT NOT NULL,
-            ativo BOOLEAN NOT NULL DEFAULT TRUE,
-            PRIMARY KEY (cliente_nome)
-            );
-            """
-        self.query_enviar_clientes_db = """
-        INSERT INTO clientes_contech.clientes_ativos_callix (
-            cliente_nome,
-            cliente_token,
-            ativo
-            )
-            VALUES
-            (
-                %(cliente)s,
-                %(token)s,
-                %(estado)s,
-                TRUE
-                ON CONFLIT (cliente_nome)
-                DO UPDATE SET
-                cliente = EXCLUDED.cliente,
-                token = EXCLUDED.token,
-                ativo = TRUE;
-                """
-                
-        self.db = DatabaseClientesCallix(
-            query_insert_cliente=self.query_enviar_clientes_db,
-        )
-
-        self.db.criar_tabela_cliente(
-            query_criar_tabela=self.query_criar_tabela_clientes,
-        )
-        
-    def db_clientes_callix(self, dict_clientes):
-        self.db.enviar_info_cliente(dict_clientes)
-                
             
             
 class DatabaseCallix:

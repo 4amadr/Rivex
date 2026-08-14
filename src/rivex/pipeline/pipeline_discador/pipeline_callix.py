@@ -7,7 +7,7 @@ from src.rivex.data_processing.Callix.cleaner_callix_api import *
 from src.rivex.enviroments.discadores.Callix.callix_req import CAllixRequisition
 from src.rivex.data_processing.Callix.cleaner_callix_req import *
 from src.rivex.enviroments.discadores.Callix.callix_client_package import *
-from src.rivex.enviroments.discadores.Callix.callix_get_clients import *
+from src.rivex.enviroments.discadores.Callix.callix_get_clients import CallixGetClients, GetTokenCallix
 from src.rivex.database.database import DatabaseCallix
 from src.rivex.data_processing.Callix.callix_clients import *
 load_dotenv()
@@ -21,17 +21,23 @@ class PipelineCallix:
         self.login=os.getenv("USUARIO_CALLIX_GERAL")
         self.senha=os.getenv("SENHA_CALLIX_GERAL")
         self.banco_callix=DatabaseCallix()
+        self.coletar_clientes=CallixGetClients()
 
     def get_ambiente(self):
         '''
         Retorna as informações necessárias para requisições futuras
         '''
-        get_infos = CallixGetClients()
-        nome_clientes_ativos = get_infos.get_infos_callix()
+        nome_clientes_ativos = self.coletar_clientes.get_infos_callix()
         
         logger.info("Consultando clientes ativos no servidor")
-        lista_cliente = clientes_ativos_callix(nome_clientes_ativos.json())
+        lista_cliente = get_clientes_servidor_callix(nome_clientes_ativos.json()) # todos os clientes
+        
+        
+        
+        
 
+        
+        
         get_token = GetTokenCallix(lista_cliente)
         
         return get_token.fluxo_de_tokens()

@@ -53,6 +53,16 @@ class DatabaseClientes:
         self.db.enviar_info_cliente(dict_clientes)
     
     def inativar_cliente(self, dict_clientes):
+        try:
+            self.cursor.execute(self.query_remover_clientes_inativos)
+            self.conexao.commit()
+        except psycopg2.Error as erro:
+            self.conexao.rollback()
+            log.error("Erro ao remover o cliente: %s", erro)
+            raise
+        
+    
+            
         
     
        

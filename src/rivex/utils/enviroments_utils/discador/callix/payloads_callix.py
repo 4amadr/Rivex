@@ -115,8 +115,7 @@ def payload_agressividade():
 
 def payload_servidor_callix():
     return {
-        "filter": "(status,:in,[`3`])",
-        "page[limit]": "100"
+        "page[limit]": "2000"
     }
 
 def headers_servidor_callix():

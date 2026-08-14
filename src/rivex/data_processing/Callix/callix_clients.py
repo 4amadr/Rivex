@@ -1,14 +1,57 @@
-def clientes_ativos_callix(clientes_json):
+import re
+
+def limpar_cliente(cliente):
+    # Remove "contech" seguido de hífen opcional e espaços, ignorando maiúsculas/minúsculas
+    return re.sub(r'(?i)^contech\s*-\s*', '', cliente).strip()
+
+
+def get_clientes_callix(clientes_json):
     """
     Retorna uma lista com o nome dos clientes ativos no servidor.
     """
+    return limpar_cliente(clientes_json['data']['attributes']['name'])
 
-    return [
-        cliente['attributes']['name']
-        .replace('Contech - ', '')
-        .replace('contech - ', '')
-        .replace('Contech- ', '')
-        .replace('contech- ', '')
-        .strip()
-        for cliente in clientes_json['data']
+
+def get_status_cliente(clientes_json):
+    return [{
+        "cliente": get_clientes_callix(clientes_json),
+        "status": estado['attributes']['status']}
+        for estado in clientes_json['data']
     ]
+    
+def get_clientes_servidor_callix(clientes_json):
+    lista_callix = []
+
+    for cliente in clientes_json['data']:
+
+        nome = limpar_cliente(
+            cliente['attributes']['name']
+        )
+
+        status = cliente['attributes']['status']
+
+        lista_callix.append({
+            "cliente": nome,
+            "status": status
+        })
+
+    return lista_callix
+
+def separar_clientes(lista_callix):
+    """
+    Separa os clientes ativos e inativos.
+
+    Status 3 = ativo
+    Status 4 = inativo
+    """
+
+    lista_clientes_ativos = []
+    lista_clientes_inativos = []
+    for usuario in lista_callix:
+        if usuario['estado'] == True:
+            lista_clientes_ativos.append(usuario)
+        elif usuario['estado'] == False:
+            lista_clientes_inativos.append(usuario)
+    return lista_clientes_ativos, lista_clientes_inativos
+    
+        

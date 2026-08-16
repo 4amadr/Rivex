@@ -3,7 +3,7 @@ import time
 from src.rivex.enviroments.discadores.IPBox.colect_ipbox import *
 from src.rivex.enviroments.discadores.IPBox.payloads_ipbox import *
 from src.rivex.utils.infra_utils.date_config import DateConfig
-from src.rivex.database.database import DatabaseIpbox
+from src.rivex.database.database_dados_chamadas import DatabaseIpbox
 import logging
 from dotenv import load_dotenv
 from src.rivex.data_processing.IPBox.limpeza_ipbox import *

@@ -1,6 +1,10 @@
 import psycopg2
 from psycopg2 import OperationalError
 from dotenv import load_dotenv
+import os
+import logging
+
+log = logging.getLogger(__name__)
 
 
 class ConexaoDatabaseRivex:
@@ -22,7 +26,6 @@ class ConexaoDatabaseRivex:
     def abrir_banco(self):
         try:
             self.connection = psycopg2.connect(**self._config)
-            print("Estabelecendo conexão com o banco de dados...")
             return self.connection.cursor(), self.connection
         
         except OperationalError as erro_abrir_banco:

@@ -2,7 +2,7 @@ from src.rivex.utils.infra_utils.date_config import DateConfig
 from src.rivex.enviroments.operadoras.pentagono.nextbiling_scrap import *
 from src.rivex.data_processing.pentagono.pentagono_cleaning import *
 from src.rivex.utils.infra_utils.date_config import *
-from src.rivex.database.database import *
+from src.rivex.database.database_dados_chamadas import *
 from dotenv import load_dotenv
 import os
 

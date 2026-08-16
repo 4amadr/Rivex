@@ -1,7 +1,7 @@
 from src.rivex.enviroments.operadoras.ultracom.sippulse_scrap import SipPulseScrap
 from src.rivex.utils.infra_utils.date_config import DateConfig
 from src.rivex.data_processing.ultracom.ultracon_cleaning import *
-from src.rivex.database.database import DatabaseUltracom
+from src.rivex.database.database_dados_chamadas import DatabaseUltracom
 from dotenv import load_dotenv
 import logging
 import os

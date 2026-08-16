@@ -20,7 +20,7 @@ class DatabaseTelefonia:
             self.cursor.execute(query_tabela_telefonia)
             self.conexao.commit()
 
-            log.info("Tabela de telefpmoa verificada/criada com sucesso.")
+            log.info("Tabela de telefonia verificada/criada com sucesso.")
 
         except psycopg2.Error as erro:
             self.conexao.rollback()

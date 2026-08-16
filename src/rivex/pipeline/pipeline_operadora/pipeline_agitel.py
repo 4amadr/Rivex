@@ -1,8 +1,8 @@
 from src.rivex.enviroments.operadoras.gsolutions.sip_client_scrap import *
 import os
 from src.rivex.utils.infra_utils.date_config import *
-from src.rivex.database.database import *
-from src.rivex.data_processing.gsolutions.cleaner_sip import *
+from src.rivex.database.database_dados_chamadas import *
+#from src.rivex.data_processing.gsolutions. import *
 import time
 
 class ExecAgitel():

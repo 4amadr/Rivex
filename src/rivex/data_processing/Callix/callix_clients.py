@@ -44,14 +44,14 @@ def separar_clientes(lista_callix):
     Status 3 = ativo
     Status 4 = inativo
     """
-
-    lista_clientes_ativos = []
-    lista_clientes_inativos = []
+    lista_ativos = []
+    lista_inativos = []
     for usuario in lista_callix:
-        if usuario['estado'] == True:
-            lista_clientes_ativos.append(usuario)
-        elif usuario['estado'] == False:
-            lista_clientes_inativos.append(usuario)
-    return lista_clientes_ativos, lista_clientes_inativos
+        if usuario['status'] == 3:
+            lista_ativos.append(usuario['cliente'])
+        else:
+
+            lista_inativos.append(usuario['cliente'])
+    return lista_ativos, lista_inativos
     
         

@@ -8,10 +8,10 @@ DO NOT CHEAT. All implementations must be genuine. DO NOT hardcode test results,
 
 Please execute the following steps:
 1. Physically delete these files using terminal commands:
-   - `src/rivex/enviroments/discadores/vonix/fluxo_limpeza.py`
+   - `src/rivex/environments/discadores/vonix/fluxo_limpeza.py`
    - `src/rivex/utils/infra_utils/cleaner.py`
    - `src/rivex/utils/infra_utils/faxina.py`
-   Command: `Remove-Item -Force "src/rivex/enviroments/discadores/vonix/fluxo_limpeza.py", "src/rivex/utils/infra_utils/cleaner.py", "src/rivex/utils/infra_utils/faxina.py"`
+   Command: `Remove-Item -Force "src/rivex/environments/discadores/vonix/fluxo_limpeza.py", "src/rivex/utils/infra_utils/cleaner.py", "src/rivex/utils/infra_utils/faxina.py"`
 2. Run the pytest suite to verify all tests pass:
    Command: `python -m pytest tests/`
 3. Run the import verification:

@@ -18,7 +18,7 @@ Physically delete deprecated files and verify that the codebase remains fully fu
 - Updated: not yet
 
 ## Task Summary
-- **What to build**: Physically delete files `src/rivex/enviroments/discadores/vonix/fluxo_limpeza.py`, `src/rivex/utils/infra_utils/cleaner.py`, and `src/rivex/utils/infra_utils/faxina.py`. Run tests using `python -m pytest tests/` and run import verification of `PipelineVonix`.
+- **What to build**: Physically delete files `src/rivex/environments/discadores/vonix/fluxo_limpeza.py`, `src/rivex/utils/infra_utils/cleaner.py`, and `src/rivex/utils/infra_utils/faxina.py`. Run tests using `python -m pytest tests/` and run import verification of `PipelineVonix`.
 - **Success criteria**: Specified files are deleted, all tests pass, and import check is successful.
 - **Interface contracts**: N/A
 - **Code layout**: N/A

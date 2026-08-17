@@ -20,7 +20,7 @@ Empirically verify the correctness and robustness of fixes made to the Vonix int
 
 ## Review Scope
 - **Files to review**:
-  - src/rivex/enviroments/discadores/vonix/fluxo_coleta.py
+  - src/rivex/environments/discadores/vonix/fluxo_coleta.py
   - src/rivex/data_processing/Vonix/cleaning_vonix.py
   - tests/test_http.py
   - tests/test_cleaning_vonix.py

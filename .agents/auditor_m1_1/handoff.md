@@ -1,7 +1,7 @@
 # Handoff Report — Forensic Auditor for Milestone 1
 
 ## 1. Observation
-- **Observation 1 (URL base reference fix)**: In `src/rivex/enviroments/discadores/vonix/fluxo_coleta.py`, the method `get_clientes_ambiente` was checked (lines 57-60):
+- **Observation 1 (URL base reference fix)**: In `src/rivex/environments/discadores/vonix/fluxo_coleta.py`, the method `get_clientes_ambiente` was checked (lines 57-60):
   ```python
   def get_clientes_ambiente(self):
       return self.http_requisitions.requisicao_get(payload_get={},
@@ -56,7 +56,7 @@ The Milestone 1 work product has successfully met all functional requirements an
 
 ## 5. Verification Method
 To independently verify the audit:
-1. View `src/rivex/enviroments/discadores/vonix/fluxo_coleta.py` and inspect lines 57-60 to ensure `self.url._url_base()` is referenced.
+1. View `src/rivex/environments/discadores/vonix/fluxo_coleta.py` and inspect lines 57-60 to ensure `self.url._url_base()` is referenced.
 2. View `src/rivex/data_processing/Vonix/cleaning_vonix.py` and inspect lines 32-50 to ensure `removeprefix` is used and `TypeError` is raised when `html` is `None`.
 3. Check `tests/test_http.py` to verify that test names are unique.
 4. Execute the test suite locally using the command:

@@ -13,7 +13,7 @@
   ```
   No class or object named `HttpResponse` exists in `src/rivex/utils/requests_utils/http_response.py`.
 - **Correct implementation of `get_clientes_ambiente` in `fluxo_coleta.py`**:
-  Line 60 of `src/rivex/enviroments/discadores/vonix/fluxo_coleta.py`:
+  Line 60 of `src/rivex/environments/discadores/vonix/fluxo_coleta.py`:
   ```python
   url=self.url._url_base()
   ```

@@ -39,7 +39,7 @@ Implement code fixes for vonix fluxo_coleta and cleaning_vonix, rename duplicate
 
 ## Change Tracker
 - **Files modified**:
-  - c:\Users\vitor\PycharmProjects\Rivex_v2.0\src\rivex\enviroments\discadores\vonix\fluxo_coleta.py
+  - c:\Users\vitor\PycharmProjects\Rivex_v2.0\src\rivex\environments\discadores\vonix\fluxo_coleta.py
   - c:\Users\vitor\PycharmProjects\Rivex_v2.0\src\rivex\data_processing\Vonix\cleaning_vonix.py
   - c:\Users\vitor\PycharmProjects\Rivex_v2.0\tests\test_http.py
   - c:\Users\vitor\PycharmProjects\Rivex_v2.0\tests\test_cleaning_vonix.py

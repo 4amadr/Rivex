@@ -3,7 +3,7 @@
 ## 1. Observation
 
 - **Observation 1 (File Path and Code Changes - Collection)**:
-  - File: `c:\Users\vitor\PycharmProjects\Rivex_v2.0\src\rivex\enviroments\discadores\vonix\fluxo_coleta.py`
+  - File: `c:\Users\vitor\PycharmProjects\Rivex_v2.0\src\rivex\environments\discadores\vonix\fluxo_coleta.py`
   - Verbatim lines 57-60:
     ```python
     def get_clientes_ambiente(self):
@@ -69,7 +69,7 @@
         data = "2026-07-14"
         url_base = "http://mock-vonix.com"
         
-        with patch("src.rivex.enviroments.discadores.vonix.fluxo_coleta.HttpRequisitions") as MockHttpRequisitions:
+        with patch("src.rivex.environments.discadores.vonix.fluxo_coleta.HttpRequisitions") as MockHttpRequisitions:
             mock_http_instance = MagicMock()
             MockHttpRequisitions.return_value = mock_http_instance
             

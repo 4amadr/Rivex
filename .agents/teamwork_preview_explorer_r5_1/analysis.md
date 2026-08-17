@@ -12,13 +12,13 @@ We scanned the target files for occurrences of `print()` statements. They are ca
 * **Line 44**: `print(f"Nome do cliente após limpeza: {nome_cliente}")`
 * **Line 57**: `print(tabela)`
 
-### 1.2 `src/rivex/enviroments/discadores/vonix/fluxo_coleta.py`
+### 1.2 `src/rivex/environments/discadores/vonix/fluxo_coleta.py`
 * **None**: No `print()` statements exist in this file.
 
-### 1.3 `src/rivex/enviroments/discadores/vonix/fluxo_limpeza.py`
+### 1.3 `src/rivex/environments/discadores/vonix/fluxo_limpeza.py`
 * **Line 61**: `print('Sem consumo na fila: ', equipe)`
 
-### 1.4 `src/rivex/data_processing/Vonix/cleaning_vonix.py` *(Note: Target path `src/rivex/enviroments/discadores/vonix/cleaning_vonix.py` does not exist; the actual implementation file is `src/rivex/data_processing/Vonix/cleaning_vonix.py`)*
+### 1.4 `src/rivex/data_processing/Vonix/cleaning_vonix.py` *(Note: Target path `src/rivex/environments/discadores/vonix/cleaning_vonix.py` does not exist; the actual implementation file is `src/rivex/data_processing/Vonix/cleaning_vonix.py`)*
 * **None**: No `print()` statements exist in this file.
 
 ### 1.5 `src/rivex/database/database.py`
@@ -32,7 +32,7 @@ We scanned the target files for occurrences of `print()` statements. They are ca
 * **Line 166**: `print("Enviando dados de consumo de clientes para o banco de dados")`
 * **Line 179**: `print("Conexão fechada com o DB")`
 
-### 1.6 `src/rivex/enviroments/discadores/vonix/vonix_queue_discovery.py` *(Bonus: Checked for completeness)*
+### 1.6 `src/rivex/environments/discadores/vonix/vonix_queue_discovery.py` *(Bonus: Checked for completeness)*
 * **Line 168**: `print(f"{'='*60}")`
 * **Line 169**: `print(f"RESUMO DE FILAS DO VONIX")`
 * **Line 170**: `print(f"{'='*60}")`
@@ -48,11 +48,11 @@ We scanned the target files for occurrences of `print()` statements. They are ca
 
 ## 2. Tracking `dict_agentes` Dictionary and Function Namespace
 A significant namespace conflict occurs because the identifier `dict_agentes` is used for two entirely different entities in the codebase:
-1. **A hardcoded lookup dictionary** mapping team names to agent IDs in `src/rivex/enviroments/discadores/vonix/equipes_vonix.py`.
+1. **A hardcoded lookup dictionary** mapping team names to agent IDs in `src/rivex/environments/discadores/vonix/equipes_vonix.py`.
 2. **A parsing function** in `src/rivex/data_processing/Vonix/cleaning_vonix.py` that processes HTML responses to extract agent information.
 
 ### 2.1 Occurrences and Import Flow
-* **`src/rivex/enviroments/discadores/vonix/equipes_vonix.py`**:
+* **`src/rivex/environments/discadores/vonix/equipes_vonix.py`**:
   * Defines the global dictionary variable:
     ```python
     dict_agentes = {
@@ -74,16 +74,16 @@ A significant namespace conflict occurs because the identifier `dict_agentes` is
         "chamadas": chamadas_val
     }
     ```
-* **`src/rivex/enviroments/discadores/vonix/fluxo_coleta.py`**:
+* **`src/rivex/environments/discadores/vonix/fluxo_coleta.py`**:
   * Imports the dictionary from `equipes_vonix`:
     ```python
-    from src.rivex.enviroments.discadores.vonix.equipes_vonix import dict_agentes
+    from src.rivex.environments.discadores.vonix.equipes_vonix import dict_agentes
     ```
   * However, `dict_agentes` is **not used** anywhere else in `fluxo_coleta.py`.
 * **`src/rivex/pipeline/pipeline_discador/pipeline_vonix.py`**:
   * Has wildcard imports from both files:
     ```python
-    from src.rivex.enviroments.discadores.vonix.fluxo_coleta import *
+    from src.rivex.environments.discadores.vonix.fluxo_coleta import *
     from src.rivex.data_processing.Vonix.cleaning_vonix import *
     ```
   * Because `fluxo_coleta` imports `dict_agentes` (the dictionary) and `cleaning_vonix` defines `dict_agentes` (the function), Python's import order causes the **function to shadow and overwrite the dictionary** in `pipeline_vonix.py`.
@@ -94,7 +94,7 @@ A significant namespace conflict occurs because the identifier `dict_agentes` is
 * **`tests/teste_discovery_vonix.py`**:
   * Imports and iterates over the **dictionary** to cross-reference discovered queues:
     ```python
-    from src.rivex.enviroments.discadores.vonix.equipes_vonix import dict_agentes
+    from src.rivex.environments.discadores.vonix.equipes_vonix import dict_agentes
     for nome, filas in dict_agentes.items():
         ...
     ```
@@ -107,7 +107,7 @@ A significant namespace conflict occurs because the identifier `dict_agentes` is
 ---
 
 ## 3. Structure and Usage of `fluxo_limpeza.py`
-The file `src/rivex/enviroments/discadores/vonix/fluxo_limpeza.py` contains a single class `LimpezaVonix` with the following structure:
+The file `src/rivex/environments/discadores/vonix/fluxo_limpeza.py` contains a single class `LimpezaVonix` with the following structure:
 
 ```python
 class LimpezaVonix:
@@ -121,12 +121,12 @@ class LimpezaVonix:
 ### 3.1 Codebase Usage Analysis
 * **`main.py`**: Imports the class:
   ```python
-  from src.rivex.enviroments.discadores.vonix.fluxo_limpeza import LimpezaVonix
+  from src.rivex.environments.discadores.vonix.fluxo_limpeza import LimpezaVonix
   ```
   But it is **never instantiated or used** anywhere in `main.py`.
 * **`src/rivex/pipeline/pipeline_discador/pipeline_vonix.py`**:
   ```python
-  from src.rivex.enviroments.discadores.vonix.fluxo_limpeza import *
+  from src.rivex.environments.discadores.vonix.fluxo_limpeza import *
   ```
   However, no classes or functions from `fluxo_limpeza.py` are referenced or called. The pipeline calls functional cleaners from `cleaning_vonix.py` (like `limpar_chamadas` and `dict_agentes`) instead.
 * **Conclusion**: The entire class `LimpezaVonix` in `fluxo_limpeza.py` is **completely dead code** and is not used in the active data pipelines.
@@ -151,7 +151,7 @@ This redundancy should be cleaned up.
 ---
 
 ## 6. Vonix Queue Discovery Analysis
-The file `src/rivex/enviroments/discadores/vonix/vonix_queue_discovery.py` defines the class `VonixQueueDiscovery`, which is designed to dynamically scrape queue identifiers and names from the Vonix dashboard.
+The file `src/rivex/environments/discadores/vonix/vonix_queue_discovery.py` defines the class `VonixQueueDiscovery`, which is designed to dynamically scrape queue identifiers and names from the Vonix dashboard.
 
 ### 6.1 Attributes
 * `PREFIXOS_INATIVOS = ['zz', 'Zz', 'ZZ', '- equipe de teste']`
@@ -182,12 +182,12 @@ The codebase uses `time.sleep` in several loops and utilities. We cataloged them
 Wildcard imports (`from ... import *`) are prevalent in the Vonix integration files and are responsible for namespace shadowing.
 
 ### 8.1 In `src/rivex/pipeline/pipeline_discador/pipeline_vonix.py`:
-* `from src.rivex.enviroments.discadores.vonix.fluxo_coleta import *`
-* `from src.rivex.enviroments.discadores.vonix.fluxo_limpeza import *`
+* `from src.rivex.environments.discadores.vonix.fluxo_coleta import *`
+* `from src.rivex.environments.discadores.vonix.fluxo_limpeza import *`
 * `from src.rivex.data_processing.Vonix.cleaning_vonix import *`
 
-### 8.2 In `src/rivex/enviroments/discadores/vonix/fluxo_coleta.py`:
-* `from src.rivex.enviroments.discadores.vonix.payloads_vonix import *`
+### 8.2 In `src/rivex/environments/discadores/vonix/fluxo_coleta.py`:
+* `from src.rivex.environments.discadores.vonix.payloads_vonix import *`
 * `from src.rivex.data_processing.Vonix.cleaning_vonix import *`
 
 These wildcards should be replaced with explicit imports to avoid collision and improve readability.

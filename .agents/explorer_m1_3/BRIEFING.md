@@ -20,7 +20,7 @@ Analyze the url property reference in get_clientes_ambiente() and client queue e
 - Updated: 2026-07-14T22:13:22-03:00
 
 ## Investigation State
-- **Explored paths**: `src/rivex/enviroments/discadores/vonix/fluxo_coleta.py`, `src/rivex/data_processing/Vonix/cleaning_vonix.py`, `tests/test_http.py`, `tests/` directory files, `tests/html_pagina_principal.html`
+- **Explored paths**: `src/rivex/environments/discadores/vonix/fluxo_coleta.py`, `src/rivex/data_processing/Vonix/cleaning_vonix.py`, `tests/test_http.py`, `tests/` directory files, `tests/html_pagina_principal.html`
 - **Key findings**:
   - `get_clientes_ambiente` uses `self.url.url_base` which bypasses the `GerarUrlVonix._url_base()` method, violating encapsulation and breaking mock-based testing.
   - `gerar_lista_de_clientes` extracts queue IDs from `<li id="container_...">` and replaces `"container_"` prefix. Slicing/removeprefix is safer, and inputs/checkboxes inside `<form id="queue_form">` provide an alternative robust method. Needs input type checking (`None`).

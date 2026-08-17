@@ -22,7 +22,7 @@ Delete deprecated files and run verification tests.
 ## Task Summary
 - **What to build**: Delete three deprecated files and run pytest + import verification.
 - **Success criteria**:
-  - `src/rivex/enviroments/discadores/vonix/fluxo_limpeza.py` deleted.
+  - `src/rivex/environments/discadores/vonix/fluxo_limpeza.py` deleted.
   - `src/rivex/utils/infra_utils/cleaner.py` deleted.
   - `src/rivex/utils/infra_utils/faxina.py` deleted.
   - Pytest suite runs and passes.

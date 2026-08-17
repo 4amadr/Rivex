@@ -3,7 +3,7 @@
 ## 1. Observation
 
 I have observed the following file structures and contents:
-- Source directories mapping: `src/rivex/enviroments/discadores/vonix/fluxo_coleta.py`, `src/rivex/data_processing/Vonix/cleaning_vonix.py`, `src/rivex/database/database.py`, and `src/rivex/pipeline/pipeline_discador/pipeline_vonix.py`.
+- Source directories mapping: `src/rivex/environments/discadores/vonix/fluxo_coleta.py`, `src/rivex/data_processing/Vonix/cleaning_vonix.py`, `src/rivex/database/database.py`, and `src/rivex/pipeline/pipeline_discador/pipeline_vonix.py`.
 - Interface contracts defined in `PROJECT.md` showing endpoints and functions like:
   - `ExecucaoVonix.get_clientes(token) -> str (HTML)`
   - `gerar_lista_de_clientes(html) -> list[str]`

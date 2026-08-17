@@ -3,7 +3,7 @@
 ## 1. Observation
 
 - **Observation 1 (Verified Files & Changes)**:
-  - File: `src/rivex/enviroments/discadores/vonix/fluxo_coleta.py`
+  - File: `src/rivex/environments/discadores/vonix/fluxo_coleta.py`
     - Lines 57-60:
       ```python
       def get_clientes_ambiente(self):

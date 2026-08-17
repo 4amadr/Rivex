@@ -4,11 +4,11 @@
 We observed the following regarding the codebase layout, namespace conflicts, unused files, and imports:
 - **Identifier Overlap (`dict_agentes`)**:
   - `src/rivex/data_processing/Vonix/cleaning_vonix.py:200` defined `def dict_agentes(html):`
-  - `src/rivex/enviroments/discadores/vonix/equipes_vonix.py:2` defined the configuration dictionary `dict_agentes = { ... }`
+  - `src/rivex/environments/discadores/vonix/equipes_vonix.py:2` defined the configuration dictionary `dict_agentes = { ... }`
   - `src/rivex/pipeline/pipeline_discador/pipeline_vonix.py:56` called `tabela = dict_agentes(agentes.text)`
   - `tests/e2e/test_e2e_suite.py:32` imported `dict_agentes` and made multiple calls to it (e.g. lines 154, 168, 175, 202, 406, 410, 414, 418, 429, 597)
 - **Unused Files & Imports**:
-  - `src/rivex/enviroments/discadores/vonix/fluxo_limpeza.py` defined class `LimpezaVonix` which was unused in the pipeline.
+  - `src/rivex/environments/discadores/vonix/fluxo_limpeza.py` defined class `LimpezaVonix` which was unused in the pipeline.
   - `main.py` had a duplicate import of `from dotenv import load_dotenv` (on line 19).
   - Wildcard imports (`from ... import *`) in `pipeline_vonix.py` and `fluxo_coleta.py` were shadowing identifiers (e.g., `dict_agentes` imported from `equipes_vonix` shadowed by `cleaning_vonix`'s function).
 - **Print Statements**:
@@ -44,5 +44,5 @@ To verify the changes, the parent agent or auditor can execute the following:
    `python -m pytest tests/`
 2. Run Import Check:
    `python -c "from src.rivex.pipeline.pipeline_discador.pipeline_vonix import PipelineVonix; print('Import OK')"`
-3. Verify that the files `src/rivex/enviroments/discadores/vonix/fluxo_limpeza.py`, `src/rivex/utils/infra_utils/cleaner.py`, and `src/rivex/utils/infra_utils/faxina.py` only contain deprecation comments and no active code.
+3. Verify that the files `src/rivex/environments/discadores/vonix/fluxo_limpeza.py`, `src/rivex/utils/infra_utils/cleaner.py`, and `src/rivex/utils/infra_utils/faxina.py` only contain deprecation comments and no active code.
 4. Verify the contents of `RELATORIO_MUDANCAS_VONIX.md` at the project root.

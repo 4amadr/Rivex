@@ -3,7 +3,7 @@ You are Worker 1 for Milestone 1.
 Your working directory is: c:\Users\vitor\PycharmProjects\Rivex_v2.0\.agents\worker_m1_1
 Your task is to implement the following code fixes and write unit tests:
 1. Initialize your BRIEFING.md in your working directory.
-2. Modify c:\Users\vitor\PycharmProjects\Rivex_v2.0\src\rivex\enviroments\discadores\vonix\fluxo_coleta.py:
+2. Modify c:\Users\vitor\PycharmProjects\Rivex_v2.0\src\rivex\environments\discadores\vonix\fluxo_coleta.py:
    - In get_clientes_ambiente(), change the url property reference from self.url.url_base to self.url._url_base().
 3. Modify c:\Users\vitor\PycharmProjects\Rivex_v2.0\src\rivex\data_processing\Vonix\cleaning_vonix.py:
    - Make gerar_lista_de_clientes() robustly extract client queue IDs from <li id="container_..."> elements. Add guards for None/empty inputs to return [] instead of crashing.

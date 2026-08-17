@@ -7,7 +7,7 @@ Detailed analysis of the Vonix dialer collection URL references, client list par
 ## 1. Observation
 
 ### A. Wrong Property Reference in `fluxo_coleta.py`
-In `src/rivex/enviroments/discadores/vonix/fluxo_coleta.py`, lines 57-60:
+In `src/rivex/environments/discadores/vonix/fluxo_coleta.py`, lines 57-60:
 ```python
     def get_clientes_ambiente(self):
         return self.http_requisitions.requisicao_get(payload_get={},
@@ -122,7 +122,7 @@ for cb in checkboxes:
   ```
 
 ### B. Files to Inspect
-- `src/rivex/enviroments/discadores/vonix/fluxo_coleta.py` (verify the URL call in `get_clientes_ambiente`)
+- `src/rivex/environments/discadores/vonix/fluxo_coleta.py` (verify the URL call in `get_clientes_ambiente`)
 - `src/rivex/data_processing/Vonix/cleaning_vonix.py` (verify extraction logic)
 - `tests/test_http.py` (verify test names are unique)
 

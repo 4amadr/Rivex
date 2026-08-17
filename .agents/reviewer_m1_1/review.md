@@ -37,8 +37,8 @@ The implementation successfully resolves the core logic requirements from `SCOPE
   and call it directly in the tests.
 
 #### [Minor] Finding 2: `dict_agentes` Name Collision in `fluxo_coleta.py`
-- **What**: In `src/rivex/enviroments/discadores/vonix/fluxo_coleta.py`, the variable `dict_agentes` is imported from `equipes_vonix` on line 7 but is immediately shadowed/overwritten by the wildcard import `from src.rivex.data_processing.Vonix.cleaning_vonix import *` on line 9, since `cleaning_vonix.py` defines a function `def dict_agentes(html):`.
-- **Where**: `src/rivex/enviroments/discadores/vonix/fluxo_coleta.py`, lines 7 and 9.
+- **What**: In `src/rivex/environments/discadores/vonix/fluxo_coleta.py`, the variable `dict_agentes` is imported from `equipes_vonix` on line 7 but is immediately shadowed/overwritten by the wildcard import `from src.rivex.data_processing.Vonix.cleaning_vonix import *` on line 9, since `cleaning_vonix.py` defines a function `def dict_agentes(html):`.
+- **Where**: `src/rivex/environments/discadores/vonix/fluxo_coleta.py`, lines 7 and 9.
 - **Why**: While not causing an active bug in this milestone (as `dict_agentes` is not called in `fluxo_coleta.py`), name shadowing makes code harder to read and debug.
 - **Suggestion**: This is noted as planned for Milestone 5 in `PROJECT.md` ("Resolve dict_agentes name collision"), so it is not a blocking issue for M1, but is reported for completeness.
 
@@ -47,7 +47,7 @@ The implementation successfully resolves the core logic requirements from `SCOPE
 ### Verified Claims
 
 - **Claim**: The wrong URL property reference `self.url.url_base` in `fluxo_coleta.py:get_clientes_ambiente()` was fixed to call the `self.url._url_base()` method.
-  - **Method**: Direct code inspection of `src/rivex/enviroments/discadores/vonix/fluxo_coleta.py` line 60.
+  - **Method**: Direct code inspection of `src/rivex/environments/discadores/vonix/fluxo_coleta.py` line 60.
   - **Result**: PASS (verified that it successfully calls `self.url._url_base()`).
 
 - **Claim**: Client list extraction is updated to parse `<li id="container_...">` IDs and returns clean queue names.

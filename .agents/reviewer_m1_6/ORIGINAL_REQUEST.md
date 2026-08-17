@@ -5,7 +5,7 @@ Your task is to:
 1. Initialize your BRIEFING.md in your working directory.
 2. Read the global PROJECT.md, the milestone SCOPE.md, and the worker's handoff at c:\Users\vitor\PycharmProjects\Rivex_v2.0\.agents\worker_m1_3\handoff.md.
 3. Review the changes made to:
-   - src/rivex/enviroments/discadores/vonix/fluxo_coleta.py
+   - src/rivex/environments/discadores/vonix/fluxo_coleta.py
    - src/rivex/data_processing/Vonix/cleaning_vonix.py
    - tests/test_http.py
    - tests/test_cleaning_vonix.py

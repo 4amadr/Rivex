@@ -20,7 +20,7 @@ The pipeline processes Vonix dialer data in a linear ETL loop:
 
 ### B. Interface Contracts
 
-#### 1. Collection Module (`src/rivex/enviroments/discadores/vonix/fluxo_coleta.py`)
+#### 1. Collection Module (`src/rivex/environments/discadores/vonix/fluxo_coleta.py`)
 - **`ExecucaoVonix.__init__(self, login, senha, data, url_base)`**
   - **Parameters**: 
     - `login` (str)
@@ -155,7 +155,7 @@ Days with zero consumption/no calls cause the HTML to lack key tags, leading to 
   - Logical mismatch: `discador = EXCLUDED.cliente` maps the wrong column value.
 
 #### 6. Naming Collisions and Unused Code
-- **Naming Collision**: Both `src/rivex/enviroments/discadores/vonix/equipes_vonix.py` and `src/rivex/data_processing/Vonix/cleaning_vonix.py` define `dict_agentes` (one as a dictionary mapping configuration, one as a cleanup function). When imported via wildcard (`*`), the function overwrites the dictionary, making the config lookup impossible.
+- **Naming Collision**: Both `src/rivex/environments/discadores/vonix/equipes_vonix.py` and `src/rivex/data_processing/Vonix/cleaning_vonix.py` define `dict_agentes` (one as a dictionary mapping configuration, one as a cleanup function). When imported via wildcard (`*`), the function overwrites the dictionary, making the config lookup impossible.
 - **Unused Class**: `fluxo_limpeza.py:LimpezaVonix` is defined but completely unused by the pipeline.
 - **Unused Files**: `cleaner.py` and `faxina.py` are build utility scripts and do not belong in the source code directories.
 - **Duplicate Imports**: `main.py` imports `load_dotenv` twice (Line 4 and Line 19).
@@ -229,7 +229,7 @@ Inspect the corrected files post-implementation to verify schema compliance and 
 - `src/rivex/database/database.py`
 - `src/rivex/data_processing/Vonix/cleaning_vonix.py`
 - `tests/test_http.py`
-- `src/rivex/enviroments/discadores/vonix/equipes_vonix.py`
+- `src/rivex/environments/discadores/vonix/equipes_vonix.py`
 
 ### 3. Invalidation Conditions
 The verification fails if:

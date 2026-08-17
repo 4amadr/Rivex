@@ -12,7 +12,7 @@ from datetime import date
 import sys
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from src.rivex.enviroments.discadores.vonix.vonix_queue_discovery import VonixQueueDiscovery
+from src.rivex.environments.discadores.vonix.vonix_queue_discovery import VonixQueueDiscovery
 
 load_dotenv()
 
@@ -86,7 +86,7 @@ print("=" * 60)
 print("COMPARAÇÃO: Hardcoded vs Dinâmico")
 print("=" * 60)
 
-from src.rivex.enviroments.discadores.vonix.equipes_vonix import dict_agentes
+from src.rivex.environments.discadores.vonix.equipes_vonix import dict_agentes
 
 hardcoded_ids = set()
 for nome, filas in dict_agentes.items():

@@ -1,6 +1,6 @@
 import requests
 from src.rivex.utils.requests_utils.requests import HttpRequisitions
-from src.rivex.enviroments.operadoras.ultracom.payloads_ultracom import *
+from src.rivex.environments.operadoras.ultracom.payloads_ultracom import *
 from src.rivex.data_processing.ultracom.get_viewstate import *
 
 class SipPulseUrl:

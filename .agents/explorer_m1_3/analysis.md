@@ -7,7 +7,7 @@ This report presents a read-only investigation and analysis of the client data r
 ## 1. Analysis: URL Property Reference in `get_clientes_ambiente()`
 
 ### Observations & Code References
-In `src/rivex/enviroments/discadores/vonix/fluxo_coleta.py`, the class `ExecucaoVonix` interacts with a helper class `GerarUrlVonix` to manage endpoints.
+In `src/rivex/environments/discadores/vonix/fluxo_coleta.py`, the class `ExecucaoVonix` interacts with a helper class `GerarUrlVonix` to manage endpoints.
 
 The helper class is defined as:
 ```python

@@ -1,6 +1,6 @@
 import pytest
 from unittest.mock import MagicMock, patch
-from src.rivex.enviroments.discadores.vonix.fluxo_coleta import ExecucaoVonix
+from src.rivex.environments.discadores.vonix.fluxo_coleta import ExecucaoVonix
 
 def test_get_clientes_ambiente_calls_requisicao_get_with_correct_url():
     # Setup mock dependencies
@@ -9,7 +9,7 @@ def test_get_clientes_ambiente_calls_requisicao_get_with_correct_url():
     data = "2026-07-14"
     url_base = "http://mock-vonix.com"
     
-    with patch("src.rivex.enviroments.discadores.vonix.fluxo_coleta.HttpRequisitions") as MockHttpRequisitions:
+    with patch("src.rivex.environments.discadores.vonix.fluxo_coleta.HttpRequisitions") as MockHttpRequisitions:
         mock_http_instance = MagicMock()
         MockHttpRequisitions.return_value = mock_http_instance
         

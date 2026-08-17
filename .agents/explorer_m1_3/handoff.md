@@ -7,7 +7,7 @@ Explorer 3 investigation results for Milestone 1: Fix Client Data Retrieval.
 ## 1. Observation
 
 ### A. Wrong Property Reference in `fluxo_coleta.py`
-In `src/rivex/enviroments/discadores/vonix/fluxo_coleta.py`, lines 57-60:
+In `src/rivex/environments/discadores/vonix/fluxo_coleta.py`, lines 57-60:
 ```python
     def get_clientes_ambiente(self):
         return self.http_requisitions.requisicao_get(payload_get={},
@@ -105,7 +105,7 @@ python -m pytest tests/
 ```
 
 ### 2. Files to Inspect
-- `src/rivex/enviroments/discadores/vonix/fluxo_coleta.py` (line 60, should call `self.url._url_base()`)
+- `src/rivex/environments/discadores/vonix/fluxo_coleta.py` (line 60, should call `self.url._url_base()`)
 - `src/rivex/data_processing/Vonix/cleaning_vonix.py` (line 25-29, verify client extraction robust logic)
 - `tests/test_http.py` (verify 4 uniquely named test functions)
 - `tests/test_cleaning_vonix.py` (verify existence of zero-consumption/login-redirect/happy-path test cases)

@@ -1,7 +1,7 @@
 # Handoff Report — Challenger 2 for Milestone 1
 
 ## 1. Observation
-- **Observation 1 (URL Base Fix)**: In `c:\Users\vitor\PycharmProjects\Rivex_v2.0\src\rivex\enviroments\discadores\vonix\fluxo_coleta.py` on line 60, the `get_clientes_ambiente()` method now calls `self.url._url_base()` rather than accessing `self.url.url_base` directly.
+- **Observation 1 (URL Base Fix)**: In `c:\Users\vitor\PycharmProjects\Rivex_v2.0\src\rivex\environments\discadores\vonix\fluxo_coleta.py` on line 60, the `get_clientes_ambiente()` method now calls `self.url._url_base()` rather than accessing `self.url.url_base` directly.
 - **Observation 2 (Client List Extraction & Cleaning)**: In `c:\Users\vitor\PycharmProjects\Rivex_v2.0\src\rivex\data_processing\Vonix\cleaning_vonix.py`:
   - `limpar_nome_lista` (lines 32-35) uses `.removeprefix("container_")` instead of `.replace("container_", "")`.
   - `gerar_lista_de_clientes` (lines 37-43) raises `TypeError("html cannot be None")` if `html is None`, returns `[]` if input is empty/whitespace, and returns `[]` if type is neither string nor bytes.

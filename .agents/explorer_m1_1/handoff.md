@@ -1,7 +1,7 @@
 # Handoff Report: Explorer 1 - Milestone 1
 
 ## 1. Observation
-- **Observation 1**: In `src/rivex/enviroments/discadores/vonix/fluxo_coleta.py`, the method `get_clientes_ambiente` references `self.url.url_base` directly.
+- **Observation 1**: In `src/rivex/environments/discadores/vonix/fluxo_coleta.py`, the method `get_clientes_ambiente` references `self.url.url_base` directly.
   * Verbatim (Lines 57-60):
     ```python
     def get_clientes_ambiente(self):
@@ -9,7 +9,7 @@
                                                      headers={},
                                                      url=self.url.url_base)
     ```
-- **Observation 2**: In `src/rivex/enviroments/discadores/vonix/fluxo_coleta.py`, the class `GerarUrlVonix` defines a helper getter method `_url_base(self)` at lines 18-19:
+- **Observation 2**: In `src/rivex/environments/discadores/vonix/fluxo_coleta.py`, the class `GerarUrlVonix` defines a helper getter method `_url_base(self)` at lines 18-19:
   * Verbatim:
     ```python
     def _url_base(self):
@@ -67,7 +67,7 @@
 
 ## 5. Verification Method
 - **Implementation Verification**:
-  1. Inspect `src/rivex/enviroments/discadores/vonix/fluxo_coleta.py` and verify `url=self.url._url_base()`.
+  1. Inspect `src/rivex/environments/discadores/vonix/fluxo_coleta.py` and verify `url=self.url._url_base()`.
   2. Inspect `src/rivex/data_processing/Vonix/cleaning_vonix.py` to confirm type assertions/safeguards on `html`.
 - **Tests Execution**:
   1. Create a mock test verifying `gerar_lista_de_clientes` with a sample HTML containing `<li id="container_testqueue">`.

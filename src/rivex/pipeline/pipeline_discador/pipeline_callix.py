@@ -2,12 +2,12 @@ import logging
 from dotenv import load_dotenv
 from src.rivex.utils.infra_utils.date_config import DateConfig
 import os
-from src.rivex.enviroments.discadores.Callix.callix import CallixAPICollector
+from src.rivex.environments.discadores.Callix.callix import CallixAPICollector
 from src.rivex.data_processing.Callix.cleaner_callix_api import *
-from src.rivex.enviroments.discadores.Callix.callix_req import CAllixRequisition
+from src.rivex.environments.discadores.Callix.callix_req import CAllixRequisition
 from src.rivex.data_processing.Callix.cleaner_callix_req import *
-from src.rivex.enviroments.discadores.Callix.callix_client_package import *
-from src.rivex.enviroments.discadores.Callix.callix_get_clients import CallixGetClients, GetTokenCallix
+from src.rivex.environments.discadores.Callix.callix_client_package import *
+from src.rivex.environments.discadores.Callix.callix_get_clients import CallixGetClients, GetTokenCallix
 from src.rivex.database.database_dados_chamadas import DatabaseCallix
 from src.rivex.data_processing.Callix.callix_clients import *
 from src.rivex.database.database_clientes import DatabaseClientes
@@ -165,7 +165,6 @@ class PipelineCallix:
             dict_limpeza = processar_dados(
                 dados_brutos_api['Completas'],
                 dados_brutos_api['Recusadas'],
-                dados_brutos_api['Abandonadas'],
                 dados_brutos_api['Campanha']
             )
 

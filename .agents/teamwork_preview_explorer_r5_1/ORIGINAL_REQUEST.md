@@ -4,18 +4,18 @@ Your working directory is: c:\Users\vitor\PycharmProjects\Rivex_v2.0\.agents\tea
 Your task is to explore the codebase and identify:
 1. All occurrences of `print()` statements in Vonix files:
    - `src/rivex/pipeline/pipeline_discador/pipeline_vonix.py`
-   - `src/rivex/enviroments/discadores/vonix/fluxo_coleta.py`
-   - `src/rivex/enviroments/discadores/vonix/fluxo_limpeza.py`
-   - `src/rivex/enviroments/discadores/vonix/cleaning_vonix.py`
+   - `src/rivex/environments/discadores/vonix/fluxo_coleta.py`
+   - `src/rivex/environments/discadores/vonix/fluxo_limpeza.py`
+   - `src/rivex/environments/discadores/vonix/cleaning_vonix.py`
    - `src/rivex/database/database.py`
 2. All occurrences and imports of the `dict_agentes` function/dictionary in:
-   - `src/rivex/enviroments/discadores/vonix/cleaning_vonix.py`
-   - `src/rivex/enviroments/discadores/vonix/equipes_vonix.py`
+   - `src/rivex/environments/discadores/vonix/cleaning_vonix.py`
+   - `src/rivex/environments/discadores/vonix/equipes_vonix.py`
    - `src/rivex/pipeline/pipeline_discador/pipeline_vonix.py`
-3. The structure of `src/rivex/enviroments/discadores/vonix/fluxo_limpeza.py` and whether any classes/functions inside it are imported or used anywhere in the codebase.
+3. The structure of `src/rivex/environments/discadores/vonix/fluxo_limpeza.py` and whether any classes/functions inside it are imported or used anywhere in the codebase.
 4. The paths and existence of `src/rivex/utils/infra_utils/cleaner.py` and `src/rivex/utils/infra_utils/faxina.py`.
 5. The duplicate imports in `main.py`.
-6. The `src/rivex/enviroments/discadores/vonix/vonix_queue_discovery.py` class and code structure.
+6. The `src/rivex/environments/discadores/vonix/vonix_queue_discovery.py` class and code structure.
 7. The occurrences of `time.sleep` (specifically the sleep per client) in the codebase.
 8. Wildcard imports (`from ... import *`) in `pipeline_vonix.py` and other Vonix files.
 9. The existing test suite in `tests/` to see where the new zero-consumption unit tests should be placed.

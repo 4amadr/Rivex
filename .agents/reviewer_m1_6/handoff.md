@@ -19,7 +19,7 @@
   - In `src/rivex/data_processing/Vonix/cleaning_vonix.py`:
     - `gerar_lista_de_clientes(html)` (line 37) raises `TypeError("html cannot be None")` (line 39) when `html is None`.
     - `limpar_nome_lista` (line 32) uses `cliente.removeprefix("container_")` (line 35).
-  - In `src/rivex/enviroments/discadores/vonix/fluxo_coleta.py`:
+  - In `src/rivex/environments/discadores/vonix/fluxo_coleta.py`:
     - `get_clientes_ambiente` (line 57) requests the URL via `url=self.url._url_base()` (line 60).
   - In `tests/test_cleaning_vonix.py`:
     - `test_gerar_lista_de_clientes_none_input` (line 19) asserts that `gerar_lista_de_clientes(None)` raises `TypeError` (line 20).

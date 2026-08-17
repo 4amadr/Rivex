@@ -1,7 +1,7 @@
 import requests
 from dotenv import load_dotenv
 from src.rivex.utils.requests_utils.requests import HttpRequisitions
-from src.rivex.enviroments.operadoras.gsolutions.headers_payload import *
+from src.rivex.environments.operadoras.gsolutions.headers_payload import *
 import urllib3
 
 load_dotenv()

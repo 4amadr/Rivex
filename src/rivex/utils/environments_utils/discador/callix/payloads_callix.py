@@ -6,12 +6,16 @@ def payload_callix(requisicao, data, filtro=None, set=None):
         
     elif requisicao == "user_performance_reports":
         querystring = {
-            "filter[date]": f"{data}T00:00:00.000Z,{data}T23:59:59.999Z"
+            "filter[date]": f"{data}T00:00:00.000Z,{data}T23:59:59.999Z",
+            "page[limit]": 5000,
+            "page[offset]": 0
         }
         
     else:
         querystring = {
             "filter[started_at]": f"{data}T00:00:00.000Z,{data}T23:59:59.999Z",
+            "page[limit]": 5000,
+            "page[offset]": 0
         }
         
     if filtro:

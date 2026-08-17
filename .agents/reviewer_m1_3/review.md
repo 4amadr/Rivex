@@ -30,8 +30,8 @@ The worker has resolved the previous import error in `tests/test_http.py` by dir
   ```
 
 #### [Minor] Finding 2: Shadowing of `dict_agentes` in `fluxo_coleta.py`
-- **What**: In `src/rivex/enviroments/discadores/vonix/fluxo_coleta.py`, the variable/function `dict_agentes` is imported on line 7 from `equipes_vonix` and then immediately shadowed by the wildcard import `from src.rivex.data_processing.Vonix.cleaning_vonix import *` on line 9 (which also defines a `dict_agentes` function).
-- **Where**: `src/rivex/enviroments/discadores/vonix/fluxo_coleta.py`, lines 7 and 9.
+- **What**: In `src/rivex/environments/discadores/vonix/fluxo_coleta.py`, the variable/function `dict_agentes` is imported on line 7 from `equipes_vonix` and then immediately shadowed by the wildcard import `from src.rivex.data_processing.Vonix.cleaning_vonix import *` on line 9 (which also defines a `dict_agentes` function).
+- **Where**: `src/rivex/environments/discadores/vonix/fluxo_coleta.py`, lines 7 and 9.
 - **Why**: While planned to be resolved in Milestone 5, it is a code smell that could lead to unexpected behavior if any reference to the original `dict_agentes` was intended.
 - **Suggestion**: Avoid wildcard imports or rename the imported objects to avoid name shadowing.
 

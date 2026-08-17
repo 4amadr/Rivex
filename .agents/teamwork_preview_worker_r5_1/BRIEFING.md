@@ -29,12 +29,12 @@ Implement refactoring, code optimization, logging updates, wildcard import clean
 - **Files modified**:
   - `src/rivex/pipeline/pipeline_discador/pipeline_vonix.py` — cleaned wildcard imports, replaced prints with logger, updated function name to `extrair_dados_agentes`
   - `src/rivex/database/database.py` — replaced print statements with logging (`log.info` and `log.error`)
-  - `src/rivex/enviroments/discadores/vonix/vonix_queue_discovery.py` — replaced print statements with logger
+  - `src/rivex/environments/discadores/vonix/vonix_queue_discovery.py` — replaced print statements with logger
   - `src/rivex/data_processing/Vonix/cleaning_vonix.py` — renamed `dict_agentes` function to `extrair_dados_agentes`
   - `tests/e2e/test_e2e_suite.py` — updated all references of `dict_agentes` function to `extrair_dados_agentes`
-  - `src/rivex/enviroments/discadores/vonix/fluxo_coleta.py` — replaced wildcard imports with explicit imports, removed unused `dict_agentes` import
+  - `src/rivex/environments/discadores/vonix/fluxo_coleta.py` — replaced wildcard imports with explicit imports, removed unused `dict_agentes` import
   - `main.py` — removed unused `LimpezaVonix` import and duplicate `load_dotenv` import
-  - `src/rivex/enviroments/discadores/vonix/fluxo_limpeza.py` — emptied and added deprecation comment
+  - `src/rivex/environments/discadores/vonix/fluxo_limpeza.py` — emptied and added deprecation comment
   - `src/rivex/utils/infra_utils/cleaner.py` — emptied and added deprecation comment
   - `src/rivex/utils/infra_utils/faxina.py` — emptied and added deprecation comment
   - `tests/test_cleaning_vonix.py` — added zero-consumption tests

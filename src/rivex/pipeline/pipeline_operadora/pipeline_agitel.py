@@ -1,4 +1,4 @@
-from src.rivex.enviroments.operadoras.gsolutions.sip_client_scrap import *
+from src.rivex.environments.operadoras.gsolutions.sip_client_scrap import *
 import os
 from src.rivex.utils.infra_utils.date_config import *
 from src.rivex.database.database_dados_chamadas import *

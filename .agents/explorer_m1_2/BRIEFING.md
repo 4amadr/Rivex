@@ -19,7 +19,7 @@ Investigate Vonix client retrieval url property reference and client list cleani
 
 ## Investigation State
 - **Explored paths**:
-  - `src/rivex/enviroments/discadores/vonix/fluxo_coleta.py`
+  - `src/rivex/environments/discadores/vonix/fluxo_coleta.py`
   - `src/rivex/data_processing/Vonix/cleaning_vonix.py`
   - `tests/` (all files: `test_http.py`, `mapear_filas_vonix.py`, `coleta_vonix_completa.py`, `teste_discovery_vonix.py`, `listar_filas.py`, `diagnostico_vonix.py`)
   - `.agents/explorer_planning/handoff.md` (peer plan analysis)

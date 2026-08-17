@@ -8,24 +8,24 @@ This handoff contains findings from the read-only exploration of the Vonix diale
 We observed the following exact patterns and file contents:
 * **Print Statements**:
   * `src/rivex/pipeline/pipeline_discador/pipeline_vonix.py` contains `print(f"Nome do cliente após limpeza: {nome_cliente}")` (line 44) and `print(tabela)` (line 57).
-  * `src/rivex/enviroments/discadores/vonix/fluxo_limpeza.py` contains `print('Sem consumo na fila: ', equipe)` (line 61).
+  * `src/rivex/environments/discadores/vonix/fluxo_limpeza.py` contains `print('Sem consumo na fila: ', equipe)` (line 61).
   * `src/rivex/database/database.py` contains 9 print statements, e.g. `print("Conectado ao banco de dados")` (line 116), `print("Enviando dados de chamadas para o banco de dados")` (line 138).
-  * `src/rivex/enviroments/discadores/vonix/vonix_queue_discovery.py` contains multiple print statements in its `resumo()` method (lines 168-179).
+  * `src/rivex/environments/discadores/vonix/vonix_queue_discovery.py` contains multiple print statements in its `resumo()` method (lines 168-179).
 * **Identifier Overlap (`dict_agentes`)**:
-  * `src/rivex/enviroments/discadores/vonix/equipes_vonix.py` defines `dict_agentes = { ... }` (line 2) mapping teams to agent lists.
+  * `src/rivex/environments/discadores/vonix/equipes_vonix.py` defines `dict_agentes = { ... }` (line 2) mapping teams to agent lists.
   * `src/rivex/data_processing/Vonix/cleaning_vonix.py` defines `def dict_agentes(html):` (line 200).
-  * `src/rivex/enviroments/discadores/vonix/fluxo_coleta.py` imports the dictionary `from src.rivex.enviroments.discadores.vonix.equipes_vonix import dict_agentes` (line 7).
+  * `src/rivex/environments/discadores/vonix/fluxo_coleta.py` imports the dictionary `from src.rivex.environments.discadores.vonix.equipes_vonix import dict_agentes` (line 7).
   * `src/rivex/pipeline/pipeline_discador/pipeline_vonix.py` performs wildcard imports of `fluxo_coleta` and `cleaning_vonix`. Consequently, the `dict_agentes` function shadows/overwrites the dictionary. It uses the function on line 56: `tabela = dict_agentes(agentes.text)`.
 * **Fluxo Limpeza Usage**:
-  * `src/rivex/enviroments/discadores/vonix/fluxo_limpeza.py` defines the class `LimpezaVonix`.
-  * `main.py` imports it on line 11: `from src.rivex.enviroments.discadores.vonix.fluxo_limpeza import LimpezaVonix`, but never references it.
+  * `src/rivex/environments/discadores/vonix/fluxo_limpeza.py` defines the class `LimpezaVonix`.
+  * `main.py` imports it on line 11: `from src.rivex.environments.discadores.vonix.fluxo_limpeza import LimpezaVonix`, but never references it.
   * `pipeline_vonix.py` imports it via wildcard but never references it.
 * **Cleaner and Faxina Utilities**:
   * `src/rivex/utils/infra_utils/cleaner.py` and `src/rivex/utils/infra_utils/faxina.py` both exist. Neither is imported or used by any other module in the codebase.
 * **Duplicate Imports**:
   * `main.py` imports `from dotenv import load_dotenv` on line 4 and again on line 19.
 * **Vonix Queue Discovery**:
-  * `src/rivex/enviroments/discadores/vonix/vonix_queue_discovery.py` implements class `VonixQueueDiscovery`. It has options to filter inactive queues (`PREFIXOS_INATIVOS = ['zz', 'Zz', 'ZZ', '- equipe de teste']`) and manual queues (`SUFIXO_MANUAL = 'manual'`).
+  * `src/rivex/environments/discadores/vonix/vonix_queue_discovery.py` implements class `VonixQueueDiscovery`. It has options to filter inactive queues (`PREFIXOS_INATIVOS = ['zz', 'Zz', 'ZZ', '- equipe de teste']`) and manual queues (`SUFIXO_MANUAL = 'manual'`).
 * **Timing / sleep per client**:
   * `src/rivex/pipeline/pipeline_discador/pipeline_vonix.py` contains `time.sleep(4)` on line 125 inside the client loop.
 * **Wildcard Imports**:
@@ -47,7 +47,7 @@ We observed the following exact patterns and file contents:
 
 ## 3. Caveats
 * We did not run the full E2E test suite because the user permission check for the `run_command` shell execution timed out.
-* We assumed that the file path `src/rivex/enviroments/discadores/vonix/cleaning_vonix.py` mentioned in the request was a typo for `src/rivex/data_processing/Vonix/cleaning_vonix.py` as search results confirmed the latter is the only file named `cleaning_vonix.py` in the source repository.
+* We assumed that the file path `src/rivex/environments/discadores/vonix/cleaning_vonix.py` mentioned in the request was a typo for `src/rivex/data_processing/Vonix/cleaning_vonix.py` as search results confirmed the latter is the only file named `cleaning_vonix.py` in the source repository.
 
 ---
 
@@ -64,6 +64,6 @@ We observed the following exact patterns and file contents:
 1. To verify file existence:
    - Check if `src/rivex/utils/infra_utils/cleaner.py` and `src/rivex/utils/infra_utils/faxina.py` exist.
 2. To verify namespace usages and print occurrences:
-   - Inspect files `src/rivex/pipeline/pipeline_discador/pipeline_vonix.py` and `src/rivex/enviroments/discadores/vonix/fluxo_coleta.py`.
+   - Inspect files `src/rivex/pipeline/pipeline_discador/pipeline_vonix.py` and `src/rivex/environments/discadores/vonix/fluxo_coleta.py`.
 3. To run existing tests:
    - Run command `pytest tests/test_cleaning_vonix.py` and `pytest tests/e2e/test_e2e_suite.py`.

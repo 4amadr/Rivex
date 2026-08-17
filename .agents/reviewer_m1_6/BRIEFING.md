@@ -20,7 +20,7 @@ Review and stress-test the changes made by worker_m1_3 to Vonix dialing environm
 
 ## Review Scope
 - **Files to review**:
-  - src/rivex/enviroments/discadores/vonix/fluxo_coleta.py
+  - src/rivex/environments/discadores/vonix/fluxo_coleta.py
   - src/rivex/data_processing/Vonix/cleaning_vonix.py
   - tests/test_http.py
   - tests/test_cleaning_vonix.py
@@ -40,7 +40,7 @@ Review and stress-test the changes made by worker_m1_3 to Vonix dialing environm
 
 ## Review Checklist
 - **Items reviewed**:
-  - src/rivex/enviroments/discadores/vonix/fluxo_coleta.py
+  - src/rivex/environments/discadores/vonix/fluxo_coleta.py
   - src/rivex/data_processing/Vonix/cleaning_vonix.py
   - tests/test_http.py
   - tests/test_cleaning_vonix.py

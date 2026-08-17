@@ -20,7 +20,7 @@ Analyze the Vonix dialer pipeline codebase and prepare a detailed report on its 
 - Updated: not yet
 
 ## Investigation State
-- **Explored paths**: `src/rivex/pipeline/pipeline_discador/pipeline_vonix.py`, `src/rivex/enviroments/discadores/vonix/fluxo_coleta.py`, `src/rivex/data_processing/Vonix/cleaning_vonix.py`, `src/rivex/database/database.py`, `tests/test_http.py`, `tests/`
+- **Explored paths**: `src/rivex/pipeline/pipeline_discador/pipeline_vonix.py`, `src/rivex/environments/discadores/vonix/fluxo_coleta.py`, `src/rivex/data_processing/Vonix/cleaning_vonix.py`, `src/rivex/database/database.py`, `tests/test_http.py`, `tests/`
 - **Key findings**: Found exact causes of pipeline bugs (missing client-context switching POST, missing database insertion, zero consumption HTML parsing errors, PostgreSQL query mismatches/syntax issues, naming conflicts, and duplicate pytest names).
 - **Unexplored areas**: Live execution rate limits on Vonix servers, local Postgres server verification.
 

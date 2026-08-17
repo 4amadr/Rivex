@@ -3,7 +3,7 @@
 ## 1. Investigation of `self.url.url_base` vs `self.url._url_base()`
 
 ### Location
-- **File**: `src/rivex/enviroments/discadores/vonix/fluxo_coleta.py`
+- **File**: `src/rivex/environments/discadores/vonix/fluxo_coleta.py`
 - **Function**: `ExecucaoVonix.get_clientes_ambiente()`
 - **Current implementation (Lines 57-60)**:
   ```python

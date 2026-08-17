@@ -16,7 +16,7 @@
 ## Key Artifacts
 - `c:\Users\vitor\PycharmProjects\Rivex_v2.0\.agents\sub_orch_m1_client_retrieval\SCOPE.md` — Milestone 1 Scope Document
 - `c:\Users\vitor\PycharmProjects\Rivex_v2.0\.agents\sub_orch_m1_client_retrieval\progress.md` — Sub-Orchestrator Progress & Heartbeat
-- `c:\Users\vitor\PycharmProjects\Rivex_v2.0\src\rivex\enviroments\discadores\vonix\fluxo_coleta.py` — Modified Collector Module
+- `c:\Users\vitor\PycharmProjects\Rivex_v2.0\src\rivex\environments\discadores\vonix\fluxo_coleta.py` — Modified Collector Module
 - `c:\Users\vitor\PycharmProjects\Rivex_v2.0\src\rivex\data_processing\Vonix\cleaning_vonix.py` — Modified Cleaning Module
 - `c:\Users\vitor\PycharmProjects\Rivex_v2.0\tests\test_http.py` — Fixed HTTP Unit Tests
 - `c:\Users\vitor\PycharmProjects\Rivex_v2.0\tests\test_cleaning_vonix.py` — New Cleaning Unit Tests

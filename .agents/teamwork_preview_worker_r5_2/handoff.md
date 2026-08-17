@@ -2,7 +2,7 @@
 
 ## 1. Observation
 - Verified that the files requested for deletion exist in the workspace:
-  - `src/rivex/enviroments/discadores/vonix/fluxo_limpeza.py`
+  - `src/rivex/environments/discadores/vonix/fluxo_limpeza.py`
     - Content: `# Deprecated and unused. Scheduled for deletion.` (1 line, 48 bytes)
   - `src/rivex/utils/infra_utils/cleaner.py`
     - Content: `# Deprecated and unused. Scheduled for deletion.` (1 line, 48 bytes)
@@ -10,8 +10,8 @@
     - Content: `# Deprecated and unused. Scheduled for deletion.` (1 line, 48 bytes)
 - Attempted to run the following terminal commands:
   - Baseline pytest suite: `python -m pytest tests/`
-  - Deletion command: `Remove-Item -Path "src/rivex/enviroments/discadores/vonix/fluxo_limpeza.py", "src/rivex/utils/infra_utils/cleaner.py", "src/rivex/utils/infra_utils/faxina.py" -Force`
-  - Deletion command (alternative syntax): `Remove-Item -Force "src/rivex/enviroments/discadores/vonix/fluxo_limpeza.py", "src/rivex/utils/infra_utils/cleaner.py", "src/rivex/utils/infra_utils/faxina.py"`
+  - Deletion command: `Remove-Item -Path "src/rivex/environments/discadores/vonix/fluxo_limpeza.py", "src/rivex/utils/infra_utils/cleaner.py", "src/rivex/utils/infra_utils/faxina.py" -Force`
+  - Deletion command (alternative syntax): `Remove-Item -Force "src/rivex/environments/discadores/vonix/fluxo_limpeza.py", "src/rivex/utils/infra_utils/cleaner.py", "src/rivex/utils/infra_utils/faxina.py"`
 - All attempts to execute `run_command` resulted in a permission prompt timeout:
   > `Encountered error in step execution: Permission prompt for action 'command' on target '...' timed out waiting for user response. The user was not able to provide permission on time. You should proceed as much as possible without access to this resource.`
 
@@ -33,11 +33,11 @@
 - Once command execution is approved by the user, the task can be verified by:
   1. Deleting the files using:
      ```powershell
-     Remove-Item -Force "src/rivex/enviroments/discadores/vonix/fluxo_limpeza.py", "src/rivex/utils/infra_utils/cleaner.py", "src/rivex/utils/infra_utils/faxina.py"
+     Remove-Item -Force "src/rivex/environments/discadores/vonix/fluxo_limpeza.py", "src/rivex/utils/infra_utils/cleaner.py", "src/rivex/utils/infra_utils/faxina.py"
      ```
   2. Verifying that the files no longer exist:
      ```powershell
-     Test-Path "src/rivex/enviroments/discadores/vonix/fluxo_limpeza.py"
+     Test-Path "src/rivex/environments/discadores/vonix/fluxo_limpeza.py"
      Test-Path "src/rivex/utils/infra_utils/cleaner.py"
      Test-Path "src/rivex/utils/infra_utils/faxina.py"
      ```

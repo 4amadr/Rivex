@@ -1,6 +1,6 @@
 from dis import print_instructions
 import pandas as pd
-from src.rivex.enviroments.discadores.Callix.callix_req import CAllixRequisition
+from src.rivex.environments.discadores.Callix.callix_req import CAllixRequisition
 from collections import namedtuple
 import unicodedata
 import re
@@ -103,8 +103,6 @@ def limpeza_techs_callix(outbound_routes: dict) -> str:
     Recebe o JSON de outbound-routes e retorna a Tech
     apropriada para ser enviada ao banco de dados.
     """
-    print("[DEBUG JSON DAS TECHS]: ", outbound_routes)
-
     for rota in outbound_routes.get("data", []):
 
         attributes = rota.get("attributes", {})
@@ -124,5 +122,5 @@ def limpeza_techs_callix(outbound_routes: dict) -> str:
 
 def limpeza_req_callix(json_agressividade, json_agentes, techs_json):
 
-    return limpar_agressividade(json_agressividade), limpar_chamadas_agentes(json_agentes), limpeza_techs_callix(techs_json)
+    return limpar_agressividade(json_agressividade), limpar_chamadas_agentes(json_agentes), limpeza_techs_callix(techs_json.json())
     

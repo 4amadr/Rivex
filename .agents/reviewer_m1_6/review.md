@@ -13,8 +13,8 @@ The code changes implemented by worker_m1_3 successfully address all reviewer co
 
 ### Minor Finding 1: Import Collision
 - **What**: Import collision for `dict_agentes`.
-- **Where**: `src/rivex/enviroments/discadores/vonix/fluxo_coleta.py`, lines 7 and 9.
-- **Why**: Line 7 imports `dict_agentes` from `src.rivex.enviroments.discadores.vonix.equipes_vonix`, while line 9 performs a wildcard import `from src.rivex.data_processing.Vonix.cleaning_vonix import *` (which also defines a `dict_agentes` function). While `dict_agentes` is not called inside `fluxo_coleta.py`, this wildcard import creates a potential collision.
+- **Where**: `src/rivex/environments/discadores/vonix/fluxo_coleta.py`, lines 7 and 9.
+- **Why**: Line 7 imports `dict_agentes` from `src.rivex.environments.discadores.vonix.equipes_vonix`, while line 9 performs a wildcard import `from src.rivex.data_processing.Vonix.cleaning_vonix import *` (which also defines a `dict_agentes` function). While `dict_agentes` is not called inside `fluxo_coleta.py`, this wildcard import creates a potential collision.
 - **Suggestion**: This collision is scheduled to be resolved in Milestone 5 ("Resolve `dict_agentes` name collision"). No immediate action is required for Milestone 1.
 
 ## Verified Claims

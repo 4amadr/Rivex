@@ -28,13 +28,13 @@
 - **Wildcard Imports in `main.py`**:
   ```python
   from src.rivex.data_processing.Callix.cleaner_callix_req import *
-  from src.rivex.enviroments.operadoras.gsolutions.sip_client_scrap import *
+  from src.rivex.environments.operadoras.gsolutions.sip_client_scrap import *
   ...
   from src.rivex.pipeline.pipeline_discador.pipeline_vonix import *
   ```
 - **Unused Import in `main.py`**: line 7:
   ```python
-  from src.rivex.enviroments.discadores.vonix.equipes_vonix import dict_agentes
+  from src.rivex.environments.discadores.vonix.equipes_vonix import dict_agentes
   ```
   This import is not used anywhere in `main.py`.
 

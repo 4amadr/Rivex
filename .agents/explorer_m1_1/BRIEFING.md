@@ -20,7 +20,7 @@ Analyze url property reference in get_clientes_ambiente and client extraction lo
 
 ## Investigation State
 - **Explored paths**:
-  - `src/rivex/enviroments/discadores/vonix/fluxo_coleta.py`
+  - `src/rivex/environments/discadores/vonix/fluxo_coleta.py`
   - `src/rivex/data_processing/Vonix/cleaning_vonix.py`
   - `src/rivex/pipeline/pipeline_discador/pipeline_vonix.py`
   - `tests/` (including test_http.py, html_pagina_principal.html, etc.)

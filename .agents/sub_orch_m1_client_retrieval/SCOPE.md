@@ -1,7 +1,7 @@
 # Scope: Milestone 1 - Fix Client Data Retrieval
 
 ## Architecture
-- Module: `src/rivex/enviroments/discadores/vonix/fluxo_coleta.py` (fetches raw HTML)
+- Module: `src/rivex/environments/discadores/vonix/fluxo_coleta.py` (fetches raw HTML)
 - Module: `src/rivex/data_processing/Vonix/cleaning_vonix.py` (cleans raw HTML client IDs)
 - Module: `src/rivex/pipeline/pipeline_discador/pipeline_vonix.py` (orchestrates loop)
 

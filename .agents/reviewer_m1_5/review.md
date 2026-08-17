@@ -17,7 +17,7 @@ No critical or major findings were discovered during this review. The implementa
 ## Verified Claims
 
 - **Claim 1**: `ExecucaoVonix.get_clientes_ambiente()` calls `self.url._url_base()` as a method.
-  - *Verification Method*: Checked code in `src/rivex/enviroments/discadores/vonix/fluxo_coleta.py:57-60`. Verified that `self.url._url_base()` is invoked.
+  - *Verification Method*: Checked code in `src/rivex/environments/discadores/vonix/fluxo_coleta.py:57-60`. Verified that `self.url._url_base()` is invoked.
   - *Result*: **PASS**
 - **Claim 2**: `gerar_lista_de_clientes` correctly handles `None` input by raising a `TypeError`.
   - *Verification Method*: Inspected `src/rivex/data_processing/Vonix/cleaning_vonix.py:37-43` and unit test `test_gerar_lista_de_clientes_none_input` in `tests/test_cleaning_vonix.py:19-21`.

@@ -2,13 +2,13 @@
 
 ## 1. Observation
 - Verified that the three files to be deleted exist:
-  - `src/rivex/enviroments/discadores/vonix/fluxo_limpeza.py`
+  - `src/rivex/environments/discadores/vonix/fluxo_limpeza.py`
   - `src/rivex/utils/infra_utils/cleaner.py`
   - `src/rivex/utils/infra_utils/faxina.py`
 - Attempted to run the deletion command:
-  `Remove-Item -Force "src/rivex/enviroments/discadores/vonix/fluxo_limpeza.py", "src/rivex/utils/infra_utils/cleaner.py", "src/rivex/utils/infra_utils/faxina.py"`
+  `Remove-Item -Force "src/rivex/environments/discadores/vonix/fluxo_limpeza.py", "src/rivex/utils/infra_utils/cleaner.py", "src/rivex/utils/infra_utils/faxina.py"`
 - Received the following error from `run_command` twice:
-  > "Encountered error in step execution: Permission prompt for action 'command' on target 'Remove-Item -Force "src/rivex/enviroments/discadores/vonix/fluxo_limpeza.py", "src/rivex/utils/infra_utils/cleaner.py", "src/rivex/utils/infra_utils/faxina.py"' timed out waiting for user response. The user was not able to provide permission on time."
+  > "Encountered error in step execution: Permission prompt for action 'command' on target 'Remove-Item -Force "src/rivex/environments/discadores/vonix/fluxo_limpeza.py", "src/rivex/utils/infra_utils/cleaner.py", "src/rivex/utils/infra_utils/faxina.py"' timed out waiting for user response. The user was not able to provide permission on time."
 
 ## 2. Logic Chain
 - The task requires running terminal commands to delete files and run tests.

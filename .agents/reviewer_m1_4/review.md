@@ -26,7 +26,7 @@
 
 ### Verified Claims
 - **Claim 1**: `ExecucaoVonix.get_clientes_ambiente()` uses the corrected URL property reference by calling `self.url._url_base()` instead of direct property access.
-  - *Method*: Inspected `src/rivex/enviroments/discadores/vonix/fluxo_coleta.py` lines 57-60.
+  - *Method*: Inspected `src/rivex/environments/discadores/vonix/fluxo_coleta.py` lines 57-60.
   - *Result*: **PASS**
 - **Claim 2**: `gerar_lista_de_clientes(html)` parses HTML to extract active client queue IDs by identifying `<li>` elements starting with `"container_"` and removing that prefix.
   - *Method*: Inspected `src/rivex/data_processing/Vonix/cleaning_vonix.py` lines 37-50.

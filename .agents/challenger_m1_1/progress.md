@@ -6,7 +6,7 @@ Last visited: 2026-07-15T01:35:00Z
 - ORIGINAL_REQUEST.md initialized.
 - Read global PROJECT.md, SCOPE.md, and worker's handoff.
 - Verified files:
-  - `src/rivex/enviroments/discadores/vonix/fluxo_coleta.py`
+  - `src/rivex/environments/discadores/vonix/fluxo_coleta.py`
   - `src/rivex/data_processing/Vonix/cleaning_vonix.py`
   - `tests/test_http.py`
   - `tests/test_cleaning_vonix.py`

@@ -77,11 +77,11 @@ def extrair_dados_agentes(html):
 ##### 3. Wildcard Imports Remaining in `main.py`
 ```python
 from src.rivex.data_processing.Callix.cleaner_callix_req import *
-from src.rivex.enviroments.operadoras.gsolutions.sip_client_scrap import *
+from src.rivex.environments.operadoras.gsolutions.sip_client_scrap import *
 from src.rivex.data_processing.gsolutions.cleaner_sip import *
 from src.rivex.data_processing.pentagono.pentagono_cleaning import *
-from src.rivex.enviroments.discadores.IPBox.colect_ipbox import *
-from src.rivex.enviroments.discadores.IPBox.payloads_ipbox import *
+from src.rivex.environments.discadores.IPBox.colect_ipbox import *
+from src.rivex.environments.discadores.IPBox.payloads_ipbox import *
 from src.rivex.pipeline.pipeline_operadora.pipeline_pentagono import *
 import logging
 from src.rivex.pipeline.pipeline_discador.pipeline_ipbox import *

@@ -22,7 +22,7 @@ Verify, review, and stress-test the worker's changes for Milestone 1, validating
 
 ## Review Scope
 - **Files to review**:
-  - src/rivex/enviroments/discadores/vonix/fluxo_coleta.py
+  - src/rivex/environments/discadores/vonix/fluxo_coleta.py
   - src/rivex/data_processing/Vonix/cleaning_vonix.py
   - tests/test_http.py
   - tests/test_cleaning_vonix.py
@@ -42,7 +42,7 @@ Verify, review, and stress-test the worker's changes for Milestone 1, validating
 
 ## Review Checklist
 - **Items reviewed**:
-  - `src/rivex/enviroments/discadores/vonix/fluxo_coleta.py`
+  - `src/rivex/environments/discadores/vonix/fluxo_coleta.py`
   - `src/rivex/data_processing/Vonix/cleaning_vonix.py`
   - `tests/test_http.py`
   - `tests/test_cleaning_vonix.py`

@@ -1,5 +1,5 @@
 from src.rivex.utils.requests_utils.requests import HttpRequisitions
-from src.rivex.enviroments.operadoras.pentagono.payloads_pentagono import *
+from src.rivex.environments.operadoras.pentagono.payloads_pentagono import *
 import random
 from urllib.parse import urlencode
 import requests

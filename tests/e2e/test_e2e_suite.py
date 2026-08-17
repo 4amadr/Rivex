@@ -6,7 +6,7 @@ import psycopg2
 from psycopg2 import OperationalError
 
 # Source imports
-from src.rivex.enviroments.discadores.vonix.fluxo_coleta import ExecucaoVonix, GerarUrlVonix
+from src.rivex.environments.discadores.vonix.fluxo_coleta import ExecucaoVonix, GerarUrlVonix
 from src.rivex.data_processing.Vonix.cleaning_vonix import (
     get_html,
     get_token,
@@ -93,7 +93,7 @@ def test_t1_context_filtering_post(mock_session):
     assert resp.status_code == 200
 
 def test_t1_context_filtering_payload():
-    from src.rivex.enviroments.discadores.vonix.payloads_vonix import payload_de_filtragem
+    from src.rivex.environments.discadores.vonix.payloads_vonix import payload_de_filtragem
     p = payload_de_filtragem("token123", "queue_one")
     assert p['authenticity_token'] == "token123"
     assert p['queue_id[]'] == "queue_one"
@@ -108,7 +108,7 @@ def test_t1_context_filtering_http_requisitions(mock_session):
     assert resp.status_code == 200
 
 def test_t1_context_filtering_headers():
-    from src.rivex.enviroments.discadores.vonix.payloads_vonix import headers
+    from src.rivex.environments.discadores.vonix.payloads_vonix import headers
     h = headers()
     assert "user-agent" in h
 

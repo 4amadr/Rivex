@@ -1,8 +1,11 @@
 import requests
 from src.rivex.utils.requests_utils.requests import HttpRequisitions
-from src.rivex.utils.enviroments_utils.discador.callix.payloads_callix import *
-from src.rivex.utils.enviroments_utils.discador.callix.get_url_callix import *
+from src.rivex.utils.environments_utils.discador.callix.payloads_callix import *
+from src.rivex.utils.environments_utils.discador.callix.get_url_callix import *
 import urllib.parse
+import logging
+
+log = logging.getLogger(__name__)
 
 
 class CAllixRequisition:
@@ -42,7 +45,7 @@ class CAllixRequisition:
                                        headers=headers_login_callix(url_base),
                                        url=url_login
                                        )
-        print(f"Resposta do login {login.status_code}")
+        log.info(f"Resposta do login {login.status_code}")
         token = login.json()["token"]
         return token
     
@@ -62,7 +65,7 @@ class CAllixRequisition:
                                       url=url_final,
                                       payload_get=None
                                       )
-        print(f"Chamadas agentes {chamadas_por_agentes.status_code}")
+        log.info(f"Chamadas agentes {chamadas_por_agentes.status_code}")
         return chamadas_por_agentes
     
     def agressividade(self, url_agressividade, token):
@@ -75,7 +78,7 @@ class CAllixRequisition:
                                         payload_get=payload_agressividade()
                                         )
             lista_json_agressividade.append(agressividade)
-        print(f"Agressividade {agressividade.status_code}")
+        log.info(f"Agressividade {agressividade.status_code}")
         return lista_json_agressividade
 
     def get_tech_cliente(self):
@@ -84,9 +87,8 @@ class CAllixRequisition:
             url=self.url.url_get_tech(self.cliente),
             payload_get=payload_get_tech()
             )
-        print(f"Tech Cliente {tech.status_code}")
-        print(f"Tech Cliente {tech.json()}")
-        print(f"TECH URL: ",self.url.url_get_tech({self.cliente}))
+        log.info(f"Tech Cliente {tech.status_code}")
+
         return tech
 
     def requisicao_callix(self):

@@ -3,9 +3,9 @@
 ## Architecture
 - Module: `src/rivex/pipeline/pipeline_discador/pipeline_vonix.py`
 - Module: `src/rivex/database/database.py`
-- Module: `src/rivex/enviroments/discadores/vonix/fluxo_coleta.py`
-- Module: `src/rivex/enviroments/discadores/vonix/fluxo_limpeza.py`
-- Module: `src/rivex/enviroments/discadores/vonix/equipes_vonix.py`
+- Module: `src/rivex/environments/discadores/vonix/fluxo_coleta.py`
+- Module: `src/rivex/environments/discadores/vonix/fluxo_limpeza.py`
+- Module: `src/rivex/environments/discadores/vonix/equipes_vonix.py`
 - Module: `main.py`
 
 ## Milestones

@@ -11,13 +11,13 @@ This is a Hard Handoff report detailing the findings of the victory audit of the
   - `RELATORIO_MUDANCAS_VONIX.md`
   - `tests/test_cleaning_vonix.py`
 - **R5 Code Cleanup**:
-  - Unused files `src/rivex/utils/infra_utils/cleaner.py`, `src/rivex/utils/infra_utils/faxina.py`, and `src/rivex/enviroments/discadores/vonix/fluxo_limpeza.py` contain only:
+  - Unused files `src/rivex/utils/infra_utils/cleaner.py`, `src/rivex/utils/infra_utils/faxina.py`, and `src/rivex/environments/discadores/vonix/fluxo_limpeza.py` contain only:
     `# Deprecated and unused. Scheduled for deletion.`
   - Naming collision resolved: the parsing function `dict_agentes` in `cleaning_vonix.py` was renamed to `extrair_dados_agentes` and all calls to it updated.
   - Logging instead of prints: A grep search for `print(` returned no print statements in any Vonix-related files.
   - No wildcard imports: `pipeline_vonix.py` imports explicitly:
     ```python
-    from src.rivex.enviroments.discadores.vonix.fluxo_coleta import ExecucaoVonix
+    from src.rivex.environments.discadores.vonix.fluxo_coleta import ExecucaoVonix
     from src.rivex.data_processing.Vonix.cleaning_vonix import (
         extrair_dados_agentes,
         limpar_chamadas,

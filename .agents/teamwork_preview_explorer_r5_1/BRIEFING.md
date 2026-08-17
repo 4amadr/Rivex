@@ -21,11 +21,11 @@ Explore the codebase to identify print statements, dict_agentes imports/occurren
 ## Investigation State
 - **Explored paths**: 
   - `src/rivex/pipeline/pipeline_discador/pipeline_vonix.py`
-  - `src/rivex/enviroments/discadores/vonix/fluxo_coleta.py`
-  - `src/rivex/enviroments/discadores/vonix/fluxo_limpeza.py`
+  - `src/rivex/environments/discadores/vonix/fluxo_coleta.py`
+  - `src/rivex/environments/discadores/vonix/fluxo_limpeza.py`
   - `src/rivex/data_processing/Vonix/cleaning_vonix.py`
   - `src/rivex/database/database.py`
-  - `src/rivex/enviroments/discadores/vonix/vonix_queue_discovery.py`
+  - `src/rivex/environments/discadores/vonix/vonix_queue_discovery.py`
   - `src/rivex/utils/infra_utils/cleaner.py`
   - `src/rivex/utils/infra_utils/faxina.py`
   - `main.py`

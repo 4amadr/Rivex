@@ -23,7 +23,7 @@ Review and stress-test the work product of worker_m1_1 for Milestone 1, assessin
 
 ## Review Scope
 - **Files to review**:
-  - `src/rivex/enviroments/discadores/vonix/fluxo_coleta.py`
+  - `src/rivex/environments/discadores/vonix/fluxo_coleta.py`
   - `src/rivex/data_processing/Vonix/cleaning_vonix.py`
   - `tests/test_http.py`
   - `tests/test_cleaning_vonix.py`
@@ -33,7 +33,7 @@ Review and stress-test the work product of worker_m1_1 for Milestone 1, assessin
 
 ## Review Checklist
 - **Items reviewed**:
-  - `src/rivex/enviroments/discadores/vonix/fluxo_coleta.py` — verified correct reference to `self.url._url_base()`
+  - `src/rivex/environments/discadores/vonix/fluxo_coleta.py` — verified correct reference to `self.url._url_base()`
   - `src/rivex/data_processing/Vonix/cleaning_vonix.py` — verified robust client extraction
   - `tests/test_http.py` — reviewed HTTP error tests (discovered ImportError)
   - `tests/test_cleaning_vonix.py` — reviewed unit tests for cleaning

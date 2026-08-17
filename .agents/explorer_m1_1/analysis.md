@@ -8,7 +8,7 @@ The investigation confirmed that `get_clientes_ambiente()` erroneously reference
 ## 1. Analysis of `get_clientes_ambiente()` URL Reference
 
 ### Target File & Code Snippet
-- **File Path**: `src/rivex/enviroments/discadores/vonix/fluxo_coleta.py`
+- **File Path**: `src/rivex/environments/discadores/vonix/fluxo_coleta.py`
 - **Lines 57-60**:
   ```python
   def get_clientes_ambiente(self):
@@ -89,7 +89,7 @@ We located the following files under `tests/`:
 
 ## 4. Proposed Code Changes (Handoff to Implementer)
 
-### Proposed change for `src/rivex/enviroments/discadores/vonix/fluxo_coleta.py`
+### Proposed change for `src/rivex/environments/discadores/vonix/fluxo_coleta.py`
 In `get_clientes_ambiente()`, replace the property access with the helper method call:
 
 ```python

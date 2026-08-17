@@ -12,7 +12,7 @@ class CallixAPICollector:
         self.hr = HttpRequisitions(session=self.session)
         
     def url_tratada(self, endpoint):
-        url = f'https://{self.cliente}contech.callix.com.br/api/v1/{endpoint}'
+        url = f'https://{self.cliente}.callix.com.br/api/v1/{endpoint}'
         return url
     
     def coletar(self, endpoint, data=None, filtro_ativar=None, filtro_setar=None, ativador_payload: bool=True):
@@ -24,10 +24,11 @@ class CallixAPICollector:
             payload_config = None
             
         dados_chamadas = self.hr.requisicao_get(
-            headers_callix(self.token[0]),
+            headers_callix(self.token),
             self.url_tratada(endpoint),
             payload_config
         )
+        print("URL usada na requisição ",self.url_tratada(endpoint))
         return dados_chamadas
     
     def chamadas_completas(self):

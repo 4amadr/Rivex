@@ -24,4 +24,4 @@ class UrlGetData:
         return f'https://{cliente}.callix.com.br/api/v4/entities/api-tokens'
 
     def url_get_tech(self, cliente):
-        return f"https://{cliente}contech.callix.com.br/api/v4/entities/outbound-routes"
+        return f"https://{cliente}.callix.com.br/api/v4/entities/outbound-routes"

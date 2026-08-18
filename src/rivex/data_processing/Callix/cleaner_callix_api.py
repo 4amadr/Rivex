@@ -31,7 +31,7 @@ def _extrair_ids(campanha):
 def processar_dados(chamadas_aceitas, chamadas_recusadas, campanha):
     
     completa = _limpeza_contagens(chamadas_aceitas)
-    recusadas_brutas = len(chamadas_recusadas)
+    recusadas_brutas = _limpeza_contagens(chamadas_recusadas)
     abandonadas = _limpeza_abandonadas(chamadas_recusadas.get("data", []))
     recusadas = _calcular_recusadas(recusadas_brutas, abandonadas)
     total = completa + recusadas_brutas

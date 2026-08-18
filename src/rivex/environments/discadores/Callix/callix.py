@@ -33,42 +33,6 @@ class CallixAPICollector:
             payload_get=payload_config
         )
         return dados_chamadas
-
-    def coletar_todos(self, endpoint, data=None, limite=5000):
-        primeira_resposta = self.coletar(endpoint, data).json()
-        total = primeira_resposta.get("meta", {}).get("count", 0)
-        registros = primeira_resposta.get("data", [])
-
-        log.info(f"[{endpoint}] Total disponível: {total} | Primeira página: {len(registros)}")
-
-        if total <= limite:
-            return registros
-
-        offsets = range(limite, total, limite)
-
-        def buscar_pagina(offset):
-            time.sleep(0.5)
-            payload = {
-                "filter[started_at]": f"{data}T00:00:00.000Z,{data}T23:59:59.999Z",
-                "page[limit]": limite,
-                "page[offset]": offset
-            }
-            resposta = self.hr.requisicao_get(
-                headers=headers_callix(self.token),
-                url=self.url_tratada(endpoint),
-                payload_get=payload
-            ).json()
-            pagina = resposta.get("data", [])
-            log.info(f"[{endpoint}] offset={offset} | registros={len(pagina)}")
-            return pagina
-
-        with ThreadPoolExecutor(max_workers=3) as executor:
-            futures = {executor.submit(buscar_pagina, offset): offset for offset in offsets}
-            for future in as_completed(futures):
-                registros.extend(future.result())
-
-        log.info(f"[{endpoint}] Coleta finalizada: {len(registros)} de {total}")
-        return registros
     
     def chamadas_completas(self):
         log.info('coletando chamadas completas')
@@ -76,12 +40,7 @@ class CallixAPICollector:
     
     def chamadas_recusadas(self):
         log.info('coletando chamadas recusadas')
-        return self.coletar_todos('campaign_missed_calls', self.data)
-
-    
-    def chamadas_abandonadas(self):
-        log.info('coletando chamadas abandonadas')
-        return self.coletar('campaign_missed_calls', self.data, filtro_ativar="filter[failure_cause]", filtro_setar="9")
+        return self.coletar('campaign_missed_calls', self.data)
     
     def campanha(self):
         log.info('coletando a campanha')
@@ -98,7 +57,7 @@ class CallixAPICollector:
         
         return {
             "Completas": chamadas_completas.json(),
-            "Recusadas": chamadas_recusadas,
+            "Recusadas": chamadas_recusadas.json(),
             "Campanha": campanhas
         }
         

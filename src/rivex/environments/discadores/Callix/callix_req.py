@@ -38,7 +38,7 @@ class CAllixRequisition:
         for campanha in self.id_campanha:
             url_agressividade = f'https://{self.cliente}.callix.com.br/api/v4/entities/campaigns/{campanha}'
             lista_de_urls_de_agressividade.append(url_agressividade)
-        return url_login, url_chamadas_agentes, lista_de_urls_de_agressividade, url_base, url_get_tech
+        return url_login, url_chamadas_agentes, lista_de_urls_de_agressividade, url_base
     
     def login_callix(self, url_login, url_base):
         login = self.http_request.requisicao_post_json(payload_post=payload_login_callix(self.login, self.senha),
@@ -95,12 +95,12 @@ class CAllixRequisition:
         abandonadas = self.http_request.requisicao_get(
             headers=headers_callix(self.token),
             url=self.url.teste_url_agressividade(self.cliente),
-            payload_get=payload_agressividade_teste(self.data)
+            payload_get=payload_abandonadas_teste(self.data)
         )
         print(f"RESULTADO ABANDONADAS: {abandonadas}")
         print(f"RESULTADO ABANDONADAS STATUS: {abandonadas.status_code}")
-        print(f"RESULTADO ABANDONADAS JSON: {abandonadas.json()}")
-        print(f"RESULTADO ABANDONADAS URL: {abandonadas.url}")
+        print(f"RESULTADO ABANDONADAS JSON: {abandonadas.text}")
+        print(f"RESULTADO ABANDONADAS URL: {abandonadas.headers}")
 
     def requisicao_callix(self):
         url_login, url_chamadas_agentes, url_agressividade, url_base = self.url_callix()

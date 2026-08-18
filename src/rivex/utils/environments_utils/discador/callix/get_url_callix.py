@@ -25,3 +25,6 @@ class UrlGetData:
 
     def url_get_tech(self, cliente):
         return f"https://{cliente}.callix.com.br/api/v4/entities/outbound-routes"
+
+    def teste_url_agressividade(self, cliente):
+        return f"https://{cliente}.callix.com.br/campaign-report"

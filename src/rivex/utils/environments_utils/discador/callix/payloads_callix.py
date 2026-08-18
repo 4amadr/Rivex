@@ -172,3 +172,8 @@ def payload_get_tech():
         "fields[outboundRoutes]": "name,enabled,archived",
     }
 
+def payload_agressividade_teste(data):
+    return {
+        "startedAt[]", f"{data}T00:00:00Z",
+        "startedAt[]", f"{data}T23:59:59Z"
+    }

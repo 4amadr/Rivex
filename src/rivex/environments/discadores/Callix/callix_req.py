@@ -91,13 +91,25 @@ class CAllixRequisition:
 
         return tech
 
+    def get_chamadas_abandonadas(self):
+        abandonadas = self.http_request.requisicao_get(
+            headers=headers_callix(self.token),
+            url=self.url.teste_url_agressividade(self.cliente),
+            payload_get=payload_agressividade_teste(self.data)
+        )
+        print(f"RESULTADO ABANDONADAS: {abandonadas}")
+        print(f"RESULTADO ABANDONADAS STATUS: {abandonadas.status_code}")
+        print(f"RESULTADO ABANDONADAS JSON: {abandonadas.json()}")
+        print(f"RESULTADO ABANDONADAS URL: {abandonadas.url}")
+
     def requisicao_callix(self):
-        url_login, url_chamadas_agentes, url_agressividade, url_base, url_get_tech = self.url_callix()
+        url_login, url_chamadas_agentes, url_agressividade, url_base = self.url_callix()
 
         login = self.login_callix(url_login, url_base)
         url_final = self.conversor_de_url(url_chamadas_agentes)
         chamadas_por_agentes = self.get_chamadas_agentes(url_final, url_chamadas_agentes, login)
         agressividade = self.agressividade(url_agressividade, login) # lista
+        agressividade = self.get_chamadas_abandonadas()
         tech = self.get_tech_cliente()
         
         return chamadas_por_agentes, agressividade, tech

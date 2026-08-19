@@ -37,11 +37,11 @@ def main_ultracom():
 
 
 
-#exec_ipbox = main_ipbox()
-#dados_vonix = main_vonix()
+exec_ipbox = main_ipbox()
+dados_vonix = main_vonix()
 dados_callix = main_callix()
 #dados_gerax = main_gerax()
-#dados_ultracom = main_ultracom()
+dados_ultracom = main_ultracom()
 
 
 # operadoras inativas

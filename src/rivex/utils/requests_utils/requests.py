@@ -1,5 +1,8 @@
 import requests
-from src.rivex.utils.requests_utils.http_response import *
+from src.rivex.utils.requests_utils.http_response import analista_de_erros
+import logging
+
+log = logging.getLogger()
 
 class HttpRequisitions:
     def __init__(self, session):
@@ -11,6 +14,7 @@ class HttpRequisitions:
         Função de post com verify ativado para evitar bloqueios por falta de SSL
         '''
         postagem = self.session.post(url, data=payload_post, headers=headers, verify=verificacao)
+
         analista_de_erros(postagem.status_code)
         return postagem
 

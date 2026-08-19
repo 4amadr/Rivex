@@ -1,4 +1,3 @@
-from dis import print_instructions
 import pandas as pd
 from src.rivex.environments.discadores.Callix.callix_req import CAllixRequisition
 from collections import namedtuple
@@ -46,7 +45,7 @@ def limpar_chamadas_agentes(json_agentes):
 
     return resultado
 
-def limpar_agressividade(json_agressividade): # por enquanto vai retornar a media de agressividade 
+def limpar_agressividade(json_agressividade):
     lista_agressividade = []
     
     for agressividade in json_agressividade:

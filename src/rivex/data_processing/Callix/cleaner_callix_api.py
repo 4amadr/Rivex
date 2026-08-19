@@ -2,40 +2,21 @@ from src.rivex.utils.infra_utils.date_config import DateConfig
 import json
     
     
-def _limpeza_contagens(chamadas):
-    return int(chamadas.get("meta", {}).get("count", 0))
-
-def _limpeza_abandonadas(chamadas_abandonadas: list) -> int:
-    causas_abandonadas = {9}
-
-    return sum(
-        1 for item in chamadas_abandonadas
-        if item.get("attributes", {}).get("failure_cause") in causas_abandonadas
-    )
-
-def _calcular_recusadas(recusadas, abandonadas):
-    return max(recusadas - abandonadas, 0)
-
-
-def _limpeza_agressividade(agressividade):
-    if not agressividade:
-        return None
-    ultimo = agressividade[-1]
-    return ultimo["data"]["attributes"].get("powerAggressiveness")
-
+def _limpar_chamadas(resumo, tipo_chamada: str):
+    return resumo["data"][0]["attributes"][tipo_chamada]
 
 def _extrair_ids(campanha):
     return [int(item) for item in campanha[0]]
 
 
-def processar_dados(chamadas_aceitas, chamadas_recusadas, campanha):
-    
-    completa = _limpeza_contagens(chamadas_aceitas)
-    recusadas_brutas = _limpeza_contagens(chamadas_recusadas)
-    abandonadas = _limpeza_abandonadas(chamadas_recusadas.get("data", []))
-    recusadas = _calcular_recusadas(recusadas_brutas, abandonadas)
-    total = completa + recusadas_brutas
+def processar_dados(resumo, campanha):
+    completa = _limpar_chamadas(resumo, "outgoing_completed_count")
+    recusadas_brutas = _limpar_chamadas(resumo, "outgoing_missed_count")
+    abandonadas = _limpar_chamadas(resumo, "outgoing_missed_agents_count")
+    total = _limpar_chamadas(resumo, "outgoing_count")
     id_campanha = _extrair_ids(campanha)
+
+    recusadas = recusadas_brutas - abandonadas
     
     # Tratamento apenas das chamadas de cada cliente
     print("Chamadas totais: ", total)

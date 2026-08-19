@@ -172,8 +172,8 @@ def payload_get_tech():
         "fields[outboundRoutes]": "name,enabled,archived",
     }
 
-def payload_abandonadas_teste(data):
-    return [
-        ("startedAt[]", f"{data}T00:00:00Z"),
-        ("startedAt[]", f"{data}T23:59:59Z")
-    ]
+def payload_resumo_campanha(data):
+    return {
+        "filter[date]": f"{data}T00:00:00.000Z,{data}T23:59:59.999Z",
+        "grouping": "day"
+    }

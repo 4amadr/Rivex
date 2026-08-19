@@ -12,6 +12,14 @@ from src.rivex.database.database_dados_chamadas import DatabaseCallix
 from src.rivex.data_processing.Callix.callix_clients import *
 from src.rivex.database.database_clientes import DatabaseClientes
 load_dotenv()
+
+
+logging.basicConfig(
+    filename='callix-exec.log',
+    level=logging.INFO,
+    format='%(asctime)s - %(levelname)s - %(message)s',
+    encoding='utf-8'
+)
 logger = logging.getLogger(__name__)
 
 
@@ -156,16 +164,15 @@ class PipelineCallix:
             req = CAllixRequisition(
                 login=self.login, senha=self.senha,
                 cliente=cliente_formatado, data=data_selecionada,
-                id_campanha=dados_brutos_api['Campanha'],
+                id_campanha=dados_brutos_api['campanha'],
                 token=token
             )
             chamadas_brutas, agressividade_bruta, tech_bruta = req.requisicao_callix()
 
             # limpeza
             dict_limpeza = processar_dados(
-                dados_brutos_api['Completas'],
-                dados_brutos_api['Recusadas'],
-                dados_brutos_api['Campanha']
+                dados_brutos_api['resumo'],
+                dados_brutos_api['campanha']
             )
 
             agressividade_limpa, chamadas_limpas, tech_limpa = limpeza_req_callix(

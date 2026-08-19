@@ -11,11 +11,13 @@ from src.rivex.environments.discadores.Callix.callix_get_clients import CallixGe
 from src.rivex.database.database_dados_chamadas import DatabaseCallix
 from src.rivex.data_processing.Callix.callix_clients import *
 from src.rivex.database.database_clientes import DatabaseClientes
+
+
+
 load_dotenv()
 
-
 logging.basicConfig(
-    filename='callix-exec.log',
+    filename=f'Log/callix-log/callix-exec.log',
     level=logging.INFO,
     format='%(asctime)s - %(levelname)s - %(message)s',
     encoding='utf-8'

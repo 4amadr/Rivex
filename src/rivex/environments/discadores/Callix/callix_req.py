@@ -6,6 +6,12 @@ import urllib.parse
 import logging
 
 log = logging.getLogger(__name__)
+logging.basicConfig(
+    filename='callix-exec.log',
+    level=logging.INFO,
+    format='%(asctime)s - %(levelname)s - %(message)s',
+    encoding='utf-8'
+)
 
 
 class CAllixRequisition:
@@ -29,23 +35,16 @@ class CAllixRequisition:
         
     def url_callix(self):
         # vai tratar e gerar todas as URL de requisições limpas para serem usadas
-        url_base = f'https://{self.cliente}.callix.com.br/login'
         url_login = f'https://{self.cliente}.callix.com.br/api/v4/auth/session'
         url_chamadas_agentes = f'https://{self.cliente}.callix.com.br/api/v4/entities/user-performance-histories'
         url_get_tech = f'https://{self.cliente}.callix.com.br/api/v4/entities/accounts'
-        
-        lista_de_urls_de_agressividade = []
-        for campanha in self.id_campanha:
-            url_agressividade = f'https://{self.cliente}.callix.com.br/api/v4/entities/campaigns/{campanha}'
-            lista_de_urls_de_agressividade.append(url_agressividade)
-        return url_login, url_chamadas_agentes, lista_de_urls_de_agressividade, url_base
+        return url_login, url_chamadas_agentes
     
-    def login_callix(self, url_login, url_base):
+    def login_callix(self):
         login = self.http_request.requisicao_post_json(payload_post=payload_login_callix(self.login, self.senha),
-                                       headers=headers_login_callix(url_base),
-                                       url=url_login
+                                       headers=headers_login_callix(self.url.login_cliente_header(self.cliente)),
+                                       url=self.url.login_cliente(self.cliente)
                                        )
-        log.info(f"Resposta do login {login.status_code}")
         token = login.json()["token"]
         return token
     
@@ -65,14 +64,13 @@ class CAllixRequisition:
                                       url=url_final,
                                       payload_get=None
                                       )
-        log.info(f"Chamadas agentes {chamadas_por_agentes.status_code}")
         return chamadas_por_agentes
     
-    def agressividade(self, url_agressividade, token):
+    def agressividade(self, token):
         # pode haver mais de uma campanha o que gera mais de uma agressividade
         lista_json_agressividade = []
         
-        for url_unico_de_agressividade in url_agressividade:
+        for url_unico_de_agressividade in self.url.url_agressividade(self.cliente, self.id_campanha):
             agressividade = self.http_request.requisicao_get(headers=headers_callix(token),
                                         url=url_unico_de_agressividade,
                                         payload_get=payload_agressividade()
@@ -86,17 +84,16 @@ class CAllixRequisition:
             url=self.url.url_get_tech(self.cliente),
             payload_get=payload_get_tech()
             )
-        log.info(f"Tech Cliente {tech.status_code}")
 
         return tech
 
     def requisicao_callix(self):
-        url_login, url_chamadas_agentes, url_agressividade, url_base = self.url_callix()
+        url_login, url_chamadas_agentes = self.url_callix()
 
-        login = self.login_callix(url_login, url_base)
+        login = self.login_callix()
         url_final = self.conversor_de_url(url_chamadas_agentes)
         chamadas_por_agentes = self.get_chamadas_agentes(url_final, url_chamadas_agentes, login)
-        agressividade = self.agressividade(url_agressividade, login) # lista
+        agressividade = self.agressividade(login) # lista
         tech = self.get_tech_cliente()
         
         return chamadas_por_agentes, agressividade, tech

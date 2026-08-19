@@ -28,3 +28,11 @@ class UrlGetData:
 
     def teste_url_agressividade(self, cliente):
         return f"https://{cliente}.callix.com.br/campaign-report"
+
+    def url_agressividade(self, cliente, id_campanha):
+        lista_de_urls_de_agressividade = []
+        for campanha in id_campanha:
+            url_agressividade = f'https://{cliente}.callix.com.br/api/v4/entities/campaigns/{campanha}'
+            lista_de_urls_de_agressividade.append(url_agressividade)
+        return  lista_de_urls_de_agressividade
+            

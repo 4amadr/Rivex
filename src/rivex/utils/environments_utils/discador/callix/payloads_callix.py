@@ -57,6 +57,8 @@ def payload_de_requisicao_de_chamadas(data):
     }
 
 def get_performance_headers(token: str, url) -> dict:
+    print("URL DE GET_PERFORMACE_HEADERS: ",url)
+    print("TYPO DE GET_PERFORMACE_HEADERS: ",type(url))
     return {
         "accept": "application/json",
         "content-type": "application/json",

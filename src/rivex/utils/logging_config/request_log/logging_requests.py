@@ -49,9 +49,10 @@ def req_log(url, headers, payload):
     """
     Corpo da requisição
     """
+    headers_limpos = limpar_headers(headers_sensiveis, headers)
     log.info("Corpo da requisição:\n" \
     f"[URL]: {url}\n" \
-    f"[HEADER]: {headers}\n" 
+    f"[HEADER]: {headers_limpos}\n" 
     f"[PAYLOAD]: {payload}\n")
 
 def res_log(response):

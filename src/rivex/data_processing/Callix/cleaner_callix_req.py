@@ -108,14 +108,14 @@ def limpeza_techs_callix(outbound_routes: dict) -> str:
         name = attributes.get("name", "")
 
         if not _rota_valida(name):
-            continue
+            return 0
 
         tech = _extrair_tech(name)
 
         if tech:
             return tech
 
-    raise ValueError("Nenhuma Tech válida foi encontrada no JSON.")
+    raise ValueError("Cliente sem rota validas, retornando zero como valor padrão.")
 
 
 

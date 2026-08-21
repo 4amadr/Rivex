@@ -35,9 +35,9 @@ def main_ultracom():
     pipeline_ultracom = PipelineUltracom()
     pipeline_ultracom.execucao_sippulse()
 
-if name == 'main':
+if __name__ == '__main__':
+    dados_callix = main_callix()
     dados_ipbox = main_ipbox()
     dados_vonix = main_vonix()
-    dados_callix = main_callix()
     dados_gerax = main_gerax()
     dados_ultracom = main_ultracom()

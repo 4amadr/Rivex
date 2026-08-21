@@ -18,13 +18,6 @@ def processar_dados(resumo, campanha):
 
     recusadas = recusadas_brutas - abandonadas
     
-    # Tratamento apenas das chamadas de cada cliente
-    print("Chamadas totais: ", total)
-    print("Chamadas completas: ",completa)
-    print("Chamadas recusadas: ", recusadas)
-    print("Chamadas abandonadas:", abandonadas)
-    print("ID da campanha: ", id_campanha)
-    
     return {
         "Chamadas totais": total,
         "Chamadas aceitas": completa,

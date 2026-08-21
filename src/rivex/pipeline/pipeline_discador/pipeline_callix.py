@@ -1,29 +1,45 @@
+
+
+import os
 import logging
+from pathlib import Path
 from dotenv import load_dotenv
 from src.rivex.utils.infra_utils.date_config import DateConfig
-import os
+
+load_dotenv()
+
+BASE_DIR = Path(__file__).resolve().parent 
+LOG_DIR = BASE_DIR / "Log" / "callix-log"
+LOG_DIR.mkdir(parents=True, exist_ok=True)
+
+data_execucao = DateConfig.data_selecionadas().replace("/", "-")
+
+logger = logging.getLogger("rivex.callix")
+logger.setLevel(logging.INFO)
+logger.propagate = False  
+
+if not logger.handlers: 
+    handler = logging.FileHandler(
+        LOG_DIR / f"callix-exec-dia{data_execucao}.log",
+        encoding="utf-8"
+    )
+    handler.setFormatter(logging.Formatter("%(asctime)s - %(levelname)s - %(message)s"))
+    logger.addHandler(handler)
+
+logger.info("========================================")
+logger.info("LOG DO CALLIX INICIADO")
+logger.info("========================================")
+
+
 from src.rivex.environments.discadores.Callix.callix import CallixAPICollector
 from src.rivex.data_processing.Callix.cleaner_callix_api import processar_dados
 from src.rivex.environments.discadores.Callix.callix_req import CAllixRequisition
 from src.rivex.data_processing.Callix.cleaner_callix_req import limpeza_req_callix
-from src.rivex.environments.discadores.Callix.callix_client_package import pacote_agentes, pacote_chamadas
+from src.rivex.environments.discadores.Callix.callix_client_package import CallixClientData
 from src.rivex.environments.discadores.Callix.callix_get_clients import CallixGetClients, GetTokenCallix
 from src.rivex.database.database_dados_chamadas import DatabaseCallix
 from src.rivex.data_processing.Callix.callix_clients import *
 from src.rivex.database.database_clientes import DatabaseClientes
-
-
-
-load_dotenv()
-
-logging.basicConfig(
-    filename=f'Log/callix-log/callix-exec.log',
-    level=logging.INFO,
-    format='%(asctime)s - %(levelname)s - %(message)s',
-    encoding='utf-8'
-)
-logger = logging.getLogger(__name__)
-
 
 
 class PipelineCallix:
@@ -40,8 +56,6 @@ class PipelineCallix:
         Retorna as informações necessárias para requisições futuras
         '''
         nome_clientes_ativos = self.coletar_clientes.get_infos_callix()
-
-        logger.info("Consultando clientes ativos no servidor")
 
         lista_cliente = get_clientes_servidor_callix(nome_clientes_ativos.json())
 
@@ -153,7 +167,7 @@ class PipelineCallix:
 
 
         cliente_formatado=cliente.removeprefix("contech.callix.com.br")
-        logger.info(f"Coletando dados do cliente: {cliente_formatado}")
+        logger.info(f"Coleta iniciada para o cliente o cliente: {cliente_formatado}")
 
 
 
@@ -162,6 +176,11 @@ class PipelineCallix:
             # Extração
             api = CallixAPICollector(cliente, token, data_selecionada)
             dados_brutos_api = api.api_callix() # dict
+            
+            if dados_brutos_api:
+                logger.info(f"Dados de API do cliente {cliente_formatado} foram coletados")
+            else:
+                logger.warning(f"Cliente {cliente_formatado} sem dados. Registro API {dados_brutos_api}")
 
             req = CAllixRequisition(
                 login=self.login, senha=self.senha,
@@ -170,6 +189,11 @@ class PipelineCallix:
                 token=token
             )
             chamadas_brutas, agressividade_bruta, tech_bruta = req.requisicao_callix()
+            
+            logger.info(f"Chamadas de requisição coletadas para o cliente {cliente_formatado}")
+            
+            if not tech_bruta:
+                logger.warning(f"Cliente {cliente_formatado} teve um erro durante a extração da tech {tech_bruta}")
 
             # limpeza
             dict_limpeza = processar_dados(
@@ -198,6 +222,11 @@ class PipelineCallix:
 
             dict_chamadas = empacotamento_callix.pacote_chamadas()
             lista_agentes = empacotamento_callix.pacote_agentes()
+            
+            
+            logger.info(f"Dados finais\n"
+                     f"CHAMADAS: {dict_chamadas}\n "
+                     f"AGENTES: {lista_agentes}")
             
             return dict_chamadas, lista_agentes
 

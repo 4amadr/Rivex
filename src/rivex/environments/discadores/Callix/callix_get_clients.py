@@ -63,8 +63,7 @@ class GetTokenCallix:
                                         headers=headers_login_callix(self.url.login_cliente_header(cliente)),
                                         url=self.url.login_cliente(cliente)
                                         )
-        print(f"Resposta do cliente logado atualmente {cliente}, {login.status_code}")
-        log.info(f"Resposta do cliente :{cliente} = {login.status_code}")
+        log.info(f"Resposta do cliente novo: {cliente}, {login.status_code}")
         token = login.json()['token']
         return token
 

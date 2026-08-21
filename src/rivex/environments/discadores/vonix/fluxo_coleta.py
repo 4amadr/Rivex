@@ -6,7 +6,6 @@ from src.rivex.utils.requests_utils.requests import HttpRequisitions
 from src.rivex.environments.discadores.vonix.payloads_vonix import *
 from src.rivex.environments.discadores.vonix.equipes_vonix import dict_agentes
 from src.rivex.utils.infra_utils.vonix_processing import ClientSimulator
-from src.rivex.data_processing.Vonix.cleaning_vonix import *
 
 '''Classe feita para executar cada etapa do discador vonix contando com
 Login + TOKEN -> Filtragem + TOKEN -> Chamadas + TOKEN -> Agentes online + TOKEN -> Agressividade + TOKEN'''

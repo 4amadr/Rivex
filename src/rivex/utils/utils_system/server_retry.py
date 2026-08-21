@@ -12,12 +12,9 @@ def tentar_novamente(tentativas=3, atraso=20):
             for tentativa in range(1, tentativas + 1):
                 try:
                     return func(*args, **kwargs)
-                except ConnectionError as e:
-                    logger.warning(f"Falha na tentativa {tentativa} de {tentativas} para {func.__name__}. Erro: {e}")
-                    if tentativa == tentativas:
+                except (ConnectionError, TimeoutError, requests.exceptions.RequestException) as e:
                         logger.error("Totas as tentativas falharam")
                         raise
-                    time.sleep(atraso)
         return wrapper
     return decorator
 

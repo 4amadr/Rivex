@@ -1,6 +1,5 @@
 from src.rivex.utils.requests_utils.requests import HttpRequisitions
 from src.rivex.environments.discadores.IPBox.payloads_ipbox import *
-from src.rivex.data_processing.IPBox.limpeza_ipbox import *
 from src.rivex.utils.utils_system.server_retry import *
 import requests
 import logging

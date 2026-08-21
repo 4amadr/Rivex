@@ -1,7 +1,7 @@
 import requests
 from src.rivex.utils.requests_utils.requests import HttpRequisitions
 from src.rivex.utils.environments_utils.discador.callix.payloads_callix import *
-from src.rivex.utils.environments_utils.discador.callix.get_url_callix import *
+from src.rivex.utils.environments_utils.discador.callix.get_url_callix import UrlGetClients, UrlGetData
 import urllib.parse
 import logging
 

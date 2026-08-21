@@ -1,5 +1,5 @@
-from src.rivex.environments.discadores.vonix.fluxo_coleta import *
-from src.rivex.environments.discadores.vonix.fluxo_limpeza import *
+from src.rivex.environments.discadores.vonix.fluxo_coleta import ExecucaoVonix
+from src.rivex.environments.discadores.vonix.fluxo_limpeza import LimpezaVonix
 from src.rivex.data_processing.Vonix.cleaning_vonix import *
 from src.rivex.database.database_dados_chamadas import DatabaseVonix
 import os

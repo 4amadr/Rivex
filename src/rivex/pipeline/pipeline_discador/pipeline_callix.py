@@ -3,10 +3,10 @@ from dotenv import load_dotenv
 from src.rivex.utils.infra_utils.date_config import DateConfig
 import os
 from src.rivex.environments.discadores.Callix.callix import CallixAPICollector
-from src.rivex.data_processing.Callix.cleaner_callix_api import *
+from src.rivex.data_processing.Callix.cleaner_callix_api import processar_dados
 from src.rivex.environments.discadores.Callix.callix_req import CAllixRequisition
-from src.rivex.data_processing.Callix.cleaner_callix_req import *
-from src.rivex.environments.discadores.Callix.callix_client_package import *
+from src.rivex.data_processing.Callix.cleaner_callix_req import limpeza_req_callix
+from src.rivex.environments.discadores.Callix.callix_client_package import pacote_agentes, pacote_chamadas
 from src.rivex.environments.discadores.Callix.callix_get_clients import CallixGetClients, GetTokenCallix
 from src.rivex.database.database_dados_chamadas import DatabaseCallix
 from src.rivex.data_processing.Callix.callix_clients import *

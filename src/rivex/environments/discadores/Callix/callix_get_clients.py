@@ -3,8 +3,8 @@ import os
 from dotenv import load_dotenv
 from src.rivex.utils.requests_utils.requests import HttpRequisitions
 from src.rivex.utils.environments_utils.discador.callix.payloads_callix import *
-from src.rivex.environments.discadores.Callix.callix_req import *
-from src.rivex.utils.environments_utils.discador.callix.get_url_callix import *
+from src.rivex.environments.discadores.Callix.callix_req import CAllixRequisition
+from src.rivex.utils.environments_utils.discador.callix.get_url_callix import UrlGetClients, UrlGetData
 import logging
 
 load_dotenv()

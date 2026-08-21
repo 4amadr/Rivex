@@ -35,17 +35,9 @@ def main_ultracom():
     pipeline_ultracom = PipelineUltracom()
     pipeline_ultracom.execucao_sippulse()
 
-
-
-exec_ipbox = main_ipbox()
-dados_vonix = main_vonix()
-dados_callix = main_callix()
-#dados_gerax = main_gerax()
-dados_ultracom = main_ultracom()
-
-
-# operadoras inativas
-#exec_agitel = main_agitel()
-#exec_gs = main_gs()
-#exec_pentagono = main_pentagono()
-
+if name == 'main':
+    dados_ipbox = main_ipbox()
+    dados_vonix = main_vonix()
+    dados_callix = main_callix()
+    dados_gerax = main_gerax()
+    dados_ultracom = main_ultracom()

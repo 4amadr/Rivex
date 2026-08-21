@@ -16,7 +16,7 @@ class CleaningSoup:
 
     def encontrar_marcacao_index(self, sopa, html: str, endereco: int):
         marcacao_por_index = sopa.find(html)
-        return marcacao_por_index
+        return marcacoes[endereco] if endereco < len(marcacoes) else None
     
     
     def marcacao_html_com_classe(self, sopa, html:str, classe):
@@ -44,13 +44,12 @@ class CleaningSoup:
     def encontrar_td_depois_de_th(self, sopa, texto: str):
         # para classes que mudam, mas que mantém a estrutura
         for th in sopa.find_all('th'):
-            if texto in th.ged_text():
-                td = th.find_text_sibling("td")
+            if texto in th.get_text():
+                td = th.find_next_sibling("td")
                 return td.get_text(strip=True)
             
     def classes_dinamicas(self, sopa, marcacao: str, classe: str):
-        # para classes que tem um prefixo definido e o resto é indefinido
-        sopa.find_all(
+        return sopa.find_all(
             marcacao,
             class_=lambda c: c and c.startswith(classe)
         )

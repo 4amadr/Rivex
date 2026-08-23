@@ -52,7 +52,6 @@ def get_lista_agentes(agentes_json):
         
         
 def limpar_nome_cliente(time):
-    print("TIME: ", time)
     return unescape(time).split(" - ", 1)[0]
     
         

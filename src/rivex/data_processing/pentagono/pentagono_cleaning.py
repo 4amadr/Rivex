@@ -59,9 +59,7 @@ def execucao_limpeza(cdr_html):
     custos = gerar_custos(elementos)
     minutagem = converter_minutagem(minutagem_texto)
 
-    lista_dados = gerar_dicionario(lista_tech_clientes, chamadas_tarifadas, minutagem, custos)
-    print("[TESTE LISTA DE DADOS]")
-    print(lista_dados)
+    lista_dados = gerar_dicionario(lista_clientes(dados), limpeza_chamadas_tarifadas(dados), minutagem, custos)
 
     return lista_dados
     

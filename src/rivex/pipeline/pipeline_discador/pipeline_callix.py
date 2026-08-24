@@ -1,36 +1,10 @@
 
 
+from pathlib import Path
 import os
 import logging
-from pathlib import Path
 from dotenv import load_dotenv
 from src.rivex.utils.infra_utils.date_config import DateConfig
-
-load_dotenv()
-
-BASE_DIR = Path(__file__).resolve().parent 
-LOG_DIR = BASE_DIR / "Log" / "callix-log"
-LOG_DIR.mkdir(parents=True, exist_ok=True)
-
-data_execucao = DateConfig.data_selecionadas().replace("/", "-")
-
-logger = logging.getLogger("rivex.callix")
-logger.setLevel(logging.INFO)
-logger.propagate = False  
-
-if not logger.handlers: 
-    handler = logging.FileHandler(
-        LOG_DIR / f"callix-exec-dia{data_execucao}.log",
-        encoding="utf-8"
-    )
-    handler.setFormatter(logging.Formatter("%(asctime)s - %(levelname)s - %(message)s"))
-    logger.addHandler(handler)
-
-logger.info("========================================")
-logger.info("LOG DO CALLIX INICIADO")
-logger.info("========================================")
-
-
 from src.rivex.environments.discadores.Callix.callix import CallixAPICollector
 from src.rivex.data_processing.Callix.cleaner_callix_api import processar_dados
 from src.rivex.environments.discadores.Callix.callix_req import CAllixRequisition
@@ -41,6 +15,26 @@ from src.rivex.database.database_dados_chamadas import DatabaseCallix
 from src.rivex.data_processing.Callix.callix_clients import *
 from src.rivex.database.database_clientes import DatabaseClientes
 
+load_dotenv()
+
+logger = logging.getLogger(__name__)
+
+formato = logging.Formatter(
+    "%(asctime)s - %(levelname)s [%(filename)s:%(lineno)d] - %(message)s",
+    datefmt="%Y-%m-%d %H:%M:%S"
+)
+
+Path("Log/callix.log").mkdir(
+    parents=True,
+    exist_ok=True
+)
+
+handler_callix = logging.FileHandler(f"Log/callix_log/callix_dia_{DateConfig.data_selecionadas().replace("/", "-")}.log")
+handler_callix.setFormatter(formato)
+
+logger.addHandler(handler_callix)
+
+logger.info("Iniciando configuração do servidor Callix...")
 
 class PipelineCallix:
     def __init__(self):
@@ -50,6 +44,7 @@ class PipelineCallix:
         self.banco_callix=DatabaseCallix()
         self.coletar_clientes=CallixGetClients()
         self.db_clientes=DatabaseClientes()
+        self.data_selecionada=self.data.data_callix()
 
     def get_ambiente(self):
         '''
@@ -159,46 +154,44 @@ class PipelineCallix:
 
         return lista_tokens
 
-
-    def processar(self, cliente:str, token: str):
+    def coletar_dados(self, cliente:str, token: str):
         """
         Processa a coleta, limpeza e carga de um liente
         """
-
-
         cliente_formatado=cliente.removeprefix("contech.callix.com.br")
         logger.info(f"Coleta iniciada para o cliente o cliente: {cliente_formatado}")
 
-
-
         try:
-            data_selecionada = self.data.data_callix()
+
             # Extração
-            api = CallixAPICollector(cliente, token, data_selecionada)
+            api = CallixAPICollector(cliente, token, self.data_selecionada)
             dados_brutos_api = api.api_callix() # dict
             
-            if dados_brutos_api:
-                logger.info(f"Dados de API do cliente {cliente_formatado} foram coletados")
-            else:
-                logger.warning(f"Cliente {cliente_formatado} sem dados. Registro API {dados_brutos_api}")
+            logger.info(f"Dados de API do cliente {cliente_formatado} foram coletados")
 
             req = CAllixRequisition(
-                login=self.login, senha=self.senha,
-                cliente=cliente_formatado, data=data_selecionada,
+                login=self.login, 
+                senha=self.senha,
+                cliente=cliente_formatado, 
+                data=self.data_selecionada,
                 id_campanha=dados_brutos_api['campanha'],
                 token=token
             )
-            chamadas_brutas, agressividade_bruta, tech_bruta = req.requisicao_callix()
-            
-            logger.info(f"Chamadas de requisição coletadas para o cliente {cliente_formatado}")
-            
-            if not tech_bruta:
-                logger.warning(f"Cliente {cliente_formatado} teve um erro durante a extração da tech {tech_bruta}")
 
+            chamadas_brutas, agressividade_bruta, tech_bruta = req.requisicao_callix()
+            logger.info(f"Chamadas de requisição coletadas para o cliente {cliente_formatado}")
+
+            return dados_brutos_api, chamadas_brutas, agressividade_bruta, tech_bruta, cliente_formatado
+
+        except Exception as e:
+            logger.error(f"Falha na coleta de dados do cliente {cliente_formatado}. Erro {e}", exc_info=True)
+            return None, None, None, None, None
+
+    def limpar_dados(self, dados_brutos_api, chamadas_brutas, agressividade_bruta, tech_bruta, cliente_formatado):
+        try:
             # limpeza
             dict_limpeza = processar_dados(
-                dados_brutos_api['resumo'],
-                dados_brutos_api['campanha']
+                dados_brutos_api,
             )
 
             agressividade_limpa, chamadas_limpas, tech_limpa = limpeza_req_callix(
@@ -207,6 +200,15 @@ class PipelineCallix:
                 techs_json=tech_bruta
             )
 
+        except Exception as e:
+            logger.error(f"Falha na limpeza de dados do cliente {cliente_formatado}. Erro {e}", exc_info=True)
+            return None, None, None, None
+
+        return dict_limpeza, agressividade_limpa, chamadas_limpas, tech_limpa
+    
+
+    def empacotar_dados(self, dict_limpeza, agressividade_limpa, chamadas_limpas, tech_limpa, data_selecionada, cliente_formatado):
+        try:
             # emcapsulando
             empacotamento_callix = CallixClientData(
                 tech=tech_limpa,
@@ -222,24 +224,21 @@ class PipelineCallix:
 
             dict_chamadas = empacotamento_callix.pacote_chamadas()
             lista_agentes = empacotamento_callix.pacote_agentes()
-            
-            
+    
+    
             logger.info(f"Dados finais\n"
-                     f"CHAMADAS: {dict_chamadas}\n "
+                    f"CHAMADAS: {dict_chamadas}\n "
                      f"AGENTES: {lista_agentes}")
             
-            return dict_chamadas, lista_agentes
-
         except Exception as e:
-            logger.error(f"Falha ao processar o cliente {cliente_formatado}. Erro {e}", exc_info=True)
+            logger.error(f"Falha no empacotamento de dados do cliente {cliente_formatado}. Erro {e}", exc_info=True)
             return None, None
 
+        return dict_chamadas, lista_agentes
+
     def executar(self):
-
-        logger.info("Iniciando callix")
-
         lista_ativos, lista_inativos = self.get_ambiente()
-
+        logger.info("Iniciando pipeline callix")
         lista_tokens = self.sincronizar_clientes(lista_ativos, lista_inativos)
 
 
@@ -250,17 +249,34 @@ class PipelineCallix:
             for info in lista_tokens:
 
 
-                dados_cliente, dados_agente = self.processar(
+                dados_brutos_api, chamadas_brutas, agressividade_bruta, tech_bruta, cliente_formatado = self.coletar_dados(
                     info['cliente'],
                     info['token'],
                     )
+
+                dict_limpeza, agressividade_limpa, chamadas_limpas, tech_limpa = self.limpar_dados(
+                    dados_brutos_api,
+                    chamadas_brutas,
+                    agressividade_bruta,
+                    tech_bruta,
+                    cliente_formatado)
+
+                dados_cliente, dados_agente = self.empacotar_dados(
+                    dict_limpeza,
+                    agressividade_limpa, 
+                    chamadas_limpas, 
+                    tech_limpa, 
+                    self.data_selecionada, 
+                    cliente_formatado)
+
                 
                 if dados_cliente is None:
                     logger.warning(
-            "Cliente %s ignorado por erro no processamento.",
-            info["cliente"]
-        )
+                        "Cliente %s ignorado por erro no processamento.",
+                        cliente_formatado
+                    )
                     continue
+
                 self.banco_callix.db_callix(dados_cliente, dados_agente)
         finally:
             self.banco_callix.fechar()

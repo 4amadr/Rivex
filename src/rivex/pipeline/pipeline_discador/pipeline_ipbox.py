@@ -11,6 +11,15 @@ from src.rivex.data_processing.IPBox.limpeza_ipbox import *
 load_dotenv()
 logger = logging.getLogger(__name__)
 
+formato = logging.Formatter(
+    "%(asctime)s - %(levelname)s [%(filename)s:%(lineno)d] - %(message)s",
+    datefmt="%Y-%m-%d %H:%M:%S"
+)
+
+handler_ipbox = logging.FileHandler(f"Log/ipbox_log/ipbox_dia_{DateConfig.data_selecionadas().replace("/", "-")}.log")
+handler_ipbox.setFormatter(formato)
+
+logger.addHandler(handler_ipbox)
 
 class PipelineIpbox:
     """

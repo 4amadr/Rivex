@@ -2,12 +2,25 @@ from src.rivex.environments.discadores.vonix.fluxo_coleta import ExecucaoVonix
 from src.rivex.environments.discadores.vonix.fluxo_limpeza import LimpezaVonix
 from src.rivex.data_processing.Vonix.cleaning_vonix import *
 from src.rivex.database.database_dados_chamadas import DatabaseVonix
+from src.rivex.utils.infra_utils.date_config import DateConfig
 import os
 import logging
 from dotenv import load_dotenv
 import time
 
 logger = logging.getLogger(__name__)
+
+formato = logging.Formatter(
+    "%(asctime)s - %(levelname)s [%(filename)s:%(lineno)d] - %(message)s",
+    datefmt="%Y-%m-%d %H:%M:%S"
+)
+
+handler_vonix = logging.FileHandler(f"Log/vonix_log/vonix_dia_{DateConfig.data_selecionadas().replace("/", "-")}.log")
+handler_vonix.setFormatter(formato)
+
+logger.addHandler(handler_vonix)
+
+logger.info("Iniciando configuração do servidor Vonix...")
 
 class PipelineVonix:
     def __init__(self):

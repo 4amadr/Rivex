@@ -73,17 +73,19 @@ class DatabaseBase:
     def enviar_dados(self, dados_cliente, agentes):
         try:
             self.enviar_cliente(dados_cliente)
+            log.info(f"Dados de chamadas enviados: {dados_cliente}.")
 
             for agente in agentes:
                 self.enviar_operador(agente)
-
+            
             self.conexao.commit()
-
-            log.info("Dados enviados com sucesso.")
+            log.info(f"Dados de agentes enviados: {agentes}.")
 
         except psycopg2.Error as erro:
             self.conexao.rollback()
-            log.error("Erro ao enviar dados para o banco: %s", erro)
+            log.error("Erro ao enviar dados para o banco: %s | %s", dados_cliente.get("cliente_nome"),
+            erro,
+            exc_info=True)
             raise
 
     def fechar_db(self):

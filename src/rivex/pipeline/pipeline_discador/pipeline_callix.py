@@ -24,7 +24,7 @@ formato = logging.Formatter(
     datefmt="%Y-%m-%d %H:%M:%S"
 )
 
-Path("Log/callix.log").mkdir(
+Path("Log/callix_log").mkdir(
     parents=True,
     exist_ok=True
 )
@@ -45,6 +45,12 @@ class PipelineCallix:
         self.coletar_clientes=CallixGetClients()
         self.db_clientes=DatabaseClientes()
         self.data_selecionada=self.data.data_callix()
+        self.api = CallixAPICollector(self.data_selecionada)
+        self.requisicao = CAllixRequisition(
+            login=self.login, 
+            senha=self.senha,
+            data=self.data_selecionada
+        )
 
     def get_ambiente(self):
         '''
@@ -122,9 +128,9 @@ class PipelineCallix:
                 "token": token
             })
             logger.info(
-                "Tipo do token: %s | valor: %r",
-                type(token).__name__,
-                token
+                "Token registrado para cliente %s | tipo=%s",
+                cliente,
+                type(token).__name__
             )
 
 
@@ -162,32 +168,20 @@ class PipelineCallix:
         logger.info(f"Coleta iniciada para o cliente o cliente: {cliente_formatado}")
 
         try:
-
             # Extração
-            api = CallixAPICollector(cliente, token, self.data_selecionada)
-            dados_brutos_api = api.api_callix() # dict
-            
+            dados_brutos_api = self.api.api_callix(token, cliente_formatado) 
             logger.info(f"Dados de API do cliente {cliente_formatado} foram coletados")
 
-            req = CAllixRequisition(
-                login=self.login, 
-                senha=self.senha,
-                cliente=cliente_formatado, 
-                data=self.data_selecionada,
-                id_campanha=dados_brutos_api['campanha'],
-                token=token
-            )
-
-            chamadas_brutas, agressividade_bruta, tech_bruta = req.requisicao_callix()
+            dados_brutos_req = self.requisicao.requisicao_callix(dados_brutos_api["id_campanha"], cliente_formatado, token)
             logger.info(f"Chamadas de requisição coletadas para o cliente {cliente_formatado}")
 
-            return dados_brutos_api, chamadas_brutas, agressividade_bruta, tech_bruta, cliente_formatado
+            return dados_brutos_api, dados_brutos_req, cliente_formatado
 
         except Exception as e:
             logger.error(f"Falha na coleta de dados do cliente {cliente_formatado}. Erro {e}", exc_info=True)
-            return None, None, None, None, None
+            return None, None, cliente_formatado
 
-    def limpar_dados(self, dados_brutos_api, chamadas_brutas, agressividade_bruta, tech_bruta, cliente_formatado):
+    def limpar_dados(self, dados_brutos_api, dados_brutos_req, cliente_formatado):
         try:
             # limpeza
             dict_limpeza = processar_dados(
@@ -195,9 +189,9 @@ class PipelineCallix:
             )
 
             agressividade_limpa, chamadas_limpas, tech_limpa = limpeza_req_callix(
-                json_agentes=chamadas_brutas,
-                json_agressividade=agressividade_bruta,
-                techs_json=tech_bruta
+                json_agentes=dados_brutos_req["chamadas por agentes brutas"],
+                json_agressividade=dados_brutos_req["agressividade bruta"],
+                techs_json=dados_brutos_req["tech bruta"]
             )
 
         except Exception as e:
@@ -238,7 +232,6 @@ class PipelineCallix:
 
     def executar(self):
         lista_ativos, lista_inativos = self.get_ambiente()
-        logger.info("Iniciando pipeline callix")
         lista_tokens = self.sincronizar_clientes(lista_ativos, lista_inativos)
 
 
@@ -249,17 +242,22 @@ class PipelineCallix:
             for info in lista_tokens:
 
 
-                dados_brutos_api, chamadas_brutas, agressividade_bruta, tech_bruta, cliente_formatado = self.coletar_dados(
+                dados_brutos_api, dados_brutos_req, cliente_formatado = self.coletar_dados(
                     info['cliente'],
                     info['token'],
                     )
+                if dados_brutos_api is None or dados_brutos_req is None:
+                    logger.warning(f"Não foi possível coletar dados do cliente {cliente_formatado}")
+                    continue
 
                 dict_limpeza, agressividade_limpa, chamadas_limpas, tech_limpa = self.limpar_dados(
                     dados_brutos_api,
-                    chamadas_brutas,
-                    agressividade_bruta,
-                    tech_bruta,
+                    dados_brutos_req,
                     cliente_formatado)
+                
+                if dict_limpeza is None:
+                    logger.warning(f'Não foi possível limpar dados do cliente {cliente_formatado}')
+                    continue
 
                 dados_cliente, dados_agente = self.empacotar_dados(
                     dict_limpeza,
@@ -272,11 +270,11 @@ class PipelineCallix:
                 
                 if dados_cliente is None:
                     logger.warning(
-                        "Cliente %s ignorado por erro no processamento.",
+                        "Cliente %s sem dados sendo ignorado.",
                         cliente_formatado
                     )
                     continue
-
+                
                 self.banco_callix.db_callix(dados_cliente, dados_agente)
         finally:
             self.banco_callix.fechar()

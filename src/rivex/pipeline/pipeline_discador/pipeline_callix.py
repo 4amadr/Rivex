@@ -64,107 +64,58 @@ class PipelineCallix:
 
         return lista_ativos, lista_inativos
 
-    def sincronizar_clientes(self, lista_ativos, lista_inativos):
+    def sincronizar_clientes(self, lista_ativos):
+        clientes_ativos_db = self.db_clientes.sincronizar_clientes()
+        set_ativos = set(lista_ativos)
+        set_banco = set(clientes_ativos_db.keys())
 
-        clientes_db = self.db_clientes.sincronizar_clientes()
+        clientes_inativos = set_banco - set_ativos
+        print(f"Clientes inativos: {clientes_inativos}")
 
-        # Clientes ativos do Callix que ainda não existem no banco
-        clientes_novos = [
-            cliente
-            for cliente in lista_ativos
-            if cliente not in clientes_db
-        ]
+        clientes_ativos_a_cadastrar = set_ativos - set_banco
+        print(f"Clientes para serem cadastrados {clientes_ativos_a_cadastrar}")
 
-        # Clientes que já existiam no DB, mas estavam inativos
-        clientes_reativados = [
-            cliente
-            for cliente in lista_ativos
-            if (
-                    cliente in clientes_db
-                    and not clientes_db[cliente]["ativo"]
-            )
-        ]
+        self.remover_clientes(clientes_inativos)
+        self.cadastrar_clientes(clientes_ativos_a_cadastrar)
+        return self.db_clientes.sincronizar_clientes()
 
-        # Reativar clientes
-        for cliente in clientes_reativados:
-            self.db_clientes.reativar_clientes(cliente)
+    def remover_clientes(self, clientes_para_remover):
+        if not clientes_para_remover:
+            logger.info("Sem clientes para serem removidos")
+            return
 
-        # Buscar tokens SOMENTE dos clientes novos
-        novos_clientes = {}
+        clientes_remover_list = list(clientes_para_remover)
+        logger.info(f"Realizando a remoção de {len(clientes_remover_list)} cliente(s): {clientes_remover_list}")
+        for cliente in clientes_remover_list:
+            self.db_clientes.inativar_cliente(cliente)
+        return
 
-        if clientes_novos:
+    def cadastrar_clientes(self, clientes_novos):
+        if not clientes_novos:
+            logger.info("Nenhum cliente novo para cadastrar")
+            return
 
-            get_tokens = GetTokenCallix()
+        clientes_novos_list = list(clientes_novos)
+        logger.info(f"Processando {len(clientes_novos_list)} clientes: {clientes_novos_list}")
 
-            tokens_novos = get_tokens.fluxo_de_tokens(
-                clientes_novos
-            )
+        lista_tokens = self.coletar_tokens(clientes_novos_list)
 
-            tokens_novos = [
-                item[0]
-                for item in tokens_novos
-            ]
+        for cliente, token in lista_tokens.items():
+            self.db_clientes.cadastrar_cliente(cliente, token)
 
-            # Validar quantidade
-            if len(clientes_novos) != len(tokens_novos):
-                raise RuntimeError(
-                    f"Quantidade diferente de tokens e clientes. "
-                    f"Clientes: {len(clientes_novos)} | "
-                    f"Tokens: {len(tokens_novos)}"
-                )
-
-            logger.info("Clientes Novos: %r: ", clientes_novos)
-            logger.info("Tokens Novos: %r: ", tokens_novos)
-
-            # Associar cliente → token
-            novos_clientes = dict(
-                zip(clientes_novos, tokens_novos)
-            )
-
-        # Inserir somente clientes novos
-        for cliente, token in novos_clientes.items():
-            self.db_clientes.db_clientes_callix({
-                "cliente": cliente,
-                "token": token
-            })
-            logger.info(
-                "Token registrado para cliente %s | tipo=%s",
-                cliente,
-                type(token).__name__
-            )
-
-
-        # Inativar clientes que estão inativos no Callix
-        for cliente in lista_inativos:
-
-            if cliente in clientes_db:
-                self.db_clientes.inativar_cliente(cliente)
-
-        # Montar lista final
-        lista_tokens = []
-
-        for cliente in lista_ativos:
-
-            if cliente in novos_clientes:
-                # Cliente recém cadastrado
-                token = novos_clientes[cliente]
-
-            else:
-                # Cliente já existente no banco
-                token = clientes_db[cliente]["token"]
-
-            lista_tokens.append({
-                "cliente": cliente,
-                "token": token
-            })
-
+    def coletar_tokens(self, clientes_novos_list):
+        if not clientes_novos_list:
+            logger.info("Nenhum token novo para coletar")
+            return []
+        get_token = GetTokenCallix()
+        lista_tokens = get_token.fluxo_de_tokens(clientes_novos_list)
         return lista_tokens
 
     def coletar_dados(self, cliente:str, token: str):
         """
         Processa a coleta, limpeza e carga de um liente
         """
-        cliente_formatado=cliente.removeprefix("contech.callix.com.br")
+        cliente_formatado=cliente.removesuffix(".contech.callix.com.br")
         logger.info(f"Coleta iniciada para o cliente o cliente: {cliente_formatado}")
 
         try:
@@ -199,7 +150,6 @@ class PipelineCallix:
             return None, None, None, None
 
         return dict_limpeza, agressividade_limpa, chamadas_limpas, tech_limpa
-    
 
     def empacotar_dados(self, dict_limpeza, agressividade_limpa, chamadas_limpas, tech_limpa, data_selecionada, cliente_formatado):
         try:
@@ -232,19 +182,19 @@ class PipelineCallix:
 
     def executar(self):
         lista_ativos, lista_inativos = self.get_ambiente()
-        lista_tokens = self.sincronizar_clientes(lista_ativos, lista_inativos)
+        clientes_db = self.sincronizar_clientes(lista_ativos)
 
 
-        if not lista_tokens:
-            raise RuntimeError("Sem clientes ou tokens")
+        if not clientes_db:
+            raise RuntimeError("Sem clientes no banco")
 
         try:
-            for info in lista_tokens:
+            for dado in clientes_db:
 
 
                 dados_brutos_api, dados_brutos_req, cliente_formatado = self.coletar_dados(
-                    info['cliente'],
-                    info['token'],
+                    dado['cliente'],
+                    dado['token'],
                     )
                 if dados_brutos_api is None or dados_brutos_req is None:
                     logger.warning(f"Não foi possível coletar dados do cliente {cliente_formatado}")

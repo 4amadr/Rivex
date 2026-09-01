@@ -56,9 +56,9 @@ class DatabaseClientes:
     def db_clientes_callix(self, dict_clientes):
         self.db_clientes.enviar_info_cliente(dict_clientes)
     
-    def inativar_cliente(self):
+    def inativar_cliente(self, cliente):
         try:
-            self.cursor.execute(self.query_remover_clientes_inativos)
+            self.cursor.execute(self.query_remover_clientes_inativos, (cliente,))
             clientes = self.cursor.fetchall()
 
             return {
@@ -101,4 +101,18 @@ class DatabaseClientes:
         except psycopg2.Error as erro:
             self.conexao.rollback()
             log.error("Erro ao reativar clietne: %s", cliente, erro)
+            raise
+
+    def cadastrar_cliente(self, cliente, token):
+        try:
+            self.cursor.execute(
+                self.query_enviar_clientes_db,
+                (cliente, token)
+            )
+            log.info(f"Cliente {cliente} cadastrado com sucesso.")
+            self.conexao.commit()
+
+        except psycopg2.Error as erro:
+            self.conexao.rollback()
+            log.error(f"Erro: {erro} ao enviar clietne: %s", cliente)
             raise

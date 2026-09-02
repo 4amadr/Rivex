@@ -100,7 +100,7 @@ class PipelineCallix:
 
         lista_tokens = self.coletar_tokens(clientes_novos_list)
 
-        for cliente, token in lista_tokens.items():
+        for cliente, token in zip(clientes_novos_list, lista_tokens):
             self.db_clientes.cadastrar_cliente(cliente, token)
 
     def coletar_tokens(self, clientes_novos_list):
@@ -115,7 +115,7 @@ class PipelineCallix:
         """
         Processa a coleta, limpeza e carga de um liente
         """
-        cliente_formatado=cliente.removesuffix(".contech.callix.com.br")
+        cliente_formatado=cliente.removesuffix("contech.callix.com.br")
         logger.info(f"Coleta iniciada para o cliente o cliente: {cliente_formatado}")
 
         try:
@@ -189,13 +189,15 @@ class PipelineCallix:
             raise RuntimeError("Sem clientes no banco")
 
         try:
-            for dado in clientes_db:
-
+            for cliente, dado in clientes_db.items():
+                if not dado["ativo"]:
+                    continue
 
                 dados_brutos_api, dados_brutos_req, cliente_formatado = self.coletar_dados(
-                    dado['cliente'],
-                    dado['token'],
-                    )
+                    cliente,
+                    dado["token"]
+                )
+                
                 if dados_brutos_api is None or dados_brutos_req is None:
                     logger.warning(f"Não foi possível coletar dados do cliente {cliente_formatado}")
                     continue

@@ -51,7 +51,7 @@ class GetTokenCallix:
     para realizar requisições de API 
     """
     
-    def __init__(self, ):
+    def __init__(self):
         self.login = os.getenv('USUARIO_CALLIX_GERAL')
         self.senha = os.getenv('SENHA_CALLIX_GERAL')
         self.http_request = HttpRequisitions(session=requests.Session())

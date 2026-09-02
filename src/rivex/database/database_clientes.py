@@ -20,11 +20,11 @@ class DatabaseClientes:
             PRIMARY KEY (cliente_nome)
             );
             """
-        self.query_remover_clientes_inativos = """
+        self.query_inativar_clientes = """
         UPDATE clientes.clientes_callix
         SET ativo = FALSE
-        WHERE cliente_nome = %s 
-                                               """
+        WHERE cliente_nome = %s
+        RETURNING cliente_nome, cliente_token                                               """
         self.query_enviar_clientes_db = """
     INSERT INTO clientes.clientes_callix (
         cliente_nome,
@@ -58,7 +58,7 @@ class DatabaseClientes:
     
     def inativar_cliente(self, cliente):
         try:
-            self.cursor.execute(self.query_remover_clientes_inativos, (cliente,))
+            self.cursor.execute(self.query_inativar_clientes, (cliente,))
             clientes = self.cursor.fetchall()
 
             return {
@@ -107,7 +107,10 @@ class DatabaseClientes:
         try:
             self.cursor.execute(
                 self.query_enviar_clientes_db,
-                (cliente, token)
+                {
+                    "cliente": cliente,
+                    "token": token
+                }
             )
             log.info(f"Cliente {cliente} cadastrado com sucesso.")
             self.conexao.commit()

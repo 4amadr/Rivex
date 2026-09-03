@@ -1,3 +1,5 @@
+from src.rivex.utils.environments_utils.discador.callix.payloads_callix import payload_agressividade
+from src.rivex.utils.environments_utils.discador.callix.payloads_callix import headers_callix
 import requests
 from src.rivex.utils.requests_utils.requests import HttpRequisitions
 from src.rivex.utils.environments_utils.discador.callix.payloads_callix import *
@@ -64,16 +66,37 @@ class CAllixRequisition:
         return chamadas_por_agentes
     
     def agressividade(self, token, cliente, campanhas):
-        # pode haver mais de uma campanha o que gera mais de uma agressividade
-        lista_json_agressividade = []
+
+        if len(campanhas) > 1:
+            lista_json_agressividade = []
+            # se tiver mais de uma campanha
+            for url_agressividade in self.url.url_agressividade(cliente, campanhas):
+                agressividade = self.http_request.requisicao_get(headers=headers_callix(token),
+                                            url=url_agressividade,
+                                            payload_get=payload_agressividade()
+                                            )
+                lista_json_agressividade.append(agressividade)
+                print("[DEBUG]")
+                print("[DEBUG]: HEADER", headers_callix(token))
+                print("[DEBUG]: PAYLOAD", payload_agressividade())
+                print("[DEBUG]: STATUS CODE", agressividade.status_code)
+                print("[DEBUG]: CAMPAMHA", campanhas)
+            return lista_json_agressividade
         
-        for url_unico_de_agressividade in self.url.url_agressividade(cliente, campanhas):
-            agressividade = self.http_request.requisicao_get(headers=headers_callix(token),
-                                        url=url_unico_de_agressividade,
-                                        payload_get=payload_agressividade()
-                                        )
-            lista_json_agressividade.append(agressividade)
-        return lista_json_agressividade
+        else:
+            # se tiver só uma campanha
+            agressividade = self.http_request.requisicao_get(
+                headers=headers_callix(token),
+                url=self.url.url_agressividade(cliente, campanhas)[0],
+                payload_get=payload_agressividade())
+                
+            print("[DEBUG]")
+            print("[DEBUG]: HEADER", headers_callix(token))
+            print("[DEBUG]: PAYLOAD", payload_agressividade())
+            print("[DEBUG]: STATUS CODE", agressividade.status_code)
+            print("[DEBUG]: CAMPAMHA", campanhas)
+            return agressividade
+
 
     def get_tech_cliente(self, cliente, token):
         tech = self.http_request.requisicao_get(

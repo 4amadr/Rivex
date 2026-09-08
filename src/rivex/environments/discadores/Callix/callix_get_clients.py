@@ -1,3 +1,5 @@
+from src.rivex.utils.environments_utils.discador.callix.payloads_callix import payload_create_tokens
+from src.rivex.utils.environments_utils.discador.callix.payloads_callix import gerar_headers_para_tokens
 import requests
 import os
 from dotenv import load_dotenv
@@ -69,10 +71,22 @@ class GetTokenCallix:
 
     def get_token(self, token, cliente):
         '''Retorna o token do cliente usado em requisições de API'''
-        tokens_api = self.http_request.requisicao_get(url=self.url.url_tokens(cliente),
-                                                        payload_get=payload_get_tokens(),
-                                                        headers=gerar_headers_para_tokens(token, cliente))
+        tokens_api = self.http_request.requisicao_get(
+            url=self.url.url_tokens(cliente),
+            payload_get=payload_get_tokens(),
+            headers=gerar_headers_para_tokens(token, cliente)
+            )
         return tokens_api.json()
+
+    def create_token(self, token, cliente):
+        """vai criar e retornar o token caso o cliente não tenha nenhum token ativo
+        """
+        return self.http_request.requisicao_post(
+            url=self.url.url_create_tokens(cliente),
+            headers=gerar_headers_para_tokens(token, cliente),
+            payload_post=payload_create_tokens())
+        
+
 
     def fluxo_de_tokens(self, clientes_ativos):
         lista_tokens = []
@@ -85,6 +99,11 @@ class GetTokenCallix:
             
             # token
             tokens_api = self.get_token(token_login, selecao_cliente)
-            token = [token_cliente['attributes']['token'] for token_cliente in tokens_api['data']]
+            token = tokens_api['data'][0]['attributes']['token']
+            if not token:
+                print(f"Cliente {selecao_cliente} sem token. Criando um novo")
+                self.create_token(selecao_cliente, token_login)
+                token = tokens_api['data'][0]['attributes']['token']
+                
             lista_tokens.append(token)
         return lista_tokens

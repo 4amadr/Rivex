@@ -149,6 +149,22 @@ def payload_get_tokens():
         'page%5Blimit%5D': '100'
     }
 
+def payload_create_tokens():
+    return {
+        "data": {
+            "type": "apiTokens",
+            "attributes": {},
+            "relationships": {
+                "accessProfile": {
+                    "data": {
+                        "id": "3",
+                        "type": "accessProfiles"
+                    }
+                }
+            }
+        }
+    }
+
 def gerar_headers_para_tokens(token, cliente):
     return {
         "accept": "application/json",

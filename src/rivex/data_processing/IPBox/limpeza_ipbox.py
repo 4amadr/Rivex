@@ -14,8 +14,14 @@ def get_cliente(cliente_html):
     return cliente_html.find('td', attrs={"nowrap": ""}).get_text()
 
 def get_tech_cliente(cliente):
-    numeros = re.findall(r"\d", cliente)
-    return "".join(numeros[:6])
+    match = re.search(r"(\d{4})#(\d{2})", cliente)
+
+    if not match:
+        raise ValueError(
+            f"Não foi possível identificar a tech do cliente: {cliente!r}"
+        )
+
+    return int(f"{match.group(1)}{match.group(2)}")
 
 def get_identificador(cliente_html):
     href = cliente_html.find("a")["href"]

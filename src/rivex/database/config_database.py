@@ -66,6 +66,22 @@ class DatabaseBase:
 
     def enviar_cliente(self, dados_cliente):
         self.cursor.execute(self.query_insert_chamada, dados_cliente)
+        print("\n========== TENTANDO INSERT ==========")
+
+        for chave, valor in dados_cliente.items():
+            print(
+                f"{chave}: valor={valor!r} | "
+                f"tipo={type(valor).__name__}"
+            )
+
+        print("=====================================")
+
+        self.cursor.execute(
+            self.query_insert_chamada,
+            dados_cliente
+        )
+
+        print(">>> INSERT OK")
 
     def enviar_operador(self, dados_operador):
         self.cursor.execute(self.query_insert_operador, dados_operador)

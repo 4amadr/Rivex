@@ -102,6 +102,8 @@ def limpeza_techs_callix(outbound_routes: dict) -> str:
     Recebe o JSON de outbound-routes e retorna a Tech
     apropriada para ser enviada ao banco de dados.
     """
+    print('[ROTAS DISPONIVEIS]')
+    print(outbound_routes)
     for rota in outbound_routes.get("data", []):
 
         attributes = rota.get("attributes", {})

@@ -22,6 +22,9 @@ class CallixAPICollector:
         campanha = self.hr.requisicao_get(url=self.url_tratada(cliente, 'campaigns'),
                                           payload_get={},
                                           headers=headers_callix(token))
+        log.info(f"campanha: {campanha.status_code}")
+        log.info(f"campanha: {campanha.url}")
+        log.info(f"campanha: {campanha.headers}")
         return campanha
 
     def resumo_campanha(self, cliente, token):

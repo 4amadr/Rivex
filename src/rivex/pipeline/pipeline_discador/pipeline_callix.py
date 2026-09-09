@@ -73,7 +73,7 @@ class PipelineCallix:
         print(f"Clientes inativos: {clientes_inativos}")
 
         clientes_ativos_a_cadastrar = set_ativos - set_banco
-        print(f"Clientes para serem cadastrados {clientes_ativos_a_cadastrar}")
+        print(f"Clientes para serem cadastrados: {clientes_ativos_a_cadastrar}")
 
         self.remover_clientes(clientes_inativos)
         self.cadastrar_clientes(clientes_ativos_a_cadastrar)
@@ -123,7 +123,7 @@ class PipelineCallix:
             dados_brutos_api = self.api.api_callix(token, cliente_formatado) 
             logger.info(f"Dados de API do cliente {cliente_formatado} foram coletados")
 
-            dados_brutos_req = self.requisicao.requisicao_callix(dados_brutos_api["id_campanha"], cliente_formatado, token)
+            dados_brutos_req = self.requisicao.requisicao_callix(dados_brutos_api["campanha"], cliente_formatado, token)
             logger.info(f"Chamadas de requisição coletadas para o cliente {cliente_formatado}")
 
             return dados_brutos_api, dados_brutos_req, cliente_formatado
@@ -197,7 +197,7 @@ class PipelineCallix:
                     cliente,
                     dado["token"]
                 )
-                
+
                 if dados_brutos_api is None or dados_brutos_req is None:
                     logger.warning(f"Não foi possível coletar dados do cliente {cliente_formatado}")
                     continue

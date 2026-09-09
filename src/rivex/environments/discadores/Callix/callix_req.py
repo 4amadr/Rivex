@@ -76,11 +76,6 @@ class CAllixRequisition:
                                             payload_get=payload_agressividade()
                                             )
                 lista_json_agressividade.append(agressividade)
-                print("[DEBUG]")
-                print("[DEBUG]: HEADER", headers_callix(token))
-                print("[DEBUG]: PAYLOAD", payload_agressividade())
-                print("[DEBUG]: STATUS CODE", agressividade.status_code)
-                print("[DEBUG]: CAMPAMHA", campanhas)
             return lista_json_agressividade
         
         else:
@@ -89,12 +84,7 @@ class CAllixRequisition:
                 headers=headers_callix(token),
                 url=self.url.url_agressividade(cliente, campanhas)[0],
                 payload_get=payload_agressividade())
-                
-            print("[DEBUG]")
-            print("[DEBUG]: HEADER", headers_callix(token))
-            print("[DEBUG]: PAYLOAD", payload_agressividade())
-            print("[DEBUG]: STATUS CODE", agressividade.status_code)
-            print("[DEBUG]: CAMPAMHA", campanhas)
+            
             return agressividade
 
 

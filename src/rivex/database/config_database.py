@@ -74,34 +74,61 @@ class DatabaseBase:
                 f"tipo={type(valor).__name__}"
             )
 
-        print("=====================================")
-
         self.cursor.execute(
             self.query_insert_chamada,
             dados_cliente
         )
 
+        print("=====================================")
         print(">>> INSERT OK")
 
     def enviar_operador(self, dados_operador):
         self.cursor.execute(self.query_insert_operador, dados_operador)
 
     def enviar_dados(self, dados_cliente, agentes):
+        cliente = dados_cliente.get("Cliente")
+        tech = dados_cliente.get("tech")
+        data = dados_cliente.get("Data")
+
         try:
+            log.info(
+                "[DB] Iniciando cliente=%s, tech=%s, data=%s",
+                cliente,
+                tech,
+                data
+            )
+
             self.enviar_cliente(dados_cliente)
-            log.info(f"Dados de chamadas enviados: {dados_cliente}.")
+
+            log.info(
+                "[DB] Cliente inserido/atualizado: %s",
+                cliente
+            )
 
             for agente in agentes:
                 self.enviar_operador(agente)
-            
+
             self.conexao.commit()
-            log.info(f"Dados de agentes enviados: {agentes}.")
+
+            log.info(
+                "[DB] commit feito: cliente=%s, tech=%s, agentes=%s",
+                cliente,
+                tech,
+                len(agentes)
+            )
 
         except psycopg2.Error as erro:
             self.conexao.rollback()
-            log.error("Erro ao enviar dados para o banco: %s | %s", dados_cliente.get("cliente_nome"),
-            erro,
-            exc_info=True)
+
+            log.error(
+                "[DB] erro no cliente=%s, tech=%s, erro=%s ",
+                cliente,
+                tech,
+                data,
+                erro,
+                exc_info=True
+            )
+
             raise
 
     def fechar_db(self):

@@ -35,7 +35,7 @@ class IpboxInit:
         self.login = login
         self.senha = senha
         self.data = data
-        self.http_client = HttpRequisitions(session=requests.session())
+        self.http_client = HttpRequisitions(session=requests.Session())
         
         
     def login_ipbox(self) -> requests.Session:

@@ -29,7 +29,7 @@ class PipelineVonix:
         self.login = os.getenv('LOGIN_VONIX')
         self.senha = os.getenv('SENHA_VONIX')
         self.url = os.getenv('URL_BASE_VONIX6')
-        self.tempo_espera = os.getenv('TEMPO_VONIX')
+        self.tempo_espera = os.getenv('TEMPO_VONIX', '2')
         self.vonix_execucao = ExecucaoVonix(
             login=self.login,
             senha=self.senha,

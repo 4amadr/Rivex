@@ -396,7 +396,7 @@ INSERT INTO dados_operadora.dados_operadora_pentagono
     minutagem = EXCLUDED.minutagem,
     chamadas_tarifadas = EXCLUDED.chamadas_tarifadas;       
 """
-        self.db = DatabaseTelefonia(self.query_criar_tabela_telefonia)
+        self.db = DatabaseTelefonia(self.query_inserir_dados_telefonia)
         self.db.criar_tabelas(query_tabela_telefonia=self.query_criar_tabela_telefonia)
 
     def enviar_dados_db_pentagono(self, dados):

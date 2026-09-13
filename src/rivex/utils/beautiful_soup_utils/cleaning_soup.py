@@ -15,7 +15,7 @@ class CleaningSoup:
         return marcacao_encontrada
 
     def encontrar_marcacao_index(self, sopa, html: str, endereco: int):
-        marcacao_por_index = sopa.find(html)
+        marcacoes = sopa.find_all(html)
         return marcacoes[endereco] if endereco < len(marcacoes) else None
     
     

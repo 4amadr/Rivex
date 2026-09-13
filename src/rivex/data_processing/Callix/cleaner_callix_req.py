@@ -110,7 +110,7 @@ def limpeza_techs_callix(outbound_routes: dict) -> str:
         name = attributes.get("name", "")
 
         if not _rota_valida(name):
-            return 0
+            continue
 
         tech = _extrair_tech(name)
 

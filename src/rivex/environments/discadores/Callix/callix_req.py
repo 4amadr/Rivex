@@ -8,14 +8,6 @@ import urllib.parse
 import logging
 
 log = logging.getLogger(__name__)
-logging.basicConfig(
-    filename='callix-exec.log',
-    level=logging.INFO,
-    format='%(asctime)s - %(levelname)s - %(message)s',
-    encoding='utf-8'
-)
-
-
 class CAllixRequisition:
     '''
     Classe para coletar os dados que não estão disponibilizados

@@ -5,7 +5,7 @@ from src.rivex.database.config_database import DatabaseBase, ConexaoDatabaseRive
 from src.rivex.database.database_dados_chamadas import DatabaseClientesCallix, DatabaseTelefonia
 import logging
 
-log = logging.Logger(__name__)
+log = logging.getLogger(__name__)
 
 class DatabaseClientes:
     def __init__(self):
@@ -59,6 +59,7 @@ class DatabaseClientes:
     def inativar_cliente(self, cliente):
         try:
             self.cursor.execute(self.query_inativar_clientes, (cliente,))
+            self.conexao.commit()
             clientes = self.cursor.fetchall()
 
             return {

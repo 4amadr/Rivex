@@ -1,6 +1,7 @@
 from functools import wraps
 import logging
 import time
+import requests
 
 logger = logging.getLogger(__name__)
 
@@ -14,7 +15,7 @@ def tentar_novamente(tentativas=3, atraso=20):
                     return func(*args, **kwargs)
                 except (ConnectionError, TimeoutError, requests.exceptions.RequestException) as e:
                         logger.error("Totas as tentativas falharam")
-                        raise
+                raise
         return wrapper
     return decorator
 

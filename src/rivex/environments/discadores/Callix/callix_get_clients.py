@@ -103,7 +103,8 @@ class GetTokenCallix:
             if not token:
                 print(f"Cliente {selecao_cliente} sem token. Criando um novo")
                 self.create_token(selecao_cliente, token_login)
-                token = tokens_api['data'][0]['attributes']['token']
+                tokens_novos = self.get_token(token_login, selecao_cliente)
+                token = tokens_novos['data'][0]['attributes']['token']
                 
             lista_tokens.append(token)
         return lista_tokens

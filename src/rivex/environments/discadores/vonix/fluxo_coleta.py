@@ -53,6 +53,14 @@ class ExecucaoVonix:
     
     def get_html(self, pag):
         return BeautifulSoup(pag, 'html.parser')
+    
+    def get_token(self, token):
+        token = token.find("input", {'name': "authenticity_token"})
+        
+        if token is None:
+            raise ValueError("Não foi encontrado o token de autenticidade do vonix!")
+        
+        return token.get("value")
 
     def login_vonix(self, token):
         return self.http_requisitions.requisicao_post(payload_post=payload_de_login(self.login, self.senha, token), headers=headers(), url=self.url._url_login())

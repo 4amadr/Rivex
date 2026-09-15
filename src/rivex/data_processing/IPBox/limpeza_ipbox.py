@@ -14,8 +14,14 @@ def get_cliente(cliente_html):
     return cliente_html.find('td', attrs={"nowrap": ""}).get_text()
 
 def get_tech_cliente(cliente):
-    numeros = re.findall(r"\d", cliente)
-    return "".join(numeros[:6])
+    match = re.search(r"(\d{4})#(\d{2})", cliente)
+
+    if not match:
+        raise ValueError(
+            f"Não foi possível identificar a tech do cliente: {cliente!r}"
+        )
+
+    return int(f"{match.group(1)}{match.group(2)}")
 
 def get_identificador(cliente_html):
     href = cliente_html.find("a")["href"]
@@ -71,6 +77,12 @@ def empacotar_dados_clientes(chamadas_json, cliente, data, agressividade):
         "agressividade": get_agressividade(agressividade)
     }
     
+def chamadas_agente(agente):
+    if agente == "-":
+        return 0
+    
+    else:
+        return int(agente)
 
     
 def empacotar_dados_agentes(agente, cliente, data):
@@ -79,7 +91,7 @@ def empacotar_dados_agentes(agente, cliente, data):
         "cliente_nome": cliente,
         "data": data,
         "nome_agente": agente["agente"],
-        "chamadas_agente": agente["atendimentos"]
+        "chamadas_agente": chamadas_agente(agente["atendimentos"])
     }
      
     

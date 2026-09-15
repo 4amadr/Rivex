@@ -113,6 +113,8 @@ class PipelineIpbox:
 
                 if nome_cliente not in cliente_coletado:
                     continue
+                
+                print(f"AGENTE: {agente}")
 
                 lista_agentes.append(
                     empacotar_dados_agentes(
@@ -121,6 +123,8 @@ class PipelineIpbox:
                         self.data_ipbox
                     )
                 )
+                
+                print(f"TESTE DE AGENTES NO AMBIENTE: {lista_agentes}")
 
                 logger.debug("Cliente: %s", dados_cliente)
                 logger.debug("Agentes: %s", lista_agentes)

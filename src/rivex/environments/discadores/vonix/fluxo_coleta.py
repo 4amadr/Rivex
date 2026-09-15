@@ -6,6 +6,7 @@ from src.rivex.utils.requests_utils.requests import HttpRequisitions
 from src.rivex.environments.discadores.vonix.payloads_vonix import *
 from src.rivex.environments.discadores.vonix.equipes_vonix import dict_agentes
 from src.rivex.utils.infra_utils.vonix_processing import ClientSimulator
+from bs4 import BeautifulSoup
 
 '''Classe feita para executar cada etapa do discador vonix contando com
 Login + TOKEN -> Filtragem + TOKEN -> Chamadas + TOKEN -> Agentes online + TOKEN -> Agressividade + TOKEN'''
@@ -49,9 +50,10 @@ class ExecucaoVonix:
 
     def get_cookie(self):
         return self.session.get(self.url._url_login())
-
-
     
+    def get_html(self, pag):
+        return BeautifulSoup(pag, 'html.parser')
+
     def login_vonix(self, token):
         return self.http_requisitions.requisicao_post(payload_post=payload_de_login(self.login, self.senha, token), headers=headers(), url=self.url._url_login())
     
@@ -96,8 +98,8 @@ class ExecucaoVonix:
         caso contrário o ambiente retorna o HTML da página de login
         """
         tokens = self.get_cookie()
-        html_token = get_html(tokens.text)
-        token_vonix = get_token(html_token)
+        html_token = self.get_html(tokens.text)
+        token_vonix = self.get_token(html_token)
         return token_vonix
         
     def get_clientes(self, token):

@@ -29,7 +29,8 @@ class PipelineVonix:
         self.login = os.getenv('LOGIN_VONIX')
         self.senha = os.getenv('SENHA_VONIX')
         self.url = os.getenv('URL_BASE_VONIX6')
-        self.tempo_espera = os.getenv('TEMPO_VONIX', '2')
+        self.tempo_espera = os.getenv('TEMPO_VONIX', '35')
+        self.tempo_int = int(self.tempo_espera)
         self.vonix_execucao = ExecucaoVonix(
             login=self.login,
             senha=self.senha,
@@ -117,7 +118,7 @@ class PipelineVonix:
             logger.info(f"Dados dos agentes após coleta e processamento de dados: {agentes}")
             
             self.db.db_vonix(cliente, agentes)
-            time.sleep(self.tempo_espera)
+            time.sleep(self.tempo_int)
         self.db.fechar_db_vonix()
 
         

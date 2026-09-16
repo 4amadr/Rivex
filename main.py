@@ -38,6 +38,6 @@ def main_ultracom():
 if __name__ == '__main__':
     #dados_callix = main_callix()
     #dados_ipbox = main_ipbox()
-    dados_vonix = main_vonix()
-    dados_gerax = main_gerax()
+    #dados_vonix = main_vonix()
+    dados_agitel = main_agitel()
     dados_ultracom = main_ultracom()

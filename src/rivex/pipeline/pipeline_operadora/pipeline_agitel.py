@@ -2,10 +2,13 @@ from src.rivex.environments.operadoras.gsolutions.sip_client_scrap import Empaco
 import os
 from src.rivex.utils.infra_utils.date_config import *
 from src.rivex.database.database_dados_chamadas import *
-#from src.rivex.data_processing.gsolutions. import *
+from src.rivex.data_processing.agitel.agitel_data_cleaning import CleaningAgitel
 import time
 
 class ExecAgitel():
+    def __init__(self):
+        cleaning_agitel = self.CleaningAgitel()
+    
       
     def pipeline_agitel(self):
         dc = DateConfig()
@@ -26,11 +29,17 @@ class ExecAgitel():
 
         # execução
         consumo_por_cliente, dict_id_clientes = sc.execucao_pipeline_sip()
+        print(f"Validação do consumo do cliente: {consumo_por_cliente}")
+        
+        
         
         # limpeza
-        limpar_sip = CleanerSip(consumo=consumo_por_cliente,
+        '''limpar_sip = CleanerSip(consumo=consumo_por_cliente,
                              id_clientes=dict_id_clientes)
-        lista_cliente, lista_minutagem, lista_custo = limpar_sip.limpar_consumo()
+        lista_cliente, lista_minutagem, lista_custo = limpar_sip.limpar_consumo()'''
+        
+        dados = self.cleaning_agitel.dados_agitel(consumo_por_cliente)
+        print(f"DADOS COLETADOS: {dados}")
         
         # segunda execução
         lista_techs, lista_ids_online = limpar_sip.gerar_ids_tarifadas(lista_cliente)

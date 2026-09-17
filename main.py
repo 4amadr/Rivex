@@ -40,4 +40,4 @@ if __name__ == '__main__':
     #dados_ipbox = main_ipbox()
     #dados_vonix = main_vonix()
     dados_agitel = main_agitel()
-    dados_ultracom = main_ultracom()
+    #dados_ultracom = main_ultracom()

@@ -7,7 +7,7 @@ import time
 
 class ExecAgitel():
     def __init__(self):
-        cleaning_agitel = self.CleaningAgitel()
+        self.cleaning_agitel = CleaningAgitel()
     
       
     def pipeline_agitel(self):
@@ -29,7 +29,6 @@ class ExecAgitel():
 
         # execução
         consumo_por_cliente, dict_id_clientes = sc.execucao_pipeline_sip()
-        print(f"Validação do consumo do cliente: {consumo_por_cliente}")
         
         
         
@@ -42,30 +41,6 @@ class ExecAgitel():
         print(f"DADOS COLETADOS: {dados}")
         
         # segunda execução
-        lista_techs, lista_ids_online = limpar_sip.gerar_ids_tarifadas(lista_cliente)
-        lista_tarifadas_html = sch.lista_chamadas_tarifadas(lista_ids_online)
-
         # segunda limpeza
-        tarifa_limpa = [limpar_sip.limpar_chamadas_tarifadas(tarifa) for tarifa in lista_tarifadas_html]
-
         # empacotamento
-        pacote_agitel = EmpacotamentoAgitel(
-            data_db=dc.data_callix(),
-            lista_tech=lista_techs,
-            lista_clientes=lista_cliente,
-            lista_minutagem=lista_minutagem,
-            lista_custo=lista_custo,
-            lista_tarifadas=tarifa_limpa
-
-        )
         # carregamento
-        db = DatabaseRivex()
-        cursor, conexao = db.abrir_banco()
-        lista_dados = pacote_agitel.preparar_dados()
-        print("LISTA DE DADOS QUE VAI SER ENVIADA PARA O BANCO: ", lista_dados)
-        for dado_db in lista_dados:
-            print("Conferencia de dados que irão para o banco!")
-            print(dado_db)
-            time.sleep(5)
-            db.enviar_banco_operadoras(dado_db, cursor)
-        db.fechar_db(cursor=cursor, conexao=conexao)

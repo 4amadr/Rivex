@@ -64,7 +64,7 @@ class SipClient:
         self.login(url_de_login=url_de_login)
         consumo = self.filtrar_dados(url_filtragem)
         id_clientes = self.get_id_do_cliente(url_id_do_cliente)
-        return consumo, id_clientes
+        return consumo, id_clientes.text
 
 class SipCharged:
     def __init__(self, data, url_base, usuario, password):
@@ -96,7 +96,15 @@ class SipCharged:
     
     def lista_chamadas_tarifadas(self, id_cliente):
         self.login()
-        return [self.get_chamadas_tarifadas(identificador) for identificador in id_cliente]
+        return [self.get_chamadas_tarifadas(identificador).text for identificador in id_cliente]
+    
+    def fluxo_tarifadas(self, id_cliente):
+        self.login()
+        tarifadas = self.get_chamadas_tarifadas(id_cliente)
+        lista_tarifadas = self.lista_chamadas_tarifadas(id_cliente)
+        
+        return tarifadas
+    
 
 
 class EmpacotamentoAgitel:

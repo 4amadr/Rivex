@@ -4,8 +4,53 @@ from dotenv import load_dotenv
 import os
 import logging
 from src.rivex.database.config_database import ConexaoDatabaseRivex, DatabaseBase
+from src.rivex.utils.infra_utils.date_config import *
 
-log = logging.getLogger(__name__)
+
+class LoggingDatabase:
+    def __init__(self, logger_name: str = "rivex.database"):
+        # 1. Obtém e formata a data para o arquivo de log
+        self.data_config = DateConfig()
+        self.data_log = self.data_config.data_callix().replace("/", "-")
+        
+        # 2. Define e cria a estrutura de diretórios se não existir
+        self.diretorio = os.path.join("Log", "database-log")
+        os.makedirs(self.diretorio, exist_ok=True)
+        
+        # 3. Define o caminho do arquivo de log
+        self.caminho = os.path.join(self.diretorio, f"database-day{self.data_log}.log")
+        
+        # 4. Instancia e configura o logger
+        self.log = logging.getLogger(logger_name)
+        self.log.setLevel(logging.INFO)
+        
+        # 5. Adiciona os handlers apenas se ainda não foram configurados (evita duplicação)
+        if not self.log.handlers:
+            formatter = logging.Formatter(
+                fmt='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+                datefmt='%Y-%m-%d %H:%M:%S'
+            )
+            
+            # Handler para gravar em arquivo
+            file_handler = logging.FileHandler(self.caminho, encoding='utf-8')
+            file_handler.setFormatter(formatter)
+            self.log.addHandler(file_handler)
+            
+            # Handler para exibir também no console/terminal (opcional)
+            console_handler = logging.StreamHandler()
+            console_handler.setFormatter(formatter)
+            self.log.addHandler(console_handler)
+
+    def conferencia_dados(self, dados):
+        # Interpolação tardia (%s) em vez de f-string
+        self.log.info("Dados enviados ao banco: %s", dados)
+
+    def registro_erro_envio(self, dados, erro):
+        # exc_info=True inclui a pilha de erro (traceback) no log
+        self.log.error("Erro ao enviar os dados %s ao banco de dados. Erro: %s", dados, erro, exc_info=True)
+
+    def erro_configuracao(self, erro):
+        self.log.error("Erro de configuração do banco: %s", erro, exc_info=True)
 
 
 class DatabaseTelefonia:
@@ -14,28 +59,27 @@ class DatabaseTelefonia:
          self.cursor = self.db.cursor
          self.conexao = self.db.conexao
          self.query_insert_telefonia = query_insert_telefonia
+         self.log = LoggingDatabase()
 
     def criar_tabelas(self, query_tabela_telefonia):
         try:
             self.cursor.execute(query_tabela_telefonia)
             self.conexao.commit()
 
-            log.info("Tabela de telefonia verificada/criada com sucesso.")
-
         except psycopg2.Error as erro:
             self.conexao.rollback()
-            log.error("Erro ao criar tabela: %s", erro)
+            self.log.erro_configuracao(erro)
             raise
 
     def enviar_dados_telefonia(self, dados):
         try:
             self.cursor.execute(self.query_insert_telefonia, dados)
             self.conexao.commit()
-            log.info("Dados enviados com sucesso.")
+            self.log.conferencia_dados(dados)
 
         except psycopg2.Error as erro:
             self.conexao.rollback()
-            log.error("Erro ao enviar dados: %s", erro)
+            self.log.registro_erro_envio(dados, erro)
             raise
 
     def fechar_db(self):
@@ -437,7 +481,9 @@ INSERT INTO dados_operadora.dados_operadora_gerax
         )
         ON CONFLICT (tech, data)
         DO UPDATE SET
-            dados_operadora_gerax = EXCLUDED.dados_operadora_gerax;
+        custo = EXCLUDED.custo,
+        minutagem = EXCLUDED.minutagem,
+        chamadas_tarifadas = EXCLUDED.chamadas_tarifadas;
 """
         self.db = DatabaseTelefonia(self.query_criar_tabela_telefonia)
         self.db.criar_tabelas(query_tabela_telefonia=self.query_criar_tabela_telefonia)
@@ -489,3 +535,46 @@ class DatabaseUltracom:
 
     def fechar_db_telefonia(self):
         self.db.fechar_db()
+        
+           
+class DatabaseAgitel():
+    def __init__(self):
+        self.query_criar_tabela_telefonia = """
+    CREATE TABLE IF NOT EXISTS dados_operadora.dados_operadora_agitel
+    (
+            tech INTEGER NOT NULL,
+            data DATE NOT NULL,
+            custo NUMERIC(12,2) NOT NULL,
+            minutagem NUMERIC(10,2) NOT NULL,
+            PRIMARY KEY (tech, data)
+        );
+        """
+        self.query_inserir_dados_telefonia = """
+        INSERT INTO dados_operadora.dados_operadora_agitel
+        (
+            tech,
+            data,
+            custo,
+            minutagem
+        )
+        VALUES
+        (
+            %(tech)s,
+            %(data)s,
+            %(custo)s,
+            %(minutagem)s
+        )
+        ON CONFLICT (tech, data)
+        DO UPDATE SET
+            custo = EXCLUDED.custo,
+            minutagem = EXCLUDED.minutagem;
+        """
+        self.db = DatabaseTelefonia(self.query_inserir_dados_telefonia)
+        self.db.criar_tabelas(query_tabela_telefonia=self.query_criar_tabela_telefonia)
+
+    def enviar_dados_db_agitel(self, dados):
+        self.db.enviar_dados_telefonia(dados)
+
+    def fechar_db_telefonia(self):
+        self.db.fechar_db()
+

@@ -1,134 +1,170 @@
-from bs4 import BeautifulSoup
-from src.rivex.utils.beautiful_soup_utils.cleaning_soup import CleaningSoup
+"""
+Extração de dados da tabela "Minutagem da Revenda" do painel Agitel (Softswitch).
+
+Observação sobre o HTML de origem: a coluna "Lucro" (6ª coluna) da tabela vem com
+a tag de fechamento errada (ex: `<td class="text-center text-danger">0,00</th>`),
+o que faz o parser aninhar as colunas seguintes dentro dela. Isso não afeta as
+colunas usadas aqui (Cliente, Minutos e Custo), pois todas ficam ANTES da coluna
+quebrada e mantêm abertura/fechamento corretos. Por isso a extração é feita
+sempre pela posição (índice) da célula dentro da linha, e não por contagem total
+de <td>.
+"""
 import re
+from bs4 import BeautifulSoup
 
-class CleaningAgitel:
-    def __init__(self):
-        self.soup = CleaningSoup()
-        
-        
-    def _linhas_clientes(self, pagina_inicial):
-        print(f"PAGINA INICIAL AGITEL: {pagina_inicial.text}")
-        """Retorna as linhas da tabela de minutagem que representam clientes."""
-        soup_html = self.soup.passar_para_html(pagina_inicial)
-
-        linhas = []
-
-        for tr in soup_html.find_all("tr"):
-            colunas = tr.find_all("td")
-
-            # A linha de cliente possui 8 colunas
-            if len(colunas) >= 5:
-                cliente = colunas[0].get_text(strip=True)
-
-                # Ignora linhas que não representam clientes
-                if cliente and cliente.lower() != "total:":
-                    linhas.append(colunas)
-
-        return linhas
+def passar_para_html(pagina_inicial):
+    """Função já existente: faz o parser do HTML com BeautifulSoup."""
+    return BeautifulSoup(pagina_inicial, "html.parser")
 
 
-    def get_cliente(self, pagina_inicial):
-        """
-        Retorna uma lista de dicionários contendo apenas
-        o nome de cada cliente.
-        """
+# --------------------------------------------------------------------------
+# Helpers internos
+# --------------------------------------------------------------------------
 
-        linhas = self._linhas_clientes(pagina_inicial)
+def _localizar_linhas_de_clientes(soup):
+    """
+    Localiza a tabela "Minutagem da Revenda" e retorna apenas as linhas (<tr>)
+    que representam clientes -- descarta cabeçalho e a linha de "Total".
 
+    A linha de "Total" também tem class="cinza1", então não dá pra filtrar só
+    pela classe da linha. O filtro real é: uma linha de cliente tem pelo menos
+    5 células <td> (Cliente, VOIP/VOIP, Minutos, Valor Venda, Custo); a linha
+    de Total usa <th> em vez de <td> nessas colunas, então cai fora sozinha.
+    """
+    titulo = soup.find(lambda tag: tag.name == "th" and "Minutagem da Revenda" in tag.get_text())
+    if titulo is None:
+        return []
 
+    tabela = titulo.find_parent("table")
+    if tabela is None:
+        return []
 
-        return [
-            {
-                "cliente": linha[0].get_text(strip=True)
-            }
-            for linha in linhas
-        ]
+    linhas_validas = []
+    for linha in tabela.find_all("tr", class_=["cinza1", "cinza2"]):
+        colunas = linha.find_all("td")
+        if len(colunas) >= 5:
+            linhas_validas.append(colunas)
 
-
-    def get_tech(self, pagina_inicial):
-        """
-        Retorna uma lista de dicionários contendo a TECH
-        de cada cliente.
-        """
-
-        linhas = self._linhas_clientes(pagina_inicial)
-
-        resultado = []
-
-        for linha in linhas:
-            cliente_completo = linha[0].get_text(" ", strip=True)
-
-            # Pega tudo que aparece antes do nome do cliente.
-            # Exemplo: "1404#01 - TC Representação" -> "1404#01"
-            match = re.match(r"^(\d+#\d+)\s*[-]?\s*", cliente_completo)
-
-            tech = match.group(1) if match else None
-
-            resultado.append({
-                "tech": tech
-            })
-
-        return resultado
+    return linhas_validas
 
 
-    def get_custo(self, pagina_inicial):
-        """
-        Retorna uma lista de dicionários contendo o custo
-        de cada cliente.
-        """
+def _separar_tech_e_cliente(texto_bruto):
+    """
+    Separa a tech e o nome do cliente.
 
-        linhas = self._linhas_clientes(pagina_inicial)
+    A tech deve possuir exatamente 6 dígitos, podendo estar no formato:
 
-        return [
-            {
-                "custo": linha[4].get_text(strip=True)
-            }
-            for linha in linhas
-        ]
+        1404#01 -> 140401
+        1030#01 -> 103001
+        2516#01 -> 251601
+
+    O caractere '#' é removido.
+
+    Caso a tech não possua exatamente 6 dígitos,
+    retorna 0.
+
+    Exemplos:
+        "1404#01 - Cliente X" -> (140401, "Cliente X")
+        "1030#01 - Cliente Y" -> (103001, "Cliente Y")
+        "Callix_Manual"       -> (0, "Callix_Manual")
+    """
+
+    texto = texto_bruto.strip()
+
+    if " - " not in texto:
+        return 0, texto
+
+    tech_bruta, nome = texto.split(" - ", 1)
+
+    # Remove somente o caractere '#'
+    tech = tech_bruta.replace("#", "").strip()
+
+    # Garante que todos os caracteres restantes sejam números
+    if not tech.isdigit():
+        return 0, nome.strip()
+
+    # A tech precisa possuir exatamente 6 dígitos
+    if len(tech) != 6:
+        return 0, nome.strip()
+
+    return int(tech), nome.strip()
 
 
-    def get_minutagem(self, pagina_inicial):
-        """
-        Retorna uma lista de dicionários contendo a minutagem
-        de cada cliente.
-        """
 
-        linhas = self._linhas_clientes(pagina_inicial)
+# --------------------------------------------------------------------------
+# As 4 funções pedidas
+# --------------------------------------------------------------------------
 
-        return [
-            {
-                "minutagem": linha[2].get_text(strip=True)
-            }
-            for linha in linhas
-        ]
-        
+def get_cliente(pagina_inicial):
+    """Retorna [{'cliente': nome}, ...] -- só o nome do cliente, sem a tech."""
+    soup = passar_para_html(pagina_inicial)
+    resultado = []
+    for colunas in _localizar_linhas_de_clientes(soup):
+        _, nome = _separar_tech_e_cliente(colunas[0].get_text())
+        resultado.append({"cliente": nome})
+    return resultado
 
 
-    def dados_agitel(self, pagina_inicial):
-        """
-        Executa todas as funções de coleta e consolida
-        os dados em uma única lista de dicionários.
-        """
+def get_tech(pagina_inicial):
+    """Retorna [{'cliente': nome, 'tech': tech}, ...] -- a numeração antes do nome."""
+    soup = passar_para_html(pagina_inicial)
+    resultado = []
+    for colunas in _localizar_linhas_de_clientes(soup):
+        tech, nome = _separar_tech_e_cliente(colunas[0].get_text())
+        resultado.append({"cliente": nome, "tech": tech})
+    return resultado
 
-        clientes = self.get_cliente(pagina_inicial)
-        techs = self.get_tech(pagina_inicial)
-        custos = self.get_custo(pagina_inicial)
-        minutagens = self.get_minutagem(pagina_inicial)
 
-        dados = []
+def get_custo(pagina_inicial):
+    """Retorna [{'cliente': nome, 'custo': valor}, ...]."""
+    soup = passar_para_html(pagina_inicial)
+    resultado = []
+    for colunas in _localizar_linhas_de_clientes(soup):
+        _, nome = _separar_tech_e_cliente(colunas[0].get_text())
+        custo = colunas[4].get_text(strip=True)
+        resultado.append({"cliente": nome, "custo": custo})
+    return resultado
 
-        for cliente, tech, custo, minutagem in zip(
-            clientes,
-            techs,
-            custos,
-            minutagens
-        ):
-            dados.append({
-                "cliente": cliente["cliente"],
-                "tech": tech["tech"],
-                "custo": custo["custo"],
-                "minutagem": minutagem["minutagem"]
-            })
 
-        return dados
+def get_minutagem(pagina_inicial):
+    """Retorna [{'cliente': nome, 'minutagem': valor}, ...]."""
+    soup = passar_para_html(pagina_inicial)
+    resultado = []
+    for colunas in _localizar_linhas_de_clientes(soup):
+        _, nome = _separar_tech_e_cliente(colunas[0].get_text())
+        minutagem = colunas[2].get_text(strip=True)
+        resultado.append({"cliente": nome, "minutagem": minutagem})
+    return resultado
+
+
+# --------------------------------------------------------------------------
+# Bônus: as 4 informações já juntas por cliente (útil pro pipeline do Rivex)
+# --------------------------------------------------------------------------
+
+def get_dados_clientes(pagina_inicial):
+    """
+    Retorna uma lista única com tudo junto por cliente:
+    [{'tech': ..., 'cliente': ..., 'minutagem': ..., 'custo': ...}, ...]
+    """
+    soup = passar_para_html(pagina_inicial)
+    resultado = []
+    for colunas in _localizar_linhas_de_clientes(soup):
+        tech, nome = _separar_tech_e_cliente(colunas[0].get_text())
+        resultado.append({
+            "tech": tech,
+            "cliente": nome,
+            "minutagem": colunas[2].get_text(strip=True),
+            "custo": colunas[4].get_text(strip=True),
+        })
+    return resultado
+
+
+def dados_empacotados(dados_consumo, data):
+    custo_corrigido = float(dados_consumo["custo"].replace(".", "").replace(",", "."))
+    minutagem_corrigida = float(dados_consumo["minutagem"].replace(".", "").replace(",", "."))
+    return {
+        'tech': dados_consumo['tech'],
+        'data': data,
+        'custo': custo_corrigido,
+        'minutagem': minutagem_corrigida
+    }

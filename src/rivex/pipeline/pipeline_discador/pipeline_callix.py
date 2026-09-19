@@ -11,9 +11,9 @@ from src.rivex.environments.discadores.Callix.callix_req import CAllixRequisitio
 from src.rivex.data_processing.Callix.cleaner_callix_req import limpeza_req_callix
 from src.rivex.environments.discadores.Callix.callix_client_package import CallixClientData
 from src.rivex.environments.discadores.Callix.callix_get_clients import CallixGetClients, GetTokenCallix
-from src.rivex.database.database_dados_chamadas import DatabaseCallix
+from src.rivex.database.database_callix.database_callix import DatabaseCallix
 from src.rivex.data_processing.Callix.callix_clients import *
-from src.rivex.database.database_clientes import DatabaseClientes
+from src.rivex.database.database_callix.database_callix_clientes import DatabaseClientes
 
 load_dotenv()
 

@@ -1,7 +1,7 @@
 from src.rivex.environments.discadores.vonix.fluxo_coleta import ExecucaoVonix
 from src.rivex.environments.discadores.vonix.fluxo_limpeza import LimpezaVonix
 from src.rivex.data_processing.Vonix.cleaning_vonix import *
-from src.rivex.database.database_dados_chamadas import DatabaseVonix
+from src.rivex.database.database_vonix.database_vonix import DatabaseVonix
 from src.rivex.utils.infra_utils.date_config import DateConfig
 import os
 import logging

@@ -26,11 +26,9 @@ if not log.handlers:  # evita handler duplicado se o módulo for importado mais 
     file_handler = logging.FileHandler(arquivo_log, encoding="utf-8")
     file_handler.setFormatter(formato)
 
-    #console_handler = logging.StreamHandler(sys.stdout)
-    #console_handler.setFormatter(formato)
 
     log.addHandler(file_handler)
-    #log.addHandler(console_handler)
+
 
 
 def limpar_headers(headers: dict, sensiveis: set = HEADERS_SENSIVEIS) -> dict:

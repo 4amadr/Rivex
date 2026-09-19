@@ -1,9 +1,8 @@
 from src.rivex.environments.operadoras.gsolutions.sip_client_scrap import EmpacotamentoAgitel, SipCharged, SipClient
 import os
 from src.rivex.utils.infra_utils.date_config import *
-from src.rivex.database.database_dados_chamadas import *
 from src.rivex.data_processing.agitel.agitel_data_cleaning import *
-from src.rivex.database.database_dados_chamadas import DatabaseAgitel
+from src.rivex.database.database_agitel.database_agitel import DatabaseAgitel
 import time
 import logging
 

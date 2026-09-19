@@ -1,11 +1,10 @@
 import psycopg2
-from psycopg2 import OperationalError
-from dotenv import load_dotenv
-from src.rivex.database.config_database import DatabaseBase, ConexaoDatabaseRivex
-from src.rivex.database.database_dados_chamadas import DatabaseClientesCallix, DatabaseTelefonia
+from src.rivex.database.config_database import ConexaoDatabaseRivex
+from src.rivex.utils.database_utils.database_telefonia import DatabaseTelefonia, DatabaseClientesCallix
 import logging
 
 log = logging.getLogger(__name__)
+
 
 class DatabaseClientes:
     def __init__(self):

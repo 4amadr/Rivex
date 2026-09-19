@@ -3,7 +3,6 @@ from src.rivex.utils.requests_utils.http_response import analista_de_erros
 import logging
 from src.rivex.utils.logging_config.request_log.logging_requests import *
 
-log = logging.getLogger()
 
 class HttpRequisitions:
     def __init__(self, session):
@@ -27,8 +26,6 @@ class HttpRequisitions:
 
         return resposta
 
-
-    # ------------------------- POST -------------------------
  
     def requisicao_post_com_certificado(self, payload_post: dict, headers: dict, url: str, verificacao: bool):
         """
@@ -44,8 +41,7 @@ class HttpRequisitions:
     def requisicao_post_json(self, payload_post: dict, headers: dict, url: str):
         """POST enviando o payload como JSON no corpo, em vez de form-data."""
         return self._requisitar("POST", url, headers, json=payload_post)
- 
-    # ------------------------- GET -------------------------
+
  
     def requisicao_get_com_verificado(self, headers: dict, url: str, payload_get: dict,
                                        verificacao: bool, cookies_requisicao: str | None = None):

@@ -94,6 +94,7 @@ class PipelineVonix:
         if "itelink" not in cliente.lower()
         and not cliente.lower().endswith("manual")
         ]
+        print(f"[CLIENTES VALIDOS NO VONIX!]: {clientes_validos}")
         logging.info(f"Clientes ativos e válidos (Sem filas manuais): {clientes_validos}")
 
         for cliente_selecionado in clientes_validos:
@@ -114,7 +115,7 @@ class PipelineVonix:
 
             agentes = self.execucao_limpeza_agentes_vonix(cliente["cliente"], response_dict["Agentes"], cliente["tech"], cliente["data"])
             
-            logger.info(f"Dados dos cliente {cliente["cliente"]} após a coleta e processamento de dados: {cliente}")
+            print(f"Dados dos cliente {cliente["cliente"]} após a coleta e processamento de dados: {cliente}")
             logger.info(f"Dados dos agentes após coleta e processamento de dados: {agentes}")
             
             self.db.db_vonix(cliente, agentes)

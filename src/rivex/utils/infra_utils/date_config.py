@@ -4,7 +4,7 @@ class DateConfig:
 
     @staticmethod
     def data_selecionadas():
-        data_ref = date.today() - timedelta(days=1)
+        data_ref = date.today() - timedelta(days=2)
         data_formatada = data_ref.strftime("%d/%m/%Y")
 
         return data_formatada
@@ -15,7 +15,7 @@ class DateConfig:
 
         return data_formatada
 
-    def data_ipbox(self, dias_atras=2):
+    def data_ipbox(self, dias_atras=1):
         data_ref = date.today() - timedelta(days=dias_atras)
 
         return data_ref.strftime('%Y%m%d')

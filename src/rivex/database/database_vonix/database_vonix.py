@@ -3,84 +3,29 @@ from src.rivex.database.config_database import DatabaseBase
 class DatabaseVonix:
     def __init__(self):
         self.query_criar_tabela_chamadas = """
-                                           CREATE TABLE IF NOT EXISTS dados_discador.chamadas_cliente_vonix \
-                                           ( \
-                                               id \
-                                               SERIAL \
-                                               PRIMARY \
-                                               KEY, \
-                                               tech_cliente \
-                                               INTEGER \
-                                               NOT \
-                                               NULL, \
-                                               cliente_nome \
-                                               TEXT \
-                                               NOT \
-                                               NULL, \
-                                               fila \
-                                               TEXT \
-                                               NOT \
-                                               NULL, \
-                                               data \
-                                               DATE \
-                                               NOT \
-                                               NULL, \
-                                               chamadas \
-                                               INTEGER \
-                                               NOT \
-                                               NULL, \
-                                               completas \
-                                               INTEGER \
-                                               NOT \
-                                               NULL, \
-                                               recusadas \
-                                               INTEGER \
-                                               NOT \
-                                               NULL, \
-                                               abandonadas \
-                                               INTEGER \
-                                               NOT \
-                                               NULL, \
-                                               agressividade \
-                                               FLOAT \
-                                               NOT \
-                                               NULL
-                                           ); \
-                                           """
+    CREATE TABLE IF NOT EXISTS dados_discador.chamadas_cliente_vonix (
+        id SERIAL PRIMARY KEY,
+        tech_cliente INTEGER NOT NULL,
+        cliente_nome TEXT NOT NULL,
+        data DATE NOT NULL,
+        chamadas INTEGER NOT NULL,
+        completas INTEGER NOT NULL,
+        recusadas INTEGER NOT NULL,
+        abandonadas INTEGER NOT NULL,
+        agressividade FLOAT NOT NULL
+    );
+"""
 
         self.query_criar_tabela_agentes = """
-                                          CREATE TABLE IF NOT EXISTS dados_discador.chamadas_agente_vonix \
-                                          ( \
-                                              id \
-                                              SERIAL \
-                                              PRIMARY \
-                                              KEY, \
-                                              tech \
-                                              INTEGER \
-                                              NOT \
-                                              NULL, \
-                                              cliente_nome \
-                                              TEXT \
-                                              NOT \
-                                              NULL, \
-                                              fila \
-                                              TEXT \
-                                              NOT \
-                                              NULL, \
-                                              data \
-                                              DATE \
-                                              NOT \
-                                              NULL, \
-                                              nome_agente \
-                                              TEXT \
-                                              NOT \
-                                              NULL, \
-                                              chamadas_agente \
-                                              INTEGER \
-                                              NOT \
-                                              NULL
-                                          ); \
-                                          """
+    CREATE TABLE IF NOT EXISTS dados_discador.chamadas_agente_vonix (
+        id SERIAL PRIMARY KEY,
+        tech INTEGER NOT NULL,
+        cliente_nome TEXT NOT NULL,
+        data DATE NOT NULL,
+        nome_agente TEXT NOT NULL,
+        chamadas_agente INTEGER NOT NULL
+    );
+"""
 
         self.query_chamadas = """
                               INSERT INTO dados_discador.chamadas_cliente_vonix
@@ -99,7 +44,14 @@ class DatabaseVonix:
                                       %(completas)s,
                                       %(recusadas)s,
                                       %(abandonadas)s,
-                                      %(agressividade)s); \
+                                      %(agressividade)s)
+                        ON CONFLICT (tech_cliente, cliente_nome ,data)
+                        DO UPDATE SET
+                            chamadas = EXCLUDED.chamadas,
+                            completas = EXCLUDED.completas,
+                            recusadas = EXCLUDED.recusadas,
+                            abandonadas = EXCLUDED.abandonadas,
+                            agressividade = EXCLUDED.agressividade;
                               """
 
         self.query_agentes = """
@@ -113,7 +65,11 @@ class DatabaseVonix:
                                      %(cliente_nome)s,
                                      %(data)s,
                                      %(agente)s,
-                                     %(chamadas)s); \
+                                     %(chamadas)s)
+                            ON CONFLICT (tech, cliente_nome, data, nome_agente)
+                            DO UPDATE SET
+                                chamadas_agente = EXCLUDED.chamadas_agente;
+                                     \
                              """
 
         self.db = DatabaseBase(

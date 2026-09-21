@@ -100,7 +100,7 @@ class DatabaseClientes:
 
         except psycopg2.Error as erro:
             self.conexao.rollback()
-            log.error("Erro ao reativar clietne: %s", cliente, erro)
+            log.error("Erro ao reativar cliente: %s: %s", cliente, erro)
             raise
 
     def cadastrar_cliente(self, cliente, token):

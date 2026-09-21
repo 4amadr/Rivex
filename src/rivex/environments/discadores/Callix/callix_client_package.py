@@ -17,19 +17,18 @@ class CallixClientData:
 
 
     def pacote_chamadas(self):
-        dict_chamadas =  {
+        return  {
             "tech": self.tech,
-            "Cliente": self.cliente,
-            "Data": self.data,
+            "cliente_nome": self.cliente,
+            "data": self.data,
             "Discador": "Callix",
-            "Chamadas totais": self.chamadas,
-            "Chamadas aceitas": self.aceitas,
-            "Chamadas recusadas": self.recusadas,
-            "Chamadas abandonadas": self.abandonadas,
-            "Agressividade": self.agressividade
+            "Chamadas": self.chamadas,
+            "Chamadas_aceitas": self.aceitas,
+            "Chamadas_recusadas": self.recusadas,
+            "Chamadas_abandonadas": self.abandonadas,
+            "agressividade": self.agressividade
         }
-        print("Dicionário  da chamadas: ",dict_chamadas)
-        return dict_chamadas
+        
     
     def pacote_agentes(self):
         print("Informação dos agentes: ", self.agentes_info)
@@ -39,11 +38,11 @@ class CallixClientData:
         if not self.agentes_info:
             return [{
                 "tech": self.tech,
-                "Cliente": self.cliente,
+                "cliente": self.cliente,
                 "discador": "Callix",
-                "Data": self.data,
-                "Nome do agente": "Sem agente",
-                "Chamadas aceitas do agente": 0,
+                "data": self.data,
+                "nome_agente": "Sem agente",
+                "chamadas_aceitas_agente": 0,
             }]
 
         for dicionario_agente in self.agentes_info:
@@ -51,15 +50,13 @@ class CallixClientData:
 
             dict_agentes = {
                     "tech": self.tech,
-                    "Cliente": self.cliente,
+                    "cliente": self.cliente,
                     "discador": "Callix",
-                    "Data": self.data,
-                    "Nome do agente": dicionario_agente.get("agente"),
-                    "Chamadas aceitas do agente": dicionario_agente.get("Chamadas atendidas", 0),
+                    "data": self.data,
+                    "nome_agente": dicionario_agente.get("agente"),
+                    "chamadas_aceitas_agente": dicionario_agente.get("Chamadas atendidas", 0),
                 }
 
 
             lista_agentes.append(dict_agentes)
-
-        print("Dicionário dos agentes: ", lista_agentes)
         return lista_agentes

@@ -3,83 +3,42 @@ from src.rivex.database.config_database import DatabaseBase
 class DatabaseCallix:
     def __init__(self):
         self.query_criar_tabela_chamadas = """
-                                           CREATE TABLE IF NOT EXISTS dados_discador.chamadas_cliente_callix \
-                                           ( \
-                                               tech_cliente \
-                                               INTEGER \
-                                               NOT \
-                                               NULL, \
-                                               cliente_nome \
-                                               TEXT \
-                                               NOT \
-                                               NULL, \
-                                               data \
-                                               DATE \
-                                               NOT \
-                                               NULL, \
-                                               chamadas \
-                                               INTEGER \
-                                               NOT \
-                                               NULL, \
-                                               completas \
-                                               INTEGER \
-                                               NOT \
-                                               NULL, \
-                                               recusadas \
-                                               INTEGER \
-                                               NOT \
-                                               NULL, \
-                                               abandonadas \
-                                               INTEGER \
-                                               NOT \
-                                               NULL, \
-                                               agressividade \
-                                               FLOAT \
-                                               NOT \
-                                               NULL, \
-                                               PRIMARY \
-                                               KEY \
-                                           ( \
-                                               tech_cliente, \
-                                               data \
-                                           )
-                                               ); \
-                                           """
+    CREATE TABLE IF NOT EXISTS dados_discador.chamadas_cliente_callix
+    (
+        tech INTEGER NOT NULL,
+        cliente_nome TEXT NOT NULL,
+        data DATE NOT NULL,
+        chamadas INTEGER NOT NULL,
+        completas INTEGER NOT NULL,
+        recusadas INTEGER NOT NULL,
+        abandonadas INTEGER NOT NULL,
+        agressividade FLOAT NOT NULL,
+
+        PRIMARY KEY (
+            tech,
+            data
+        )
+    );
+"""
         self.query_criar_tabela_agentes = """
-                                          CREATE TABLE IF NOT EXISTS dados_discador.chamadas_agente_callix \
-                                          ( \
-                                              tech \
-                                              INTEGER \
-                                              NOT \
-                                              NULL, \
-                                              cliente_nome \
-                                              TEXT \
-                                              NOT \
-                                              NULL, \
-                                              data \
-                                              DATE \
-                                              NOT \
-                                              NULL, \
-                                              nome_agente \
-                                              TEXT \
-                                              NOT \
-                                              NULL, \
-                                              chamadas_agente \
-                                              INTEGER \
-                                              NOT \
-                                              NULL, \
-                                              PRIMARY \
-                                              KEY \
-                                          ( \
-                                              tech, \
-                                              data, \
-                                              nome_agente \
-                                          )
-                                              ); \
-                                          """
+    CREATE TABLE IF NOT EXISTS dados_discador.chamadas_agente_callix
+    (
+        tech INTEGER NOT NULL,
+        cliente_nome TEXT NOT NULL,
+        data DATE NOT NULL,
+        nome_agente TEXT NOT NULL,
+        chamadas_agente INTEGER NOT NULL,
+
+        PRIMARY KEY (
+            tech,
+            data,
+            nome_agente
+        )
+    );
+"""
         self.query_chamadas = """
                               INSERT INTO dados_discador.chamadas_cliente_callix
-                              (tech_cliente, \
+                              (tech, \
                                cliente_nome, \
                                data, \
                                chamadas, \
@@ -88,13 +47,13 @@ class DatabaseCallix:
                                abandonadas, \
                                agressividade)
                               VALUES (%(tech)s,
-                                      %(Cliente)s,
-                                      %(Data)s, \
-                                         %(Chamadas totais) s, \
-                                         %(Chamadas aceitas) s, \
-                                         %(Chamadas recusadas) s, \
-                                         %(Chamadas abandonadas) s,
-                                      %(Agressividade)s) ON CONFLICT (tech_cliente, data)
+                                      %(cliente)s,
+                                      %(data)s, \
+                                         %(chamadas)s, \
+                                         %(chamadas_aceitas)s, \
+                                         %(chamadas_recusadas)s, \
+                                         %(chamadas_abandonadas)s,
+                                      %(agressividade)s) ON CONFLICT (tech, data)
         DO \
                               UPDATE SET
                                   chamadas = EXCLUDED.chamadas, \
@@ -111,10 +70,10 @@ class DatabaseCallix:
                               nome_agente, \
                               chamadas_agente)
                              VALUES (%(tech)s,
-                                     %(Cliente)s,
-                                     %(Data)s, \
-                                        %(Nome do agente) s, \
-                                        %(Chamadas aceitas do agente) s) ON CONFLICT (tech, data, nome_agente)
+                                     %(cliente)s,
+                                     %(data)s, \
+                                        %(nome_agente)s, \
+                                        %(chamadas_aceitas_agente)s) ON CONFLICT (tech, data, nome_agente)
         DO \
                              UPDATE SET
                                  chamadas_agente = EXCLUDED.chamadas_agente; \

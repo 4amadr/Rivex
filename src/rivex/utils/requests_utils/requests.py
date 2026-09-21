@@ -11,7 +11,7 @@ class HttpRequisitions:
     def _requisitar(self, metodo: str, url:str, headers: dict,
                     params: dict | None = None, data: dict | None = None,
                     json: dict | None = None, cookies: str | None = None,
-                    verify: bool = True):
+                    verify: bool = True): # verify = True para coleta da rota agitel 
 
         req_log(url, headers, params)
 

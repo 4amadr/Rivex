@@ -219,6 +219,8 @@ class PipelineCallix:
                     self.data_selecionada, 
                     cliente_formatado)
 
+                print(f"dados cliente: {dados_cliente}")
+
                 
                 if dados_cliente is None:
                     logger.warning(

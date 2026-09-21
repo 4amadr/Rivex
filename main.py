@@ -1,5 +1,5 @@
 import argparse
-
+import logging
 from src.rivex.pipeline.pipeline_discador.pipeline_callix import PipelineCallix
 from src.rivex.pipeline.pipeline_discador.pipeline_ipbox import PipelineIpbox    
 from src.rivex.pipeline.pipeline_discador.pipeline_vonix import PipelineVonix
@@ -7,6 +7,8 @@ from src.rivex.pipeline.pipeline_operadora.pipeline_agitel import ExecAgitel
 from src.rivex.pipeline.pipeline_operadora.pipeline_gerax import ExecucaoGerax
 from src.rivex.pipeline.pipeline_operadora.pipeline_pentagono import ExecucaoPentagono
 from src.rivex.pipeline.pipeline_operadora.pipeline_ultracom import PipelineUltracom
+
+log = logging.getLogger(__name__)
 
 
 def main_agitel():
@@ -40,11 +42,21 @@ def main():
     parser.add_argument(
         "--pipeline",
         required=True,
-        choises=PIPELINES.keys(),
-        help="Pipeline executado"
+        choices=[*PIPELINES.keys(), "all"],
+        help="pipeline + sistema para ser executado  ouu 'all' para executar tudo"
     )
 
     args = parser.parse_args()
+
+    if args.pipeline =="all":
+        for nome, pipeline in PIPELINES.items():
+            log.info(f"Executando pipeline: {nome}")
+
+            try:
+                pipeline()
+            except Exception as error:
+                log.error(f"Erro durante a execução da pipeline {nome}: {error}")
+        return
 
     pipeline = PIPELINES[args.pipeline]
 

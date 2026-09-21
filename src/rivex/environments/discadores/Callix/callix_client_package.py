@@ -19,19 +19,18 @@ class CallixClientData:
     def pacote_chamadas(self):
         return  {
             "tech": self.tech,
-            "cliente_nome": self.cliente,
+            "cliente": self.cliente,
             "data": self.data,
             "Discador": "Callix",
-            "Chamadas": self.chamadas,
-            "Chamadas_aceitas": self.aceitas,
-            "Chamadas_recusadas": self.recusadas,
-            "Chamadas_abandonadas": self.abandonadas,
+            "chamadas": self.chamadas,
+            "chamadas_aceitas": self.aceitas,
+            "chamadas_recusadas": self.recusadas,
+            "chamadas_abandonadas": self.abandonadas,
             "agressividade": self.agressividade
         }
         
     
     def pacote_agentes(self):
-        print("Informação dos agentes: ", self.agentes_info)
 
         lista_agentes = []
 

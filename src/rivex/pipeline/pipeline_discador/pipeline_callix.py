@@ -152,9 +152,7 @@ class PipelineCallix:
         return dict_limpeza, agressividade_limpa, chamadas_limpas, tech_limpa
 
     def empacotar_dados(self, dict_limpeza, agressividade_limpa, chamadas_limpas, tech_limpa, data_selecionada, cliente_formatado):
-        try:
-            # emcapsulando
-            empacotamento_callix = CallixClientData(
+        empacotamento_callix = CallixClientData(
                 tech=tech_limpa,
                 cliente=cliente_formatado,
                 chamadas=dict_limpeza["Chamadas totais"],
@@ -166,17 +164,8 @@ class PipelineCallix:
                 agentes_info=chamadas_limpas
             )
 
-            dict_chamadas = empacotamento_callix.pacote_chamadas()
-            lista_agentes = empacotamento_callix.pacote_agentes()
-    
-    
-            logger.info(f"Dados finais\n"
-                    f"CHAMADAS: {dict_chamadas}\n "
-                     f"AGENTES: {lista_agentes}")
-            
-        except Exception as e:
-            logger.error(f"Falha no empacotamento de dados do cliente {cliente_formatado}. Erro {e}", exc_info=True)
-            return None, None
+        dict_chamadas = empacotamento_callix.pacote_chamadas()
+        lista_agentes = empacotamento_callix.pacote_agentes()
 
         return dict_chamadas, lista_agentes
 

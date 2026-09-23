@@ -1,28 +1,32 @@
 import requests
 from src.rivex.utils.requests_utils.http_response import analista_de_erros
 import logging
-from src.rivex.utils.logging_config.request_log.logging_requests import *
+from src.rivex.utils.logging_config.logging_config import ExtractLogger
 
 
 class HttpRequisitions:
     def __init__(self, session):
         self.session = session
+        self.extract_logger = ExtractLogger()
 
     def _requisitar(self, metodo: str, url:str, headers: dict,
                     params: dict | None = None, data: dict | None = None,
                     json: dict | None = None, cookies: str | None = None,
                     verify: bool = True): # verify = True para coleta da rota agitel 
 
-        req_log(url, headers, params)
 
         resposta = self.session.request(
             metodo, url,
             params=params, data=data, json=json,
             headers=headers, cookies=cookies, verify=verify
         )
+        if resposta.status_code != 200:
+            self.extract_logger.registrar_falha(url, resposta.status_code, headers, params)
 
-        res_log(resposta)
+        self.extract_logger.registrar_requisicao(url, resposta.status_code, headers, params)
         analista_de_erros(resposta.status_code)
+        
+        
 
         return resposta
 

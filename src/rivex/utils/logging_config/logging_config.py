@@ -1,7 +1,7 @@
 import logging
 import os
 import logging.config
-from typing, import Dict, Any, Optional
+from typing import Dict, Any, Optional
 
 LOG_DIRS = {
     "extract": os.path.join("Log", "extract"),

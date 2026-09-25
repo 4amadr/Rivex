@@ -88,7 +88,7 @@ class DatabaseClientes:
 
 
         except psycopg2.Error as erro:
-            log.error(f"Erro na verificação de clietnes: {erro}")
+            return {}
         
     def reativar_clientes(self, cliente):
         try:

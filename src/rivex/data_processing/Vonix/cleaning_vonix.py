@@ -140,7 +140,6 @@ def get_lista_techs(tech_html):
     select = tech_convertida.find("select", {"id": "lcr_profile"})
     
     if select is None:
-        logger.warning('LCR não encontrado no vonix!')
         return []
 
     clientes = []

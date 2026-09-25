@@ -114,9 +114,10 @@ class ExtractLogger:
     ) -> None:
         headers_seguros = self._ocultar_dados_sensiveis(headers)
         payload_seguro = self._ocultar_dados_sensiveis(payload) if isinstance(payload, dict) else payload
+        
 
         self.logger.error(
-            "[%s] REQ FAIL | URL: %s | STATUS: %s | HEADERS: %s | PAYLOAD: %s | ERRO: %s",
+            "Exec[%s] REQ FAIL | URL: %s | STATUS: %s | HEADERS: %s | PAYLOAD: %s | ERRO: %s",
             self.execution_id, url, status_code, headers_seguros, payload_seguro, erro,
             exc_info=bool(erro)  # Grava o traceback completo no log se houver uma exceção
         )
@@ -127,14 +128,14 @@ class TransformLogger:
         self.execution_id = execution_id
         
     def registrar_limpeza_chamadas(self, cliente, chamadas, aceitas, recusadas, abandonadas, agressividade):
-        self.logger.info("[%s] DADOS LIMPOS DO CLIENTE %s | CHAMADAS: %s | ACEITAS: %s | RECUSADAS: %s | ABANDONADAS: %s | AGRESSIVIDADE: %s", self.execution_id, cliente, chamadas, aceitas, recusadas, abandonadas, agressividade)
+        self.logger.info("Exec[%s] DATA CLIENT %s | CHAMADAS: %s | ACEITAS: %s | RECUSADAS: %s | ABANDONADAS: %s | AGRESSIVIDADE: %s", self.execution_id, cliente, chamadas, aceitas, recusadas, abandonadas, agressividade)
         
 
     def registrar_limpeza_rota(self, dados_cliente_rota):
-        self.logger.info("[%s] DADOS LIMPOS DA ROTA: %s",self.execution_id, dados_cliente_rota)
+        self.logger.info("Exec[%s] ROUTE CLEAN DATA: %s",self.execution_id, dados_cliente_rota)
         
     def registrar_limpeza_agente(self, dados_agente):
-        self.logger.info("[%s] DADOS DO OPERADOR: %s", self.execution_id, dados_agente)
+        self.logger.info("Exec[%s] OPERATOR DATA: %s", self.execution_id, dados_agente)
         
 class LoadLogger:
     def __init__(self, execution_id: str = ""):
@@ -142,11 +143,11 @@ class LoadLogger:
         self.execution_id = execution_id
         
     def registrar_envio_db(self, query, dados):
-        self.logger.info("[%s] CARREGAMENTO DB | QUERY: %s | DADOS INSERIDOS %s", self.execution_id, query, dados)
+        self.logger.info("Exec[%s] LOADING DB | QUERY: %s | DADOS INSERIDOS %s", self.execution_id, query, dados)
         
         
     def registrar_erro_db(self, query, dados, erro: Exception):
-        self.logger.error("[%s] ERRO AO CARREGAR DADOS NO BANCO | QUERY: %s | ERRO %s | DADOS %s", self.execution_id, query, erro, dados)
+        self.logger.error("[%s] ERROR LOADING DB | QUERY: %s | ERRO %s | DADOS %s", self.execution_id, query, erro, dados)
         
     
         

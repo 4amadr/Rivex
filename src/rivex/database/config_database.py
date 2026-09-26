@@ -3,6 +3,7 @@ from psycopg2 import OperationalError
 from dotenv import load_dotenv
 import os
 import logging
+from src.rivex.utils.logging_config.logging_database
 
 log = logging.getLogger(__name__)
 
@@ -57,30 +58,16 @@ class DatabaseBase:
             self.cursor.execute(query_tabela_agentes)
             self.conexao.commit()
 
-            log.info("Tabelas verificadas/criadas com sucesso.")
 
         except psycopg2.Error as erro:
             self.conexao.rollback()
-            log.error("Erro ao criar tabelas: %s", erro)
             raise
 
     def enviar_cliente(self, dados_cliente):
-        self.cursor.execute(self.query_insert_chamada, dados_cliente)
-        print("\n========== TENTANDO INSERT ==========")
-
-        for chave, valor in dados_cliente.items():
-            print(
-                f"{chave}: valor={valor!r} | "
-                f"tipo={type(valor).__name__}"
-            )
-
         self.cursor.execute(
             self.query_insert_chamada,
             dados_cliente
         )
-
-        print("=====================================")
-        print(">>> INSERT OK")
 
     def enviar_operador(self, dados_operador):
         self.cursor.execute(self.query_insert_operador, dados_operador)
@@ -117,7 +104,7 @@ class DatabaseBase:
                 len(agentes)
             )
 
-        except psycopg2.Error as erro:
+        except Exception as erro:
             self.conexao.rollback()
 
             log.error(

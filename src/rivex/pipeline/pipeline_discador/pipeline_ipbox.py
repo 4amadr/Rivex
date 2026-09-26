@@ -129,6 +129,5 @@ class PipelineIpbox:
                 dados_cliente,
                 lista_agentes
             )
-
             time.sleep(5)
         self.banco_ipbox.fechar_db_ipbox()

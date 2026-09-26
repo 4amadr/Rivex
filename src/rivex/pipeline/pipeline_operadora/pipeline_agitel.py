@@ -22,13 +22,6 @@ class ExecAgitel():
                     url=os.getenv('AGITEL_URL'),
                     operadora='Agitel',
                     data=data_selecionada)
-        sch = SipCharged(
-            data=data_selecionada,
-            url_base=os.getenv('AGITEL_URL'),
-            usuario=os.getenv('AGITEL_USER'),
-            password=os.getenv('AGITEL_PASSWORD'),
-            
-        )
 
         consumo_por_cliente, dict_id_clientes = sc.execucao_pipeline_sip()
 

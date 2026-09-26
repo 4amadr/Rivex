@@ -70,6 +70,9 @@ class CAllixRequisition:
                 lista_json_agressividade.append(agressividade)
             return lista_json_agressividade
         
+        elif not campanhas:
+            return None
+        
         else:
             # se tiver só uma campanha
             agressividade = self.http_request.requisicao_get(

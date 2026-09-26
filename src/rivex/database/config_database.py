@@ -3,7 +3,6 @@ from psycopg2 import OperationalError
 from dotenv import load_dotenv
 import os
 import logging
-from src.rivex.utils.logging_config.logging_database
 
 log = logging.getLogger(__name__)
 

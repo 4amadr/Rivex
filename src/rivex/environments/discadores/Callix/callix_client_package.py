@@ -1,3 +1,5 @@
+from src.rivex.utils.logging_config.logging_config import TransformLogger
+
 class CallixClientData:
     '''
     classe que vai retornar dois dicionários 
@@ -17,12 +19,13 @@ class CallixClientData:
         self.recusadas = recusadas
         self.abandonadas = abandonadas
         self.agressividade = agressividade
+        self.log_transform = TransformLogger()
         self.data = data
         self.agentes_info = agentes_info
 
 
     def pacote_chamadas(self):
-        return  {
+        pacote =  {
             "tech": self.tech,
             "cliente": self.cliente,
             "data": self.data,
@@ -33,6 +36,8 @@ class CallixClientData:
             "chamadas_abandonadas": self.abandonadas,
             "agressividade": self.agressividade
         }
+        self.log_transform.registrar_limpeza_chamadas(pacote)
+        return pacote
         
     
     def pacote_agentes(self):
@@ -63,4 +68,5 @@ class CallixClientData:
 
 
             lista_agentes.append(dict_agentes)
+            self.log_transform.registrar_limpeza_agente(lista_agentes)
         return lista_agentes

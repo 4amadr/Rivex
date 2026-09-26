@@ -1,13 +1,13 @@
 import psycopg2
 from src.rivex.database.config_database import ConexaoDatabaseRivex
 from src.rivex.utils.database_utils.database_telefonia import DatabaseTelefonia, DatabaseClientesCallix
-import logging
-
-log = logging.getLogger(__name__)
+from src.rivex.utils.logging_config.logging_config import LoggingDatabaseConfig, LoadLogger
 
 
 class DatabaseClientes:
     def __init__(self):
+        self.log_db = LoggingDatabaseConfig()
+        self.load_log = LoadLogger()
         self.db = ConexaoDatabaseRivex()
         self.cursor = self.db.cursor
         self.conexao = self.db.conexao
@@ -88,6 +88,7 @@ class DatabaseClientes:
 
 
         except psycopg2.Error as erro:
+            self.log_db.erro_configuracao(erro)
             return {}
         
     def reativar_clientes(self, cliente):
@@ -100,22 +101,27 @@ class DatabaseClientes:
 
         except psycopg2.Error as erro:
             self.conexao.rollback()
-            log.error("Erro ao reativar cliente: %s: %s", cliente, erro)
+            self.load_log.registrar_erro_db(self.query_reativar_clientes, cliente, erro)
             raise
 
     def cadastrar_cliente(self, cliente, token):
+        
+        
+        envio = {
+            "cliente": cliente,
+            "token": token
+        }
+        
+        
         try:
             self.cursor.execute(
                 self.query_enviar_clientes_db,
-                {
-                    "cliente": cliente,
-                    "token": token
-                }
+                envio
             )
-            log.info(f"Cliente {cliente} cadastrado com sucesso.")
+            self.load_log.registrar_envio_db(self.query_enviar_clientes_db, envio)
             self.conexao.commit()
 
         except psycopg2.Error as erro:
             self.conexao.rollback()
-            log.error(f"Erro: {erro} ao enviar clietne: %s", cliente)
+            self.load_log.registrar_erro_db(self.query_enviar_clientes_db, envio, erro)
             raise

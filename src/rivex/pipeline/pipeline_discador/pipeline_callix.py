@@ -1,8 +1,4 @@
-
-
 from pathlib import Path
-import os
-import logging
 from dotenv import load_dotenv
 from src.rivex.utils.infra_utils.date_config import DateConfig
 from src.rivex.environments.discadores.Callix.callix import CallixAPICollector
@@ -17,24 +13,6 @@ from src.rivex.database.database_callix.database_callix_clientes import Database
 
 load_dotenv()
 
-logger = logging.getLogger(__name__)
-
-formato = logging.Formatter(
-    "%(asctime)s - %(levelname)s [%(filename)s:%(lineno)d] - %(message)s",
-    datefmt="%Y-%m-%d %H:%M:%S"
-)
-
-Path("Log/callix_log").mkdir(
-    parents=True,
-    exist_ok=True
-)
-
-handler_callix = logging.FileHandler(f"Log/callix_log/callix_dia_{DateConfig.data_selecionadas().replace("/", "-")}.log")
-handler_callix.setFormatter(formato)
-
-logger.addHandler(handler_callix)
-
-logger.info("Iniciando configuração do servidor Callix...")
 
 class PipelineCallix:
     def __init__(self):
@@ -70,10 +48,7 @@ class PipelineCallix:
         set_banco = set(clientes_ativos_db.keys())
 
         clientes_inativos = set_banco - set_ativos
-        print(f"Clientes inativos: {clientes_inativos}")
-
         clientes_ativos_a_cadastrar = set_ativos - set_banco
-        print(f"Clientes para serem cadastrados: {clientes_ativos_a_cadastrar}")
 
         self.remover_clientes(clientes_inativos)
         self.cadastrar_clientes(clientes_ativos_a_cadastrar)
@@ -81,23 +56,18 @@ class PipelineCallix:
 
     def remover_clientes(self, clientes_para_remover):
         if not clientes_para_remover:
-            logger.info("Sem clientes para serem removidos")
             return
 
         clientes_remover_list = list(clientes_para_remover)
-        logger.info(f"Realizando a remoção de {len(clientes_remover_list)} cliente(s): {clientes_remover_list}")
         for cliente in clientes_remover_list:
             self.db_clientes.inativar_cliente(cliente)
         return
 
     def cadastrar_clientes(self, clientes_novos):
         if not clientes_novos:
-            logger.info("Nenhum cliente novo para cadastrar")
             return
 
         clientes_novos_list = list(clientes_novos)
-        logger.info(f"Processando {len(clientes_novos_list)} clientes: {clientes_novos_list}")
-
         lista_tokens = self.coletar_tokens(clientes_novos_list)
 
         for cliente, token in zip(clientes_novos_list, lista_tokens):
@@ -105,7 +75,7 @@ class PipelineCallix:
 
     def coletar_tokens(self, clientes_novos_list):
         if not clientes_novos_list:
-            logger.info("Nenhum token novo para coletar")
+            
             return []
         get_token = GetTokenCallix()
         lista_tokens = get_token.fluxo_de_tokens(clientes_novos_list)
@@ -116,20 +86,14 @@ class PipelineCallix:
         Processa a coleta, limpeza e carga de um liente
         """
         cliente_formatado=cliente.removesuffix("contech.callix.com.br")
-        logger.info(f"Coleta iniciada para o cliente o cliente: {cliente_formatado}")
 
         try:
             # Extração
             dados_brutos_api = self.api.api_callix(token, cliente_formatado) 
-            logger.info(f"Dados de API do cliente {cliente_formatado} foram coletados")
-
             dados_brutos_req = self.requisicao.requisicao_callix(dados_brutos_api["campanha"], cliente_formatado, token)
-            logger.info(f"Chamadas de requisição coletadas para o cliente {cliente_formatado}")
-
             return dados_brutos_api, dados_brutos_req, cliente_formatado
 
         except Exception as e:
-            logger.error(f"Falha na coleta de dados do cliente {cliente_formatado}. Erro {e}", exc_info=True)
             return None, None, cliente_formatado
 
     def limpar_dados(self, dados_brutos_api, dados_brutos_req, cliente_formatado):
@@ -146,7 +110,6 @@ class PipelineCallix:
             )
 
         except Exception as e:
-            logger.error(f"Falha na limpeza de dados do cliente {cliente_formatado}. Erro {e}", exc_info=True)
             return None, None, None, None
 
         return dict_limpeza, agressividade_limpa, chamadas_limpas, tech_limpa
@@ -188,7 +151,6 @@ class PipelineCallix:
                 )
 
                 if dados_brutos_api is None or dados_brutos_req is None:
-                    logger.warning(f"Não foi possível coletar dados do cliente {cliente_formatado}")
                     continue
 
                 dict_limpeza, agressividade_limpa, chamadas_limpas, tech_limpa = self.limpar_dados(
@@ -197,7 +159,6 @@ class PipelineCallix:
                     cliente_formatado)
                 
                 if dict_limpeza is None:
-                    logger.warning(f'Não foi possível limpar dados do cliente {cliente_formatado}')
                     continue
 
                 dados_cliente, dados_agente = self.empacotar_dados(
@@ -207,15 +168,8 @@ class PipelineCallix:
                     tech_limpa, 
                     self.data_selecionada, 
                     cliente_formatado)
-
-                print(f"dados cliente: {dados_cliente}")
-
-                
+             
                 if dados_cliente is None:
-                    logger.warning(
-                        "Cliente %s sem dados sendo ignorado.",
-                        cliente_formatado
-                    )
                     continue
                 
                 self.banco_callix.db_callix(dados_cliente, dados_agente)

@@ -103,7 +103,6 @@ class ExtractLogger:
             if str(chave).lower() in chaves_sensiveis:
                 dados_limpos[chave] = "***OCULTO***"
         return dados_limpos
-
         
     def registrar_requisicao(
         self, 
@@ -137,15 +136,15 @@ class ExtractLogger:
         self.logger.error(
             "Exec[%s] REQ FAIL | URL: %s | STATUS: %s | HEADERS: %s | PAYLOAD: %s | ERRO: %s",
             self.log_conf.data_exec, url, status_code, headers_seguros, payload_seguro, erro,
-            exc_info=True(erro)  # Grava o traceback completo no log se houver uma exceção
+            exc_info=True  # Grava o traceback completo no log se houver uma exceção
         )
         
 class TransformLogger:
     def __init__(self):
         self.log_conf = LoggingConfig('transform')
         
-    def registrar_limpeza_chamadas(self, cliente, chamadas, aceitas, recusadas, abandonadas, agressividade):
-        self.log_conf.log.info("Exec[%s] DATA CLIENT %s | CHAMADAS: %s | ACEITAS: %s | RECUSADAS: %s | ABANDONADAS: %s | AGRESSIVIDADE: %s", self.log_conf.data_exec, cliente, chamadas, aceitas, recusadas, abandonadas, agressividade)
+    def registrar_limpeza_chamadas(self, pacote):
+        self.log_conf.log.info("Exec[%s] CLIENT DATA VALIDATION: ", self.log_conf.data_exec, pacote)
         
     def registrar_limpeza_rota(self, dados_cliente_rota):
         self.log_conf.log.info("Exec[%s] ROUTE CLEAN DATA: %s",self.log_conf.data_exec, dados_cliente_rota)
@@ -159,7 +158,6 @@ class LoadLogger:
         
     def registrar_envio_db(self, query, dados):
         self.log_conf.log.info("Exec[%s] LOADING DB | QUERY: %s | DADOS INSERIDOS %s", self.log_conf.data_exec, query, dados)
-        
         
     def registrar_erro_db(self, query, dados, erro: Exception):
         self.log_conf.log.info("[%s] ERROR LOADING DB | QUERY: %s | ERRO %s | DADOS %s", self.log_conf.data_exec, query, erro, dados)

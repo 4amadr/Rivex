@@ -4,7 +4,6 @@ class DatabaseVonix:
     def __init__(self):
         self.query_criar_tabela_chamadas = """
     CREATE TABLE IF NOT EXISTS dados_discador.chamadas_cliente_vonix (
-        id SERIAL PRIMARY KEY,
         tech_cliente INTEGER NOT NULL,
         cliente_nome TEXT NOT NULL,
         data DATE NOT NULL,
@@ -12,18 +11,19 @@ class DatabaseVonix:
         completas INTEGER NOT NULL,
         recusadas INTEGER NOT NULL,
         abandonadas INTEGER NOT NULL,
-        agressividade FLOAT NOT NULL
+        agressividade FLOAT NOT NULL,
+        PRIMARY KEY (tech_cliente, cliente_nome, data)
     );
 """
 
         self.query_criar_tabela_agentes = """
     CREATE TABLE IF NOT EXISTS dados_discador.chamadas_agente_vonix (
-        id SERIAL PRIMARY KEY,
         tech INTEGER NOT NULL,
         cliente_nome TEXT NOT NULL,
         data DATE NOT NULL,
         nome_agente TEXT NOT NULL,
-        chamadas_agente INTEGER NOT NULL
+        chamadas_agente INTEGER NOT NULL,
+        PRIMARY KEY (tech, cliente_nome, data, nome_agente)
     );
 """
 

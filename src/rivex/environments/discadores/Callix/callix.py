@@ -33,15 +33,11 @@ class CallixAPICollector:
         campanhas = [campanha['id'] for campanha in campanha_json['data']]
         resumo_campanha = self.resumo_campanha(cliente, token)
         
-        extract_log = ExtractLogger()
-        
-        
-        
         return {
             "resumo": resumo_campanha.json(),
             "campanha": campanhas
         }
-        
+
         
         
         

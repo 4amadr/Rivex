@@ -1,9 +1,6 @@
 import psycopg2
 from src.rivex.database.config_database import ConexaoDatabaseRivex, DatabaseBase
-from src.rivex.utils.logging_config.logging_database.logging_database import LoggingDatabase
-import logging
-
-log = logging.getLogger(__name__)
+from src.rivex.utils.logging_config.logging_config import LoggingDatabaseConfig
 
 class DatabaseClientesCallix:
     def __init__(self, query_insert_cliente):
@@ -28,7 +25,6 @@ class DatabaseClientesCallix:
                 self.query_insert_clientes_callix,
                 dados_cliente
             )
-
             self.conexao.commit()
 
         except psycopg2.Error as erro:
@@ -46,7 +42,7 @@ class DatabaseTelefonia:
          self.cursor = self.db.cursor
          self.conexao = self.db.conexao
          self.query_insert_telefonia = query_insert_telefonia
-         self.log = LoggingDatabase()
+         self.log = LoggingDatabaseConfig()
 
     def criar_tabelas(self, query_tabela_telefonia):
         try:
@@ -74,5 +70,6 @@ class DatabaseTelefonia:
             self.cursor,
             self.conexao
         )
+
 
 

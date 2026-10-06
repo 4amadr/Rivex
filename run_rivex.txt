@@ -1,0 +1,5 @@
+@echo off
+
+cd /d "C:\Users\victor.amador\Documents\projects\Rivex"
+
+"C:\Users\victor.amador\Documents\projects\Rivex\.venv\Scripts\python.exe" main.py --pipeline all >> "logs\rivex_cron.log" 2>&1

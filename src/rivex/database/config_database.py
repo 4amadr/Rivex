@@ -47,7 +47,6 @@ class DatabaseBase:
         self.db = ConexaoDatabaseRivex()
         self.cursor = self.db.cursor
         self.conexao = self.db.conexao
-
         self.query_insert_chamada = query_insert_chamada
         self.query_insert_operador = query_insert_operador
 
@@ -72,48 +71,15 @@ class DatabaseBase:
         self.cursor.execute(self.query_insert_operador, dados_operador)
 
     def enviar_dados(self, dados_cliente, agentes):
-        cliente = dados_cliente.get("Cliente")
-        tech = dados_cliente.get("tech")
-        data = dados_cliente.get("Data")
-
         try:
-            log.info(
-                "[DB] Iniciando cliente=%s, tech=%s, data=%s",
-                cliente,
-                tech,
-                data
-            )
-
             self.enviar_cliente(dados_cliente)
-
-            log.info(
-                "[DB] Cliente inserido/atualizado: %s",
-                cliente
-            )
-
+            self.conexao.commit()
             for agente in agentes:
                 self.enviar_operador(agente)
-
             self.conexao.commit()
-
-            log.info(
-                "[DB] commit feito: cliente=%s, tech=%s, agentes=%s",
-                cliente,
-                tech,
-                len(agentes)
-            )
 
         except Exception as erro:
             self.conexao.rollback()
-
-            log.error(
-                "[DB] erro no cliente=%s, tech=%s, erro=%s ",
-                cliente,
-                tech,
-                data,
-                erro,
-                exc_info=True
-            )
 
             raise
 

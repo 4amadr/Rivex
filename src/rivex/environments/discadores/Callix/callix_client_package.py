@@ -7,13 +7,10 @@ class CallixClientData:
     2 - Dict agente: id, fila, nome agente, chamadas_aceitas_agente
     '''
     def __init__(self, cliente, chamadas, aceitas, recusadas, abandonadas, agressividade, data, agentes_info, tech):
-        self.tech_str = str(tech).strip()
-        if not tech_str.isdigit() or len(tech_str) != 6:
-            raise ValueError(f"Tech invalida ({self.tech}).")
         self.cliente = cliente
         if not cliente:
-            raise ValueError(f"Campo cliente vazio para a tech: {self.tech}.")
-        self.tech = int(tech_str)
+            raise ValueError(f"Campo cliente vazio para a tech: {tech}.")
+        self.tech = int(tech)
         self.chamadas = chamadas
         self.aceitas = aceitas
         self.recusadas = recusadas

@@ -83,9 +83,18 @@ class LoggingConfig:
         self.sufixo_arquivo = self.data_exec
         self.subdiretorio = subdiretorio
     
-    def infos_logging(self):
+    def infos_logging_conf(self):
         self.log.info(f"Data da coleta de dados Rivex {self.data_exec}")
-        self.log.info(f"Subdiretório: {self.subdiretorio}")      
+        self.log.info(f"Subdiretório: {self.subdiretorio}")
+
+    def log_info(self, informacao, registro):
+        self.log.info(informacao, registro)
+
+    def log_erro(self, info, erro):
+        self.log.error(info, erro)
+
+    def log_debug(self, info, teste):
+        self.log.debug(info, teste)
 
 class ExtractLogger:
     def __init__(self):
@@ -166,12 +175,18 @@ class LoggingDatabaseConfig:
     def __init__(self):
         self.log_conf = LoggingConfig("database_config")
         
-    def verificar_query(query):
-        self.log.debug(f"QUERY UTILIZADA {query}")
+    def verificar_query(self, query):
+        self.log_conf.log_debug("Debug da query", query)
 
     def erro_configuracao(self, erro):
-        self.log.error("ERROR DB CONFIG: %s", erro, exc_info=True)
+        self.log_conf.log_erro("ERROR DB CONFIG: %s", erro, )
 
     def decode_erro(self, erro_decode):
-        self.log.error(f"DECODE ERROR: {erro_decode}")
+        self.log_conf.log_erro(f"DECODE ERROR", erro_decode)
+
+    def registro_erro_envio(self, erro):
+        self.log_conf.log_erro("Erro envio DB!", erro)
+
+    def conferencia_dados(self, dados):
+        self.log_conf.log_info("Conferencia de dados", dados)
         

@@ -1,4 +1,5 @@
 from pathlib import Path
+import os
 from dotenv import load_dotenv
 from src.rivex.utils.infra_utils.date_config import DateConfig
 from src.rivex.environments.discadores.Callix.callix import CallixAPICollector
@@ -10,7 +11,6 @@ from src.rivex.environments.discadores.Callix.callix_get_clients import CallixGe
 from src.rivex.database.database_callix.database_callix import DatabaseCallix
 from src.rivex.data_processing.Callix.callix_clients import *
 from src.rivex.database.database_callix.database_callix_clientes import DatabaseClientes
-
 load_dotenv()
 
 
@@ -102,12 +102,12 @@ class PipelineCallix:
             dict_limpeza = processar_dados(
                 dados_brutos_api,
             )
-
             agressividade_limpa, chamadas_limpas, tech_limpa = limpeza_req_callix(
                 json_agentes=dados_brutos_req["chamadas por agentes brutas"],
                 json_agressividade=dados_brutos_req["agressividade bruta"],
                 techs_json=dados_brutos_req["tech bruta"]
             )
+
 
         except Exception as e:
             return None, None, None, None
@@ -117,7 +117,7 @@ class PipelineCallix:
     def empacotar_dados(self, dict_limpeza, agressividade_limpa, chamadas_limpas, tech_limpa, data_selecionada, cliente_formatado):
         empacotamento_callix = CallixClientData(
                 tech=tech_limpa,
-                cliente=cliente_formatado,
+                cliente=cliente_formatado.removesuffix("contech"),
                 chamadas=dict_limpeza["Chamadas totais"],
                 aceitas=dict_limpeza["Chamadas aceitas"],
                 recusadas=dict_limpeza["Chamadas recusadas"],
@@ -136,7 +136,6 @@ class PipelineCallix:
         lista_ativos, lista_inativos = self.get_ambiente()
         clientes_db = self.sincronizar_clientes(lista_ativos)
 
-
         if not clientes_db:
             raise RuntimeError("Sem clientes no banco")
 
@@ -144,15 +143,14 @@ class PipelineCallix:
             for cliente, dado in clientes_db.items():
                 if not dado["ativo"]:
                     continue
-
                 dados_brutos_api, dados_brutos_req, cliente_formatado = self.coletar_dados(
                     cliente,
                     dado["token"]
                 )
 
+
                 if dados_brutos_api is None or dados_brutos_req is None:
                     continue
-
                 dict_limpeza, agressividade_limpa, chamadas_limpas, tech_limpa = self.limpar_dados(
                     dados_brutos_api,
                     dados_brutos_req,
@@ -168,7 +166,7 @@ class PipelineCallix:
                     tech_limpa, 
                     self.data_selecionada, 
                     cliente_formatado)
-             
+
                 if dados_cliente is None:
                     continue
                 

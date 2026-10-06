@@ -18,7 +18,7 @@ AgenteData = namedtuple(
 
 
 def limpar_chamadas_agentes(json_agentes):
-    dados = json_agentes.json()
+    dados = json_agentes
 
     # se não houver "included", não há agentes para processar
     if "included" not in dados:
@@ -46,16 +46,12 @@ def limpar_chamadas_agentes(json_agentes):
     return resultado
 
 def limpar_agressividade(json_agressividade):
-    lista_agressividade = []
-    
-    for agressividade in json_agressividade:
-        dados = agressividade.json()
-        atributos = dados["data"]["attributes"]
-        lista_agressividade.append(atributos["powerAggressiveness"])
-
-    media = round(sum(lista_agressividade) / len(lista_agressividade), 2) if lista_agressividade else 0.0
-
-    return media
+    valores = [
+        item["data"]["attributes"]["powerAggressiveness"]
+        for item in json_agressividade
+        if item.get("data", {}).get("attributes", {}).get("powerAggressiveness") is not None
+    ]
+    return round(sum(valores) / len(valores), 2) if valores else 0.0
 
 def _normalizar_texto(texto: str) -> str:
     texto = unicodedata.normalize("NFD", texto)
@@ -121,5 +117,5 @@ def limpeza_techs_callix(outbound_routes: dict) -> str:
 
 def limpeza_req_callix(json_agressividade, json_agentes, techs_json):
 
-    return limpar_agressividade(json_agressividade), limpar_chamadas_agentes(json_agentes), limpeza_techs_callix(techs_json.json())
+    return limpar_agressividade(json_agressividade), limpar_chamadas_agentes(json_agentes), limpeza_techs_callix(techs_json)
     

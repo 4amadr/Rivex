@@ -58,30 +58,15 @@ class CAllixRequisition:
         return chamadas_por_agentes
     
     def agressividade(self, token, cliente, campanhas):
-
-        if len(campanhas) > 1:
-            lista_json_agressividade = []
-            # se tiver mais de uma campanha
-            for url_agressividade in self.url.url_agressividade(cliente, campanhas):
-                agressividade = self.http_request.requisicao_get(headers=headers_callix(token),
-                                            url=url_agressividade,
-                                            payload_get=payload_agressividade()
-                                            )
-                lista_json_agressividade.append(agressividade)
-            return lista_json_agressividade
-        
-        elif not campanhas:
-            return None
-        
-        else:
-            # se tiver só uma campanha
-            agressividade = self.http_request.requisicao_get(
+        lista_agressividades = []
+        for url in self.url.url_agressividade(cliente, campanhas or []):
+            resposta = self.http_request.requisicao_get(
                 headers=headers_callix(token),
-                url=self.url.url_agressividade(cliente, campanhas)[0],
-                payload_get=payload_agressividade())
-            
-            return agressividade
-
+                url=url,
+                payload_get=payload_agressividade(),
+            )
+            lista_agressividades.append(resposta.json())
+        return lista_agressividades
 
     def get_tech_cliente(self, cliente, token):
         tech = self.http_request.requisicao_get(
@@ -102,7 +87,7 @@ class CAllixRequisition:
         tech = self.get_tech_cliente(cliente, login)
         
         return {
-            "chamadas por agentes brutas":chamadas_por_agentes, 
-            "agressividade bruta": agressividade, 
-            "tech bruta": tech
+            "chamadas por agentes brutas":chamadas_por_agentes.json(),
+            "agressividade bruta": agressividade,
+            "tech bruta": tech.json(),
             }

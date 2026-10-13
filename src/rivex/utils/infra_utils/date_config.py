@@ -4,23 +4,23 @@ class DateConfig:
 
     @staticmethod
     def data_selecionadas():
-        data_ref = date.today() - timedelta(days=1)
+        data_ref = date.today() - timedelta(days=4)
         data_formatada = data_ref.strftime("%d/%m/%Y")
 
         return data_formatada
     
     def data_callix(self):
-        data_ref = date.today() - timedelta(days=1)
+        data_ref = date.today() - timedelta(days=4)
         data_formatada = data_ref.strftime("%Y-%m-%d")
 
         return data_formatada
 
-    def data_ipbox(self, dias_atras=1):
+    def data_ipbox(self, dias_atras=4):
         data_ref = date.today() - timedelta(days=dias_atras)
 
         return data_ref.strftime('%Y%m%d')
     
-    def data_ipbox_payload(self, dias_atras=1):
+    def data_ipbox_payload(self, dias_atras=4):
         """
         Gera o payload no formato:
         de=YYYYMMDD000000&ate=YYYYMMDD235959

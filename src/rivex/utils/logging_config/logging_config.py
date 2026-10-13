@@ -5,6 +5,8 @@ from typing import Dict, Any, Optional
 from src.rivex.utils.infra_utils.date_config import DateConfig
 import uuid
 
+data_exec = DateConfig.data_selecionadas().replace("/", "-")
+
 LOG_DIRS = {
     "extract": os.path.join("Log", "extract"),
     "transform": os.path.join("Log", "transform"),
@@ -27,19 +29,19 @@ LOGGING_CONFIG = {
     "handlers": {
         "extract_file": {
             "class": "logging.FileHandler",
-            "filename": os.path.join(LOG_DIRS["extract"], "extract.log"),
+            "filename": os.path.join(LOG_DIRS["extract"], f"extract_{data_exec}.log"),
             "formatter": "detailed",
             "encoding": "utf-8"
         },
         "transform_file": {
             "class": "logging.FileHandler",
-            "filename": os.path.join(LOG_DIRS["transform"], "transform.log"),
+            "filename": os.path.join(LOG_DIRS["transform"], f"transform_{data_exec}.log"),
             "formatter": "detailed",
             "encoding": "utf-8"
         },
         "load_file": {
             "class": "logging.FileHandler",
-            "filename": os.path.join(LOG_DIRS["load"], "load.log"),
+            "filename": os.path.join(LOG_DIRS["load"], f"load_{data_exec}.log"),
             "formatter": "detailed",
             "encoding": "utf-8"
         },
@@ -77,28 +79,37 @@ LOGGING_CONFIG = {
 logging.config.dictConfig(LOGGING_CONFIG)
 
 class LoggingConfig:
-    def __init__(self, subdiretorio):
-        self.log = logging.getLogger()
+    def __init__(self, logger_name, subdiretorio):
+        self.log = logging.getLogger(logger_name)
         self.data_exec = DateConfig.data_selecionadas()
         self.sufixo_arquivo = self.data_exec
         self.subdiretorio = subdiretorio
     
     def infos_logging_conf(self):
-        self.log.info(f"Data da coleta de dados Rivex {self.data_exec}")
-        self.log.info(f"Subdiretório: {self.subdiretorio}")
+        self.log.info(f"Data da coleta de dados Rivex: %s", self.data_exec)
+        self.log.info(f"Subdiretório: %s", self.subdiretorio)
 
     def log_info(self, informacao, registro):
-        self.log.info(informacao, registro)
+        if registro != "":
+            self.log.info("%s: %s",informacao, registro)
+        else:
+            self.log.info(informacao)
 
     def log_erro(self, info, erro):
-        self.log.error(info, erro)
+        if erro != "":
+            self.log.error("%s - %s",info, erro, exec_info=isinstance(erro, Exception))
+        else:
+            self.log.error(info)
 
     def log_debug(self, info, teste):
-        self.log.debug(info, teste)
+        if teste != "":
+            self.log.debug("%s: %s",info, teste)
+        else:
+            self.log.debug(info)
 
 class ExtractLogger:
     def __init__(self):
-        self.log_conf = LoggingConfig("extract")
+        self.log_conf = LoggingConfig("etl.extract", "extract")
         
     def _ocultar_dados_sensiveis(self, dados: Any) -> Any:
         """Substitui valores de chaves sensíveis por um texto de redacção."""
@@ -142,7 +153,7 @@ class ExtractLogger:
         payload_seguro = self._ocultar_dados_sensiveis(payload) if isinstance(payload, dict) else payload
         
 
-        self.logger.error(
+        self.log_conf.log.error(
             "Exec[%s] REQ FAIL | URL: %s | STATUS: %s | HEADERS: %s | PAYLOAD: %s | ERRO: %s",
             self.log_conf.data_exec, url, status_code, headers_seguros, payload_seguro, erro,
             exc_info=True  # Grava o traceback completo no log se houver uma exceção
@@ -150,10 +161,10 @@ class ExtractLogger:
         
 class TransformLogger:
     def __init__(self):
-        self.log_conf = LoggingConfig('transform')
+        self.log_conf = LoggingConfig('etl.transform', "transform")
         
     def registrar_limpeza_chamadas(self, pacote):
-        self.log_conf.log.info("Exec[%s] CLIENT DATA VALIDATION: ", self.log_conf.data_exec, pacote)
+        self.log_conf.log.info("Exec[%s] CLIENT DATA VALIDATION: %s", self.log_conf.data_exec, pacote)
         
     def registrar_limpeza_rota(self, dados_cliente_rota):
         self.log_conf.log.info("Exec[%s] ROUTE CLEAN DATA: %s",self.log_conf.data_exec, dados_cliente_rota)
@@ -163,17 +174,17 @@ class TransformLogger:
         
 class LoadLogger:
     def __init__(self):
-        self.log_conf = LoggingConfig("load")
+        self.log_conf = LoggingConfig("etl.load", "load")
         
     def registrar_envio_db(self, query, dados):
         self.log_conf.log.info("Exec[%s] LOADING DB | QUERY: %s | DADOS INSERIDOS %s", self.log_conf.data_exec, query, dados)
         
     def registrar_erro_db(self, query, dados, erro: Exception):
-        self.log_conf.log.info("[%s] ERROR LOADING DB | QUERY: %s | ERRO %s | DADOS %s", self.log_conf.data_exec, query, erro, dados)
+        self.log_conf.log.error("[%s] ERROR LOADING DB | QUERY: %s | ERRO %s | DADOS %s", self.log_conf.data_exec, query, erro, dados)
         
 class LoggingDatabaseConfig:
     def __init__(self):
-        self.log_conf = LoggingConfig("database_config")
+        self.log_conf = LoggingConfig("database_config", "database")
         
     def verificar_query(self, query):
         self.log_conf.log_debug("Debug da query", query)
@@ -189,4 +200,3 @@ class LoggingDatabaseConfig:
 
     def conferencia_dados(self, dados):
         self.log_conf.log_info("Conferencia de dados", dados)
-        

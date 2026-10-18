@@ -44,7 +44,7 @@ class DatabaseTelefonia:
          self.query_insert_telefonia = query_insert_telefonia
          self.log = LoggingDatabaseConfig()
 
-    def criar_tabelas(self, query_tabela_telefonia):
+    def criar_objeto_db(self, query_tabela_telefonia):
         try:
             self.cursor.execute(query_tabela_telefonia)
             self.conexao.commit()

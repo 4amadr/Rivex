@@ -36,50 +36,49 @@ class PipelineCallix:
         '''
         nome_clientes_ativos = self.coletar_clientes.get_infos_callix()
 
-        lista_cliente = get_clientes_servidor_callix(nome_clientes_ativos.json())
+        clientes_totais = get_clientes_servidor_callix(nome_clientes_ativos.json())
 
-        lista_ativos, lista_inativos = separar_clientes((lista_cliente))
+        return  clientes_totais
 
-        return lista_ativos, lista_inativos
-
-    def sincronizar_clientes(self, lista_ativos):
-        clientes_ativos_db = self.db_clientes.sincronizar_clientes()
-        set_ativos = set(lista_ativos)
-        set_banco = set(clientes_ativos_db.keys())
-
-        clientes_inativos = set_banco - set_ativos
-        clientes_ativos_a_cadastrar = set_ativos - set_banco
-
-        self.remover_clientes(clientes_inativos)
-        self.cadastrar_clientes(clientes_ativos_a_cadastrar)
-        return self.db_clientes.sincronizar_clientes()
-
-    def remover_clientes(self, clientes_para_remover):
-        if not clientes_para_remover:
-            return
-
-        clientes_remover_list = list(clientes_para_remover)
-        for cliente in clientes_remover_list:
-            self.db_clientes.inativar_cliente(cliente)
-        return
-
-    def cadastrar_clientes(self, clientes_novos):
-        if not clientes_novos:
-            return
-
-        clientes_novos_list = list(clientes_novos)
-        lista_tokens = self.coletar_tokens(clientes_novos_list)
-
-        for cliente, token in zip(clientes_novos_list, lista_tokens):
-            self.db_clientes.cadastrar_cliente(cliente, token)
-
-    def coletar_tokens(self, clientes_novos_list):
-        if not clientes_novos_list:
+    def sincronizar_clientes(self, clientes_totais):
+        status_cliente = self.verificar_status_clientes(clientes_totais)
+        self.inserir_clientes(status_cliente)
+        clientes_sem_token = self.buscar_clientes_sem_token()
+        lista_tokens = self.coletar_tokens(clientes_sem_token)
+        self.adicionar_token_ao_db(lista_tokens, clientes_sem_token)
+        
+        return self.db_clientes.consultar_view()    
+    def verificar_status_clientes(self, clientes_totais):
+        return [
+            {
+                "cliente": c["cliente"],
+                "ativo": c["status"] != 4
+            }
+            for c in clientes_totais
+        ]
+    
+    def inserir_clientes(self, status_cliente):
+        """comparar a lista atual com o banco e inserir a diferença entre os dois no banco"""
+        for cliente in status_cliente:
+            self.db_clientes.cadastrar_cliente(cliente)
             
+    def buscar_clientes_sem_token(self):
+        return self.db_clientes.buscar_clientes_sem_token()
+
+    def adicionar_token_ao_db(self, lista_tokens_novos, lista_clientes_sem_token):
+        for token, cliente in zip(lista_tokens_novos, lista_clientes_sem_token):
+            self.db_clientes.adicionar_token_ao_db(token, cliente)
+
+    def coletar_tokens(self, cliente_sem_token):
+        if not cliente_sem_token:
             return []
+        
         get_token = GetTokenCallix()
-        lista_tokens = get_token.fluxo_de_tokens(clientes_novos_list)
+        lista_tokens = get_token.fluxo_de_tokens(cliente_sem_token)
         return lista_tokens
+
+    def consultar_clientes_ativos(self):
+        clientes_ativos = self.db_clientes.consultar_view()
 
     def coletar_dados(self, cliente:str, token: str):
         """
@@ -133,19 +132,17 @@ class PipelineCallix:
         return dict_chamadas, lista_agentes
 
     def executar(self):
-        lista_ativos, lista_inativos = self.get_ambiente()
-        clientes_db = self.sincronizar_clientes(lista_ativos)
+        clientes_totais = self.get_ambiente()
+        clientes_db = self.sincronizar_clientes(clientes_totais)
 
         if not clientes_db:
             raise RuntimeError("Sem clientes no banco")
 
         try:
-            for cliente, dado in clientes_db.items():
-                if not dado["ativo"]:
-                    continue
+            for dados_cadastro_cliente_ativo in clientes_db:
                 dados_brutos_api, dados_brutos_req, cliente_formatado = self.coletar_dados(
-                    cliente,
-                    dado["token"]
+                    dados_cadastro_cliente_ativo["cliente"],
+                    dados_cadastro_cliente_ativo["token"]
                 )
 
 

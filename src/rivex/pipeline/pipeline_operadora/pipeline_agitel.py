@@ -16,7 +16,6 @@ class ExecAgitel():
         dc = DateConfig()
         data_selecionada = dc.data_selecionadas()
         database = DatabaseAgitel()
-        print(f"Coleta do dia {data_selecionada} na agitel")
         sc = SipClient(usuario=os.getenv('AGITEL_USER'),
                     password=os.getenv('AGITEL_PASSWORD'),
                     url=os.getenv('AGITEL_URL'),

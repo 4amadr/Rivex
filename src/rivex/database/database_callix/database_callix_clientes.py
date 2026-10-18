@@ -13,44 +13,75 @@ class DatabaseClientes:
         self.conexao = self.db.conexao
         self.query_criar_tabela_clientes = """
         CREATE TABLE IF NOT EXISTS clientes.clientes_callix (
-            cliente_nome TEXT NOT NULL,
-            cliente_token TEXT NOT NULL,
+            cliente TEXT NOT NULL,
+            token TEXT,
             ativo BOOLEAN NOT NULL DEFAULT TRUE,
-            PRIMARY KEY (cliente_nome)
+            PRIMARY KEY (cliente)
             );
             """
         self.query_inativar_clientes = """
-        UPDATE clientes.clientes_callix
-        SET ativo = FALSE
-        WHERE cliente_nome = %s
-        RETURNING cliente_nome, cliente_token                                               """
+            UPDATE clientes.clientes_callix
+            SET ativo = FALSE
+            WHERE cliente = %s
+                AND ativo = TRUE
+            RETURNING cliente, token;
+"""
         self.query_enviar_clientes_db = """
     INSERT INTO clientes.clientes_callix (
-        cliente_nome,
-        cliente_token,
+        cliente,
         ativo
     )
     VALUES (
         %(cliente)s,
-        %(token)s,
-        TRUE
+        %(ativo)s
     )
-    ON CONFLICT (cliente_nome)
-    DO NOTHING;
+    ON CONFLICT (cliente)
+    DO UPDATE SET
+        ativo = EXCLUDED.ativo
+    WHERE
+        clientes.clientes_callix.ativo
+            IS DISTINCT FROM EXCLUDED.ativo;
 """
-        self.query_verificar_clientes = """
-        SELECT cliente_nome, cliente_token, ativo
-        FROM clientes.clientes_callix;
+        self.query_buscar_clientes = """
+        SELECT cliente, token, ativo
+        FROM clientes.clientes_callix
+        WHERE ativo = 'TRUE';
         """
         self.query_reativar_clientes = """
     UPDATE clientes.clientes_callix
     SET ativo = TRUE
-    WHERE cliente_nome = %s
-      AND ativo = FALSE;
+    WHERE cliente_nome = %s;
 """
+        self.query_buscar_clientes_sem_token = """
+        SELECT cliente
+        FROM clientes.clientes_callix
+        WHERE ativo = TRUE
+            AND token is NULL;
+        """
+        self.query_adicionar_token_db = """
+    UPDATE clientes.clientes_callix
+    SET token = %(token)s
+    WHERE cliente = %(cliente)s;
+"""
+        self.query_criar_view_clientes_ativos = """
+    CREATE OR REPLACE VIEW clientes.vw_clientes_ativos AS
+    SELECT
+        cliente,
+        token
+    FROM clientes.clientes_callix
+    WHERE ativo = TRUE;
+"""
+        self.query_consultar_clientes_ativos = """
+    SELECT cliente, token
+    FROM clientes.vw_clientes_ativos;
+"""
+
+                    
+                    
         self.db_clientes = DatabaseClientesCallix(self.query_enviar_clientes_db)
         self.db_telefonia = DatabaseTelefonia(self.query_enviar_clientes_db)
-        self.db_telefonia.criar_tabelas(self.query_criar_tabela_clientes)
+        self.db_telefonia.criar_objeto_db(self.query_criar_tabela_clientes)
+        self.db_telefonia.criar_objeto_db(self.query_criar_view_clientes_ativos)
         
     def db_clientes_callix(self, dict_clientes):
         self.db_clientes.enviar_info_cliente(dict_clientes)
@@ -104,12 +135,10 @@ class DatabaseClientes:
             self.load_log.registrar_erro_db(self.query_reativar_clientes, cliente, erro)
             raise
 
-    def cadastrar_cliente(self, cliente, token):
-        
-        
+    def cadastrar_cliente(self, cliente):    
         envio = {
-            "cliente": cliente,
-            "token": token
+            "cliente": cliente["cliente"],
+            "ativo": cliente["ativo"]
         }
         
         
@@ -124,4 +153,56 @@ class DatabaseClientes:
         except psycopg2.Error as erro:
             self.conexao.rollback()
             self.load_log.registrar_erro_db(self.query_enviar_clientes_db, envio, erro)
+            raise
+
+    def consultar_view(self):
+        try:
+            self.cursor.execute(
+                self.query_consultar_clientes_ativos
+            )
+            clientes_ativos = self.cursor.fetchall()
+            clientes_db = [
+                {
+                    "cliente": cliente,
+                    "token": token
+                }
+                for cliente, token in clientes_ativos
+            ]
+            return clientes_db
+        except Exception as erro:
+            self.execucao.rollback()
+            self.load_log.registrar_erro_db(self.query_consultar_clientes_ativos, erro)
+            raise
+    
+    
+    def buscar_clientes_sem_token(self):
+        try:
+            self.cursor.execute(
+                self.query_buscar_clientes_sem_token
+            )
+            cliente_sem_token = self.cursor.fetchall()
+            return [linha[0] for linha in cliente_sem_token]
+        except Exception as erro:
+            self.conexao.rollback()
+            self.load_log.registrar_erro_db(self.query_buscar_clientes_sem_token, [], erro)
+            raise
+    
+    def adicionar_token_ao_db(self, token, cliente):
+        
+        envio_db = {
+            "cliente": cliente,
+            "token": token
+        }
+        
+        
+        try:
+            self.cursor.execute(
+                self.query_adicionar_token_db, envio_db
+            )
+            self.load_log.registrar_envio_db(self.query_adicionar_token_db, envio_db)
+            self.conexao.commit()
+
+        except psycopg2.Error as erro:
+            self.conexao.rollback()
+            self.load_log.registrar_erro_db(self.query_adicionar_token_db, envio_db, erro)
             raise

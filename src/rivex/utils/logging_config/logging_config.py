@@ -90,14 +90,19 @@ class LoggingConfig:
         self.log.info(f"Subdiretório: %s", self.subdiretorio)
 
     def log_info(self, informacao, registro):
-        if registro != "":
+        if registro:
             self.log.info("%s: %s",informacao, registro)
         else:
             self.log.info(informacao)
 
-    def log_erro(self, info, erro):
-        if erro != "":
-            self.log.error("%s - %s",info, erro, exec_info=isinstance(erro, Exception))
+    def log_erro(self, info, erro=None):
+        if erro:
+            self.log.error(
+                "%s - %s",
+                info,
+                erro,
+                exc_info=isinstance(erro, Exception)
+            )
         else:
             self.log.error(info)
 

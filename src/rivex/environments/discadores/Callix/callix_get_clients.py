@@ -7,10 +7,7 @@ from src.rivex.utils.requests_utils.requests import HttpRequisitions
 from src.rivex.utils.environments_utils.discador.callix.payloads_callix import *
 from src.rivex.environments.discadores.Callix.callix_req import CAllixRequisition
 from src.rivex.utils.environments_utils.discador.callix.get_url_callix import UrlGetClients, UrlGetData
-import logging
-
-load_dotenv()
-log = logging.getLogger(__name__)
+from src.rivex.utils.logging_config.logging_config import LoggingConfig
 
 
 class CallixGetClients:
@@ -25,6 +22,7 @@ class CallixGetClients:
         self.usuario = os.getenv('USUARIO_CALLIX_GERAL')
         self.senha = os.getenv('SENHA_CALLIX_GERAL')
         self.url = UrlGetClients()
+        self.log = LoggingConfig('get_client', 'Extract')
 
         
     def login_ambiente_padrao(self):
@@ -58,14 +56,15 @@ class GetTokenCallix:
         self.senha = os.getenv('SENHA_CALLIX_GERAL')
         self.http_request = HttpRequisitions(session=requests.Session())
         self.url = UrlGetData()
+        self.log = LoggingConfig('get_token', 'config_sys')
 
     def login_callix(self, cliente):
-        log.info(f"Cliente logado atualmente {cliente}")
+        self.log.log_info(f"Cliente logado atualmente", cliente)
         login = self.http_request.requisicao_post_json(payload_post=payload_login_callix(self.login, self.senha),
                                         headers=headers_login_callix(self.url.login_cliente_header(cliente)),
                                         url=self.url.login_cliente(cliente)
                                         )
-        log.info(f"Resposta do cliente novo: {cliente}, {login.status_code}")
+        self.log.log_info(f"Resposta do cliente novo: {cliente}", {login.status_code})
         token = login.json()['token']
         return token
 
@@ -92,24 +91,35 @@ class GetTokenCallix:
         lista_tokens = []
         
         for selecao_cliente in clientes_ativos:
+        
             url = UrlGetData()
-            
-            # login no ambiente
-            token_login = self.login_callix(selecao_cliente)
+            try:
+                # login no ambiente
+                token_login = self.login_callix(selecao_cliente)
+            except Exception as e:
+                self.log.log_erro(f'falha no login para o cliente {selecao_cliente}', e)
+                continue
+                
             
             # token
             tokens_api = self.get_token(token_login, selecao_cliente)
-            if tokens_api['data']:
-                token = tokens_api['data'][0]['attributes']['token']
-            else:
+            if not tokens_api['data']:
                 continue
             
+            token = tokens_api['data'][0]['attributes']['token']
             
             if not token:
                 print(f"Cliente {selecao_cliente} sem token. Criando um novo")
+                
                 self.create_token(selecao_cliente, token_login)
+                
                 tokens_novos = self.get_token(token_login, selecao_cliente)
-                token = tokens_novos['data'][0]['attributes']['token']
+                dados_novos = tokens_novos.get("data") or []
+                
+                if not dados_novos:
+                    print(f"Não foi possível obter o token de {selecao_cliente}")
+                    continue 
+                token = dados_novos[0].get("attributes", {}).get("token")
                 
             lista_tokens.append(token)
         return lista_tokens

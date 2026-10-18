@@ -20,6 +20,11 @@ class HttpRequisitions:
             params=params, data=data, json=json,
             headers=headers, cookies=cookies, verify=verify
         )
+        print("MÉTODO:", metodo)
+        print("URL SOLICITADA:", url)
+        print("STATUS HTTP:", resposta.status_code)
+        print("URL FINAL:", resposta.url)
+        print("CORPO DA RESPOSTA:", resposta.text[:500])
         if resposta.status_code != 200:
             self.extract_logger.registrar_falha(url, resposta.status_code, headers, params)
 

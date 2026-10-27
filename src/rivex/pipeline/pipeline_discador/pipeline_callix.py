@@ -7,10 +7,11 @@ from src.rivex.data_processing.Callix.cleaner_callix_api import processar_dados
 from src.rivex.environments.discadores.Callix.callix_req import CAllixRequisition
 from src.rivex.data_processing.Callix.cleaner_callix_req import limpeza_req_callix
 from src.rivex.environments.discadores.Callix.callix_client_package import CallixClientData
-from src.rivex.environments.discadores.Callix.callix_get_clients import CallixGetClients, GetTokenCallix
-from src.rivex.database.database_callix.database_callix import DatabaseCallix
+from src.rivex.environments.discadores.Callix.callix_get_clients import CallixGetClients
 from src.rivex.data_processing.Callix.callix_clients import *
-from src.rivex.database.database_callix.database_callix_clientes import DatabaseClientes
+from src.rivex.environments.discadores.Callix.sincronizar_clientes import SincroniaCallix
+from src.rivex.database.database_callix.database_callix import DatabaseCallix
+
 load_dotenv()
 
 
@@ -21,9 +22,9 @@ class PipelineCallix:
         self.senha=os.getenv("SENHA_CALLIX_GERAL")
         self.banco_callix=DatabaseCallix()
         self.coletar_clientes=CallixGetClients()
-        self.db_clientes=DatabaseClientes()
         self.data_selecionada=self.data.data_callix()
         self.api = CallixAPICollector(self.data_selecionada)
+        self.sincronizar = SincroniaCallix()
         self.requisicao = CAllixRequisition(
             login=self.login, 
             senha=self.senha,
@@ -39,46 +40,6 @@ class PipelineCallix:
         clientes_totais = get_clientes_servidor_callix(nome_clientes_ativos.json())
 
         return  clientes_totais
-
-    def sincronizar_clientes(self, clientes_totais):
-        status_cliente = self.verificar_status_clientes(clientes_totais)
-        self.inserir_clientes(status_cliente)
-        clientes_sem_token = self.buscar_clientes_sem_token()
-        lista_tokens = self.coletar_tokens(clientes_sem_token)
-        self.adicionar_token_ao_db(lista_tokens, clientes_sem_token)
-        
-        return self.db_clientes.consultar_view()    
-    def verificar_status_clientes(self, clientes_totais):
-        return [
-            {
-                "cliente": c["cliente"],
-                "ativo": c["status"] != 4
-            }
-            for c in clientes_totais
-        ]
-    
-    def inserir_clientes(self, status_cliente):
-        """comparar a lista atual com o banco e inserir a diferença entre os dois no banco"""
-        for cliente in status_cliente:
-            self.db_clientes.cadastrar_cliente(cliente)
-            
-    def buscar_clientes_sem_token(self):
-        return self.db_clientes.buscar_clientes_sem_token()
-
-    def adicionar_token_ao_db(self, lista_tokens_novos, lista_clientes_sem_token):
-        for token, cliente in zip(lista_tokens_novos, lista_clientes_sem_token):
-            self.db_clientes.adicionar_token_ao_db(token, cliente)
-
-    def coletar_tokens(self, cliente_sem_token):
-        if not cliente_sem_token:
-            return []
-        
-        get_token = GetTokenCallix()
-        lista_tokens = get_token.fluxo_de_tokens(cliente_sem_token)
-        return lista_tokens
-
-    def consultar_clientes_ativos(self):
-        clientes_ativos = self.db_clientes.consultar_view()
 
     def coletar_dados(self, cliente:str, token: str):
         """
@@ -133,7 +94,7 @@ class PipelineCallix:
 
     def executar(self):
         clientes_totais = self.get_ambiente()
-        clientes_db = self.sincronizar_clientes(clientes_totais)
+        clientes_db = self.sincronizar.sincronizar_clientes(clientes_totais)
 
         if not clientes_db:
             raise RuntimeError("Sem clientes no banco")

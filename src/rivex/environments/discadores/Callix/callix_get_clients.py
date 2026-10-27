@@ -89,37 +89,57 @@ class GetTokenCallix:
 
     def fluxo_de_tokens(self, clientes_ativos):
         lista_tokens = []
-        
+
         for selecao_cliente in clientes_ativos:
-        
-            url = UrlGetData()
             try:
-                # login no ambiente
+                # Login no ambiente do cliente
                 token_login = self.login_callix(selecao_cliente)
+
             except Exception as e:
-                self.log.log_erro(f'falha no login para o cliente {selecao_cliente}', e)
+                self.log.log_erro(
+                    f"Falha no login para o cliente {selecao_cliente}",
+                    e
+                )
                 continue
-                
-            
-            # token
-            tokens_api = self.get_token(token_login, selecao_cliente)
-            if not tokens_api['data']:
-                continue
-            
-            token = tokens_api['data'][0]['attributes']['token']
-            
+
+            tokens_api = self.get_token(
+                token=token_login,
+                cliente=selecao_cliente
+            )
+
+            dados = tokens_api.get("data") or []
+
+            token = (
+                dados[0].get("attributes", {}).get("token")
+                if dados
+                else None
+            )
+
+            # Se não houver token, tenta criar e consultar novamente
             if not token:
-                print(f"Cliente {selecao_cliente} sem token. Criando um novo")
-                
                 self.create_token(selecao_cliente, token_login)
-                
-                tokens_novos = self.get_token(token_login, selecao_cliente)
+
+                tokens_novos = self.get_token(
+                    token=token_login,
+                    cliente=selecao_cliente
+                )
+
                 dados_novos = tokens_novos.get("data") or []
-                
-                if not dados_novos:
-                    print(f"Não foi possível obter o token de {selecao_cliente}")
-                    continue 
-                token = dados_novos[0].get("attributes", {}).get("token")
-                
+
+                token = (
+                    dados_novos[0].get("attributes", {}).get("token")
+                    if dados_novos
+                    else None
+                )
+
+            if not token:
+                self.log.log_erro(
+                    f"Não foi possível obter o token do cliente "
+                    f"{selecao_cliente}",
+                    None
+                )
+                continue
+
             lista_tokens.append(token)
+
         return lista_tokens

@@ -111,11 +111,22 @@ def limpeza_techs_callix(outbound_routes: dict) -> str:
         if tech:
             return tech
 
-    raise ValueError("Cliente sem rota validas, retornando zero como valor padrão.")
+    raise ValueError("Cliente sem rota valida, retornando zero como valor padrão.")
+
+def produtos_contratados(produto):
+    return produto["webAccess"]["professional"]["units"]
+
+def preco_produto(produto):
+    return produto["webAccess"]["professional"]["unitPrice"]
 
 
 
-def limpeza_req_callix(json_agressividade, json_agentes, techs_json):
+def limpeza_req_callix(json_agressividade, json_agentes, techs_json, produto):
 
-    return limpar_agressividade(json_agressividade), limpar_chamadas_agentes(json_agentes), limpeza_techs_callix(techs_json)
+    return (limpar_agressividade(json_agressividade),
+            limpar_chamadas_agentes(json_agentes),
+            limpeza_techs_callix(techs_json),
+            produtos_contratados(produto),
+            preco_produto(produto))
+
     

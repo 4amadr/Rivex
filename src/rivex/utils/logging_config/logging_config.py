@@ -203,5 +203,15 @@ class LoggingDatabaseConfig:
     def registro_erro_envio(self, erro):
         self.log_conf.log_erro("Erro envio DB!", erro)
 
+    def erro_db(self, erro, query):
+        self.log_conf.log_erro(f"ERRO -  QUERY: {query} - ERRO: {erro}")
+
+    def erro_db_comentado(self, comentario, erro):
+        self.log_conf.log_erro(comentario, erro)
+
+
     def conferencia_dados(self, dados):
         self.log_conf.log_info("Conferencia de dados", dados)
+
+    def erro_consulta(self, query, erro):
+        self.log_conf.log_erro(f"ERRO DURANTE A CONSULTA - QUERY: {query}. ERRO: {erro}")

@@ -13,7 +13,7 @@ class DatabaseClientes:
         self.conexao = self.db.conexao
         self.query_criar_tabela_clientes = """
         CREATE TABLE IF NOT EXISTS clientes.clientes_callix (
-            cliente TEXT NOT NULL,
+            cliente_nome TEXT NOT NULL,
             token TEXT,
             ativo BOOLEAN NOT NULL DEFAULT TRUE,
             PRIMARY KEY (cliente)
@@ -61,18 +61,18 @@ class DatabaseClientes:
         self.query_adicionar_token_db = """
     UPDATE clientes.clientes_callix
     SET token = %(token)s
-    WHERE cliente = %(cliente)s;
+    WHERE cliente_nome = %(cliente)s;
 """
         self.query_criar_view_clientes_ativos = """
     CREATE OR REPLACE VIEW clientes.vw_clientes_ativos AS
     SELECT
-        cliente,
+        cliente_nome,
         token
     FROM clientes.clientes_callix
     WHERE ativo = TRUE;
 """
         self.query_consultar_clientes_ativos = """
-    SELECT cliente, token
+    SELECT cliente_nome, token
     FROM clientes.vw_clientes_ativos;
 """
 
@@ -98,12 +98,12 @@ class DatabaseClientes:
             }
         except psycopg2.Error as erro:
             self.conexao.rollback()
-            log.error("Erro ao remover o cliente: %s", erro)
+            self.log_db.erro_configuracao("Erro ao remover o cliente: %s")
             raise
 
     def sincronizar_clientes(self):
         try:
-            self.cursor.execute(self.query_verificar_clientes)
+            self.cursor.execute(self.query_buscar_clientes)
             self.conexao.commit()
 
             resultado = self.cursor.fetchall()
@@ -170,8 +170,8 @@ class DatabaseClientes:
             ]
             return clientes_db
         except Exception as erro:
-            self.execucao.rollback()
-            self.load_log.registrar_erro_db(self.query_consultar_clientes_ativos, erro)
+            self.conexao.rollback()
+            self.log_db.erro_consulta(self.query_consultar_clientes_ativos, erro)
             raise
     
     

@@ -18,7 +18,7 @@ class HttpRequisitions:
         resposta = self.session.request(
             metodo, url,
             params=params, data=data, json=json,
-            headers=headers, cookies=cookies, verify=verify
+            headers=headers, cookies=cookies, verify=verify, timeout=(10,60)
         )
         if resposta.status_code != 200:
             self.extract_logger.registrar_falha(url, resposta.status_code, headers, params)

@@ -8,15 +8,15 @@ class DatabaseClientesCallix:
         self.cursor = self.db.cursor
         self.conexao = self.db.conexao
         self.query_insert_clientes_callix = query_insert_cliente
+        self.log = LoggingDatabaseConfig()
 
     def criar_tabela_cliente(self, query_criar_tabela):
         try:
             self.cursor.execute(query_criar_tabela)
-            log.info("Tabela de informações de clientes criadas")
             self.conexao.commit()
         except psycopg2.Error as erro:
             self.conexao.rollback()
-            log.error("Erro ao criar tabelas: %s", erro)
+            self.log.erro_db(query_criar_tabela, erro)
             raise
 
     def enviar_info_cliente(self, dados_cliente):
@@ -29,7 +29,7 @@ class DatabaseClientesCallix:
 
         except psycopg2.Error as erro:
             self.conexao.rollback()
-            log.error(
+            self.log.erro_db_comentado(
                 "Erro ao inserir cliente Callix: %s",
                 erro
             )
@@ -62,7 +62,7 @@ class DatabaseTelefonia:
 
         except psycopg2.Error as erro:
             self.conexao.rollback()
-            self.log.registro_erro_envio(dados, erro)
+            self.log.registro_erro_envio(erro)
             raise
 
     def fechar_db(self):

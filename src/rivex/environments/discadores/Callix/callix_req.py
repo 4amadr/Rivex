@@ -69,13 +69,18 @@ class CAllixRequisition:
         return lista_agressividades
 
     def get_tech_cliente(self, cliente, token):
-        tech = self.http_request.requisicao_get(
+        return self.http_request.requisicao_get(
             headers=headers_callix(token),
             url=self.url.url_get_tech(cliente),
             payload_get=payload_get_tech()
             )
 
-        return tech
+    def get_info_produto_cliente(self, cliente, token):
+        return self.http_request.requisicao_get(
+            headers=headers_callix(token),
+            url=self.url.url_info_produto(cliente),
+            payload_get={}
+        )
 
     def requisicao_callix(self, id_campanha, cliente, token):
         url_login, url_chamadas_agentes = self.url_callix(cliente)
@@ -85,9 +90,11 @@ class CAllixRequisition:
         chamadas_por_agentes = self.get_chamadas_agentes(url_final, url_chamadas_agentes, login)
         agressividade = self.agressividade(login, cliente, id_campanha) # lista
         tech = self.get_tech_cliente(cliente, login)
+        produto = self.get_info_produto_cliente()
         
         return {
-            "chamadas por agentes brutas":chamadas_por_agentes.json(),
-            "agressividade bruta": agressividade,
-            "tech bruta": tech.json(),
+            "chamadas agentes":chamadas_por_agentes.json(),
+            "agressividade": agressividade,
+            "tech": tech.json(),
+            "produto": produto.json()
             }

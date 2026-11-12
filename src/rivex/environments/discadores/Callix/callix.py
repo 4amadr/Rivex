@@ -16,11 +16,17 @@ class CallixAPICollector:
         url = f'https://{cliente}.callix.com.br/api/v1/{endpoint}'
         return url
     
+    
     def campanha(self, token, cliente):
-        campanha = self.hr.requisicao_get(url=self.url_tratada(cliente, 'campaigns'),
-                                          payload_get={},
-                                          headers=headers_callix(token))
+        url = self.url_tratada(cliente, 'campaigns')
+
+        campanha = self.hr.requisicao_get(
+            url=url,
+            payload_get={},
+            headers=headers_callix(token)
+        )
         return campanha
+
 
     def resumo_campanha(self, cliente, token):
         resumo_campanha = self.hr.requisicao_get(url=self.url_tratada(cliente, 'campaign_call_summaries'),

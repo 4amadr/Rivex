@@ -32,6 +32,9 @@ class UrlGetData:
     def url_create_tokens(self, cliente):
         return f"https://{cliente}.callix.com.br/api/v4/entities/api-tokens"
 
+    def url_info_produto(self, cliente):
+        return f"https://{cliente}.callix.com.br/api/v4/user-context"
+
     def url_agressividade(self, cliente, id_campanha):
         lista_de_urls_de_agressividade = []
         for campanha in id_campanha:

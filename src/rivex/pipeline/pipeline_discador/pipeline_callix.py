@@ -13,8 +13,8 @@ from src.rivex.environments.discadores.Callix.sincronizar_clientes import Sincro
 from src.rivex.database.database_callix.database_callix import DatabaseCallix
 
 load_dotenv()
-
-
+print("DEBUG: ARQUIVO CALLIX INICIADO")
+print(f"DEBUG: __name__ = {__name__}")
 class PipelineCallix:
     def __init__(self):
         self.data=DateConfig()
@@ -62,12 +62,12 @@ class PipelineCallix:
             dict_limpeza = processar_dados(
                 dados_brutos_api,
             )
-            agressividade_limpa, chamadas_limpas, tech_limpa = limpeza_req_callix(
-                json_agentes=dados_brutos_req["chamadas por agentes brutas"],
-                json_agressividade=dados_brutos_req["agressividade bruta"],
-                techs_json=dados_brutos_req["tech bruta"]
+            agressividade_limpa, chamadas_limpas, tech_limpa, produtos_contratados, preco_produto  = limpeza_req_callix(
+                json_agentes=dados_brutos_req["chamadas agentes"],
+                json_agressividade=dados_brutos_req["agressividade"],
+                techs_json=dados_brutos_req["tech"],
+                produto=dados_brutos_req["produto"]
             )
-
 
         except Exception as e:
             return None, None, None, None
@@ -134,5 +134,6 @@ class PipelineCallix:
 
 
 
-
+if __name__ == "__main__":
+    print("DEBUG: ENTRADA DIRETA NO CALLIX")
 

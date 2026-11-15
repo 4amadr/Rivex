@@ -3,9 +3,12 @@ import os
 
 class UrlGetClients:
     def __init__(self):
-        self.url_contech = os.getenv('URL_CALLIX_GERAL')
         load_dotenv()
-    
+
+        self.url_contech = os.getenv('URL_CALLIX_GERAL')
+
+        if not self.url_contech:
+            raise RuntimeError("URL_CALLIX_GERAL não foi definida.")
     def url_login_servidor_contech(self):
         return f"{self.url_contech}/api/v4/auth/session"
     

@@ -26,8 +26,8 @@ def payload_callix(requisicao, data, filtro=None, set=None):
         
     return querystring
 
-def payload_login_callix(login_ambiente, password):
-    payload = {"username": login_ambiente, "password": password}
+def payload_login_callix(login_ambiente, password, token):
+    payload = {"username": login_ambiente, "password": password, "captchaToken": token}
     return payload
 
 def headers_callix(token):

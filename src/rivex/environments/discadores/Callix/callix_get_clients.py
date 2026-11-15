@@ -11,30 +11,36 @@ from src.rivex.utils.logging_config.logging_config import LoggingConfig
 
 
 class CallixGetClients:
-    """
-    Classe que vai coletar as URLs de clientes
-    que estão ativos no ambiente da empresa
-    """
     
     def __init__(self):
+        load_dotenv()
         self.url_geral = os.getenv('URL_CALLIX_GERAL')
         self.http_requisition = HttpRequisitions(session=requests.Session())
         self.usuario = os.getenv('USUARIO_CALLIX_GERAL')
         self.senha = os.getenv('SENHA_CALLIX_GERAL')
+        self.token = os.getenv('TOKEN_CALLIX')
         self.url = UrlGetClients()
         self.log = LoggingConfig('get_client', 'Extract')
-
+        
         
     def login_ambiente_padrao(self):
-        '''Loga no ambiente padrão e retorna a sessão'''
-        login = self.http_requisition.requisicao_post_json(url=self.url.url_login_servidor_contech(),
-                                              payload_post=payload_login_callix(login_ambiente=self.usuario, password=self.senha),
-                                              headers=headers_servidor_callix()
-                                              )
-        return self.http_requisition.session
+        """Autentica no ambiente geral do Callix."""
+
+        resposta = self.http_requisition.requisicao_post_json(
+            url=self.url.url_login_servidor_contech(),
+            payload_post=payload_login_callix(
+                login_ambiente=self.usuario,
+                password=self.senha,
+                token=self.token
+            ),
+            headers=headers_servidor_callix()
+        )
+        
+        print(resposta.json())
+        return resposta
+
     
     def get_cliente_nome(self):
-        self.login_ambiente_padrao()
         cliente_ativo = self.http_requisition.requisicao_get(headers=headers_servidor_callix(),
                                                              url=self.url.url_get_clients(),
                                                              payload_get=payload_servidor_callix())
@@ -117,7 +123,7 @@ class GetTokenCallix:
 
             # Se não houver token, tenta criar e consultar novamente
             if not token:
-                self.create_token(selecao_cliente, token_login)
+                self.create_token(token=token_login, cliente=selecao_cliente)
 
                 tokens_novos = self.get_token(
                     token=token_login,

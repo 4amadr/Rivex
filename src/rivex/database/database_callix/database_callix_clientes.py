@@ -5,77 +5,86 @@ from src.rivex.utils.logging_config.logging_config import LoggingDatabaseConfig,
 
 
 class DatabaseClientes:
+    
     def __init__(self):
         self.log_db = LoggingDatabaseConfig()
         self.load_log = LoadLogger()
         self.db = ConexaoDatabaseRivex()
         self.cursor = self.db.cursor
         self.conexao = self.db.conexao
+
         self.query_criar_tabela_clientes = """
-        CREATE TABLE IF NOT EXISTS clientes.clientes_callix (
-            cliente_nome TEXT NOT NULL,
-            token TEXT,
-            ativo BOOLEAN NOT NULL DEFAULT TRUE,
-            PRIMARY KEY (cliente)
+            CREATE TABLE IF NOT EXISTS clientes.clientes_callix (
+                cliente TEXT NOT NULL,
+                token TEXT,
+                ativo BOOLEAN NOT NULL DEFAULT TRUE,
+                PRIMARY KEY (cliente)
             );
-            """
+        """
+
         self.query_inativar_clientes = """
             UPDATE clientes.clientes_callix
             SET ativo = FALSE
             WHERE cliente = %s
                 AND ativo = TRUE
             RETURNING cliente, token;
-"""
-        self.query_enviar_clientes_db = """
-    INSERT INTO clientes.clientes_callix (
-        cliente,
-        ativo
-    )
-    VALUES (
-        %(cliente)s,
-        %(ativo)s
-    )
-    ON CONFLICT (cliente)
-    DO UPDATE SET
-        ativo = EXCLUDED.ativo
-    WHERE
-        clientes.clientes_callix.ativo
-            IS DISTINCT FROM EXCLUDED.ativo;
-"""
-        self.query_buscar_clientes = """
-        SELECT cliente, token, ativo
-        FROM clientes.clientes_callix
-        WHERE ativo = 'TRUE';
         """
-        self.query_reativar_clientes = """
-    UPDATE clientes.clientes_callix
-    SET ativo = TRUE
-    WHERE cliente_nome = %s;
-"""
-        self.query_buscar_clientes_sem_token = """
-        SELECT cliente
-        FROM clientes.clientes_callix
-        WHERE ativo = TRUE
-            AND token is NULL;
-        """
-        self.query_adicionar_token_db = """
-    UPDATE clientes.clientes_callix
-    SET token = %(token)s
-    WHERE cliente_nome = %(cliente)s;
-"""
-        self.query_criar_view_clientes_ativos = """
-    CREATE OR REPLACE VIEW clientes.vw_clientes_ativos AS
-    SELECT
-        cliente_nome,
-        token
-    FROM clientes.clientes_callix
-    WHERE ativo = TRUE;
-"""
-        self.query_consultar_clientes_ativos = """
-    SELECT cliente_nome, token
-    FROM clientes.vw_clientes_ativos;
-"""
 
+        self.query_enviar_clientes_db = """
+            INSERT INTO clientes.clientes_callix (
+                cliente,
+                ativo
+            )
+            VALUES (
+                %(cliente)s,
+                %(ativo)s
+            )
+            ON CONFLICT (cliente)
+            DO UPDATE SET
+                ativo = EXCLUDED.ativo
+            WHERE
+                clientes.clientes_callix.ativo
+                    IS DISTINCT FROM EXCLUDED.ativo;
+        """
+
+        self.query_buscar_clientes = """
+            SELECT cliente, token, ativo
+            FROM clientes.clientes_callix
+            WHERE ativo = TRUE;
+        """
+
+        self.query_reativar_clientes = """
+            UPDATE clientes.clientes_callix
+            SET ativo = TRUE
+            WHERE cliente = %s;
+        """
+
+        self.query_buscar_clientes_sem_token = """
+            SELECT cliente
+            FROM clientes.clientes_callix
+            WHERE ativo = TRUE
+                AND token IS NULL;
+        """
+
+        self.query_adicionar_token_db = """
+            UPDATE clientes.clientes_callix
+            SET token = %(token)s
+            WHERE cliente = %(cliente)s;
+        """
+
+        self.query_criar_view_clientes_ativos = """
+            CREATE OR REPLACE VIEW clientes.vw_clientes_ativos AS
+            SELECT
+                cliente,
+                token
+            FROM clientes.clientes_callix
+            WHERE ativo = TRUE;
+        """
+
+        self.query_consultar_clientes_ativos = """
+            SELECT cliente, token
+            FROM clientes.vw_clientes_ativos;
+        """
                     
                     
         self.db_clientes = DatabaseClientesCallix(self.query_enviar_clientes_db)

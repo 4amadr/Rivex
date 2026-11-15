@@ -12,11 +12,10 @@ from src.rivex.data_processing.Callix.callix_clients import *
 from src.rivex.environments.discadores.Callix.sincronizar_clientes import SincroniaCallix
 from src.rivex.database.database_callix.database_callix import DatabaseCallix
 
-load_dotenv()
-print("DEBUG: ARQUIVO CALLIX INICIADO")
-print(f"DEBUG: __name__ = {__name__}")
+
 class PipelineCallix:
     def __init__(self):
+        load_dotenv()
         self.data=DateConfig()
         self.login=os.getenv("USUARIO_CALLIX_GERAL")
         self.senha=os.getenv("SENHA_CALLIX_GERAL")
@@ -131,9 +130,3 @@ class PipelineCallix:
                 self.banco_callix.db_callix(dados_cliente, dados_agente)
         finally:
             self.banco_callix.fechar()
-
-
-
-if __name__ == "__main__":
-    print("DEBUG: ENTRADA DIRETA NO CALLIX")
-

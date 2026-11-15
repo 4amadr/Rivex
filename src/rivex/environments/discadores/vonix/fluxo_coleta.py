@@ -4,7 +4,6 @@ from dotenv import load_dotenv
 from src.rivex.utils.infra_utils.date_config import DateConfig
 from src.rivex.utils.requests_utils.requests import HttpRequisitions
 from src.rivex.environments.discadores.vonix.payloads_vonix import *
-from src.rivex.environments.discadores.vonix.equipes_vonix import dict_agentes
 from src.rivex.utils.infra_utils.vonix_processing import ClientSimulator
 from bs4 import BeautifulSoup
 
@@ -35,6 +34,9 @@ class GerarUrlVonix:
     
     def _url_techs(self):
         return f"{self.url_base}/admin/routes"
+
+    def _url_operadores_cliente(self):
+        return f"{self.url_base}/admin/agent_list"
     
 
 class ExecucaoVonix:
@@ -93,6 +95,14 @@ class ExecucaoVonix:
         return self.http_requisitions.requisicao_get(payload_get=payload_de_agentes(self.data),
                                     headers=headers(),
                                     url=self.url._url_get_agentes())
+
+    def get_operadores_cliente(self, token=None):
+        """Coleta a lista HTML de operadores vinculados ao(s) cliente(s) filtrado(s) na sessão."""
+        return self.http_requisitions.requisicao_get(
+            payload_get=payload_de_operadores_cliente(),
+            headers=headers_operadores_cliente(self.url_base, token),
+            url=self.url._url_operadores_cliente()
+        )
     
     def coleta_de_agressividade_vonix(self, cliente, token):
         # função para coletar informações de agressividade por equipe     

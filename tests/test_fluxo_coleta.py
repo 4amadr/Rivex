@@ -25,3 +25,28 @@ def test_get_clientes_ambiente_calls_requisicao_get_with_correct_url():
             headers={},
             url="http://mock-vonix.com"
         )
+
+
+def test_get_operadores_cliente_calls_requisicao_get_with_agent_list_url():
+    login = "test_login"
+    senha = "test_password"
+    data = "2026-07-14"
+    url_base = "http://mock-vonix.com"
+
+    with patch("src.rivex.environments.discadores.vonix.fluxo_coleta.HttpRequisitions") as MockHttpRequisitions:
+        mock_http_instance = MagicMock()
+        MockHttpRequisitions.return_value = mock_http_instance
+
+        execucao = ExecucaoVonix(login, senha, data, url_base)
+        execucao.get_operadores_cliente(token="csrf_abc")
+
+        mock_http_instance.requisicao_get.assert_called_once_with(
+            payload_get={},
+            headers={
+                "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36",
+                "X-Requested-With": "XMLHttpRequest",
+                "Referer": "http://mock-vonix.com/admin/agents",
+                "X-CSRF-Token": "csrf_abc",
+            },
+            url="http://mock-vonix.com/admin/agent_list",
+        )

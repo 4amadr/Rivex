@@ -81,3 +81,18 @@ def payload_de_agressividade(token):
         'authenticity_token': token
     }
     return payload
+
+
+def payload_de_operadores_cliente():
+    return {}
+
+
+def headers_operadores_cliente(url_base, token=None):
+    req_headers = headers()
+    req_headers.update({
+        "X-Requested-With": "XMLHttpRequest",
+        "Referer": f"{url_base}/admin/agents"
+    })
+    if token:
+        req_headers["X-CSRF-Token"] = token
+    return req_headers

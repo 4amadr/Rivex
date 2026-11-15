@@ -91,8 +91,7 @@ class PipelineIpbox:
                 execucao_ipbox,
                 id_cliente
                 )
-            
-            print(dados_cliente)
+
             
             if dados_cliente is None:
                 continue

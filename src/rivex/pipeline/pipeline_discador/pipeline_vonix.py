@@ -23,7 +23,7 @@ logger.addHandler(handler_vonix)
 logger.info("Iniciando configuração do servidor Vonix...")
 
 class PipelineVonix:
-    def __init__(self):
+    def __init__(self, usar_db: bool = True):
         load_dotenv()
         self.data = DateConfig()
         self.login = os.getenv('LOGIN_VONIX')
@@ -37,7 +37,8 @@ class PipelineVonix:
             data=self.data.data_selecionadas(),
             url_base=self.url
         )
-        self.db = DatabaseVonix()
+        self.limpeza_vonix = LimpezaVonix()
+        self.db = DatabaseVonix() if usar_db else None
 
     def inicial_config(self):
         token_encontrado = self.vonix_execucao.token_pronto()
@@ -84,7 +85,42 @@ class PipelineVonix:
         return dados_cliente
         
     def execucao_limpeza_agentes_vonix(self, cliente, agentes, tech, data):
-        return dict_agentes(agentes.text, tech, cliente, data)        
+        return dict_agentes(agentes.text, tech, cliente, data)
+
+    def get_operadores_cliente_sujos(self, cliente, token):
+        self.vonix_execucao.get_filtragem(cliente, token)
+        return self.vonix_execucao.get_operadores_cliente(token)
+
+    def execucao_limpeza_operadores_cliente(self, operadores_html, cliente=None):
+        return self.limpeza_vonix.extrair_operadores_cliente(operadores_html, cliente=cliente)
+
+    def execucao_teste_operadores_vonix(self, clientes_teste=None, limite=3):
+        lista_clientes, token = self.inicial_config()
+        if clientes_teste is not None:
+            alvos = list(clientes_teste)
+        else:
+            alvos = [
+                cliente
+                for cliente in lista_clientes
+                if "itelink" not in cliente.lower()
+                and not cliente.lower().endswith("manual")
+                and not cliente.lower().startswith("zz")
+            ][:limite]
+
+        resultados = {}
+        for cliente_selecionado in alvos:
+            logger.info(f"Coletando operadores via /admin/agent_list para o cliente: {cliente_selecionado}")
+            resposta_operadores = self.get_operadores_cliente_sujos(cliente_selecionado, token)
+            operadores_limpos = self.execucao_limpeza_operadores_cliente(
+                resposta_operadores,
+                cliente=cliente_selecionado
+            )
+            resultados[cliente_selecionado] = operadores_limpos
+            logger.info(
+                f"Operadores coletados para {cliente_selecionado} "
+                f"(status={resposta_operadores.status_code}, total={len(operadores_limpos)}): {operadores_limpos}"
+            )
+        return resultados
 
     def execucao_vonix(self):
         lista_clientes, token = self.inicial_config()
@@ -120,4 +156,17 @@ class PipelineVonix:
             time.sleep(self.tempo_int)
         self.db.fechar_db_vonix()
 
-        
+
+if __name__ == "__main__":
+    logging.basicConfig(
+        level=logging.INFO,
+        format="%(asctime)s - %(levelname)s [%(filename)s:%(lineno)d] - %(message)s",
+    )
+    pipeline = PipelineVonix(usar_db=False)
+    resultados = pipeline.execucao_teste_operadores_vonix(
+        clientes_teste=["realpromotora", "tcrepresentacao03", "oneinvest"]
+    )
+    for cliente, operadores in resultados.items():
+        print(f"\n=== Cliente: {cliente} | Operadores ativos: {len(operadores)} ===")
+        for operador in operadores:
+            print(operador)

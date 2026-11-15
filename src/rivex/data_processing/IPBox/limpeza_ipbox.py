@@ -17,9 +17,7 @@ def get_tech_cliente(cliente):
     match = re.search(r"(\d{4})#(\d{2})", cliente)
 
     if not match:
-        raise ValueError(
-            f"Não foi possível identificar a tech do cliente: {cliente!r}"
-        )
+        return 0
 
     return int(f"{match.group(1)}{match.group(2)}")
 
@@ -65,7 +63,21 @@ def limpar_nome_cliente(time):
 def get_chamadas_completas_agente(agentes_json):
     return agentes_json['atendimentos']
 
-def empacotar_dados_clientes(chamadas_json, cliente, data, agressividade):
+def get_operadores(operadores_html):
+    soup = gerar_html(operadores_html)
+    container = soup.find(id="gridUsuarios") or soup.find(id="intGridUsuarios")
+    if not container:
+        return []
+
+    operadores = []
+    for tabela in container.find_all("table", class_="grid"):
+        for linha in tabela.find_all("tr", class_=["linha1", "linha2"]):
+            colunas = linha.find_all("td")
+            if len(colunas) >= 2 and colunas[1].get_text(strip=True).lower() == "agente":
+                operadores.append(colunas[0].get_text(strip=True))
+    return list(dict.fromkeys(operadores))
+
+def empacotar_dados_clientes(chamadas_json, cliente, data, agressividade, operadores):
     return {
         "tech": get_tech_cliente(cliente),
         "cliente_nome": cliente,
@@ -74,7 +86,8 @@ def empacotar_dados_clientes(chamadas_json, cliente, data, agressividade):
         "completas": get_chamadas_completas_cliente(chamadas_json),
         "recusadas": get_chamadas_recusadas_cliente(chamadas_json),
         "abandonadas": get_chamadas_abandonadas_cliente(chamadas_json),
-        "agressividade": get_agressividade(agressividade)
+        "agressividade": get_agressividade(agressividade),
+        "operadores": get_operadores(operadores)
     }
     
 def chamadas_agente(agente):

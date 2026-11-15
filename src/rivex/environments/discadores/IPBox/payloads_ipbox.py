@@ -56,3 +56,9 @@ def payload_api_telefonia(data, cliente):
     cliente = cliente.strip()
     # Retorna um dicionário puro em vez de uma string com '&'
     return {"de": f"{data}000000", "ate": f"{data}235959", "operacao": cliente}
+
+def payload_get_clientes_painel_de_estado():
+    return {"selectActive": "Y"}
+
+def payload_get_operadores_ativos(time_id):
+    return {"act": "alter", "obj_time_id": time_id}

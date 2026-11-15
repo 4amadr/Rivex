@@ -29,6 +29,12 @@ class UrlIpbox:
     def _gerar_url_relatorio_agentes(self):
         return f'{self.url}/ipbox/api/getPA1'
     
+    def _gerar_url_painel_clientes_ativos(self):
+        return f'{self.url}/contech/listTime.php'
+    
+    def _gerar_url_painel_operadores_ativos(self):
+        return f'{self.url}/contech/editTime.php'
+    
 class IpboxInit:
     def __init__(self, login, senha, data, url):
         self.url = UrlIpbox(url)
@@ -98,6 +104,26 @@ class IpboxClientConfig:
         return self.http_client.requisicao_post(headers=headers_api_telefonia(self.token),
                                          payload_post=self.data_agentes,
                                          url=self.url._gerar_url_relatorio_agentes())
+        
+    def get_lista_clientes(self):
+        return self.http_client.requisicao_post(headers=headers_ipbox(),
+                                                payload_post=payload_get_clientes_painel_de_estado(),
+                                                url=self.url._gerar_url_painel_clientes_ativos()
+                                                )
+        
+    def get_operadores_ativos(self, id_cliente):
+        operadores = self.http_client.requisicao_get(headers=headers_ipbox(),
+                                                payload_get=payload_get_operadores_ativos(id_cliente),
+                                                url=self.url._gerar_url_painel_operadores_ativos())
+        return operadores
+        
 
     def execucao_ipbox(self, nome_cliente, id_cliente):
-        return self.get_agressividade(id_cliente).text, self.get_relatorio_chamadas(nome_cliente).json()
+        agressividade = self.get_agressividade(id_cliente)
+        chamadas = self.get_relatorio_chamadas(nome_cliente)
+        return {
+            "Agressividade": agressividade.text,
+            "Chamadas": chamadas.json(),
+            "Operadores": agressividade.text,
+        }
+        

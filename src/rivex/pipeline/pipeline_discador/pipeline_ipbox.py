@@ -52,9 +52,8 @@ class PipelineIpbox:
     def processar_cliente(self, cliente, ipbox_client, id_cliente):
         '''Processa a extração e limpeza de dados em um cliente'''
         try:
-            logger.info(f"Cliente atual: {cliente}")
-            agressividade, chamadas, = ipbox_client.execucao_ipbox(nome_cliente=cliente, id_cliente=id_cliente)
-            dict_cliente = empacotar_dados_clientes(chamadas, cliente, self.data_ipbox, agressividade)
+            dados_sujos = ipbox_client.execucao_ipbox(nome_cliente=cliente, id_cliente=id_cliente)
+            dict_cliente = empacotar_dados_clientes(dados_sujos["Chamadas"], cliente, self.data_ipbox, dados_sujos["Agressividade"], dados_sujos["Operadores"])
             return dict_cliente
 
         except Exception as e:
@@ -79,7 +78,6 @@ class PipelineIpbox:
 
         html_clientes = gerar_html(clientes_texto)
         lista_clientes = gerar_lista_clientes(html_clientes)     
-        
         agentes_json = execucao_ipbox.get_relatorio_agente().json()
 
         for cliente in lista_clientes:
@@ -94,7 +92,8 @@ class PipelineIpbox:
                 id_cliente
                 )
             
-
+            print(dados_cliente)
+            
             if dados_cliente is None:
                 continue
 

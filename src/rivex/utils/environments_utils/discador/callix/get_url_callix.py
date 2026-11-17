@@ -15,10 +15,13 @@ class UrlGetClients:
     def url_get_clients(self):
         return f'{self.url_contech}/api/v4/tenants/sub-accounts'
     
+    def url_sub_accounts_v1(self):
+        return f'{self.url_contech}/api/v1/sub_accounts'
+    
 class UrlGetData:
     
     def login_cliente_header(self, cliente):
-        return f'https://{cliente}contech.callix.com.br/login'
+        return f'https://{cliente}.callix.com.br/login'
     
     def login_cliente(self, cliente):
         return f'https://{cliente}.callix.com.br/api/v4/auth/session'
@@ -37,6 +40,35 @@ class UrlGetData:
 
     def url_info_produto(self, cliente):
         return f"https://{cliente}.callix.com.br/api/v4/user-context"
+    
+    def url_users_v1(self, cliente):
+        return f"https://{cliente}.callix.com.br/api/v1/users"
+    
+    def url_sdk_user_session(self, cliente):
+        return f"https://{cliente}.callix.com.br/sdk/v1/server/user-session"
+    
+    def url_logout_v4(self, cliente):
+        return f"https://{cliente}.callix.com.br/api/v4/auth/session"
+    
+    def url_accounts(self, cliente):
+        return f"https://{cliente}.callix.com.br/api/v4/entities/accounts"
+    
+    def url_campanhas_v4(self, cliente):
+        return f"https://{cliente}.callix.com.br/api/v4/entities/campaigns"
+    
+    def url_audit_logs(self, cliente):
+        return f"https://{cliente}.callix.com.br/api/v4/entities/audit-logs"
+    
+    def url_chamadas_completas_v4(self, cliente):
+        return f"https://{cliente}.callix.com.br/api/v4/entities/campaign-completed-calls"
+
+    def url_outbound_routes(self, cliente):
+        return f"https://{cliente}.callix.com.br/api/v4/entities/outbound-routes"
+
+    def url_user_performance_histories(self, cliente):
+        return f"https://{cliente}.callix.com.br/api/v4/entities/user-performance-histories"
+     
+     
 
     def url_agressividade(self, cliente, id_campanha):
         lista_de_urls_de_agressividade = []

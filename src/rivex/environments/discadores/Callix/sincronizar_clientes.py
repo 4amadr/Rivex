@@ -10,7 +10,11 @@ class SincroniaCallix():
         return [
             {
                 "cliente": c["cliente"],
-                "ativo": c["status"] != 4
+                "ativo": (
+                    c["status"].strip().lower() == "active"
+                    if isinstance(c["status"], str)
+                    else c["status"] == 3
+                ),
             }
             for c in clientes_totais
         ]
@@ -23,8 +27,13 @@ class SincroniaCallix():
     def buscar_clientes_sem_token(self):
         return self.db_clientes.buscar_clientes_sem_token()
 
-    def adicionar_token_ao_db(self, lista_tokens_novos, lista_clientes_sem_token):
-        for token, cliente in zip(lista_tokens_novos, lista_clientes_sem_token):
+    def adicionar_token_ao_db(self, lista_tokens_novos, lista_clientes_sem_token=None):
+        if isinstance(lista_tokens_novos, dict):
+            for cliente, token in lista_tokens_novos.items():
+                self.db_clientes.adicionar_token_ao_db(token, cliente)
+            return
+
+        for token, cliente in zip(lista_tokens_novos, lista_clientes_sem_token or []):
             self.db_clientes.adicionar_token_ao_db(token, cliente)
 
     def coletar_tokens(self, cliente_sem_token):

@@ -57,4 +57,9 @@ class HttpRequisitions:
                         cookies_requisicao: str | None = None):
         """GET padrão (verify=True), com ou sem cookies."""
         return self._requisitar("GET", url, headers, params=payload_get, cookies=cookies_requisicao)
+
+    def requisicao_delete(self, headers: dict, url: str,
+                          cookies_requisicao: str | None = None):
+        """DELETE padrão (verify=True), com ou sem cookies."""
+        return self._requisitar("DELETE", url, headers, cookies=cookies_requisicao)
  

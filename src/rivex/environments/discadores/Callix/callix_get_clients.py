@@ -23,33 +23,20 @@ class CallixGetClients:
         self.log = LoggingConfig('get_client', 'Extract')
         
         
-    def login_ambiente_padrao(self):
-        """Autentica no ambiente geral do Callix."""
-
-        resposta = self.http_requisition.requisicao_post_json(
-            url=self.url.url_login_servidor_contech(),
-            payload_post=payload_login_callix(
-                login_ambiente=self.usuario,
-                password=self.senha,
-                token=self.token
-            ),
-            headers=headers_servidor_callix()
-        )
-        
-        print(resposta.json())
-        return resposta
-
-    
     def get_cliente_nome(self):
-        cliente_ativo = self.http_requisition.requisicao_get(headers=headers_servidor_callix(),
-                                                             url=self.url.url_get_clients(),
-                                                             payload_get=payload_servidor_callix())
-        return cliente_ativo
-    
+        if not self.token:
+            raise RuntimeError(
+                "TOKEN_CALLIX não foi definido para consultar sub_accounts."
+            )
+
+        return self.http_requisition.requisicao_get(
+            headers=headers_callix(self.token),
+            url=self.url.url_sub_accounts_v1(),
+            payload_get=payload_servidor_callix(),
+        )
+
     def get_infos_callix(self):
-        self.login_ambiente_padrao()
-        nome_clientes_ativos = self.get_cliente_nome()
-        return nome_clientes_ativos
+        return self.get_cliente_nome()
     
 class GetTokenCallix:
     """
@@ -58,21 +45,35 @@ class GetTokenCallix:
     """
     
     def __init__(self):
+        load_dotenv()
         self.login = os.getenv('USUARIO_CALLIX_GERAL')
         self.senha = os.getenv('SENHA_CALLIX_GERAL')
+        self.token = os.getenv('TOKEN_CALLIX', '')
         self.http_request = HttpRequisitions(session=requests.Session())
         self.url = UrlGetData()
         self.log = LoggingConfig('get_token', 'config_sys')
 
     def login_callix(self, cliente):
-        self.log.log_info(f"Cliente logado atualmente", cliente)
-        login = self.http_request.requisicao_post_json(payload_post=payload_login_callix(self.login, self.senha),
-                                        headers=headers_login_callix(self.url.login_cliente_header(cliente)),
-                                        url=self.url.login_cliente(cliente)
-                                        )
-        self.log.log_info(f"Resposta do cliente novo: {cliente}", {login.status_code})
-        token = login.json()['token']
-        return token
+        self.log.log_info("Cliente logado atualmente", cliente)
+        login = self.http_request.requisicao_post_json(
+            payload_post=payload_login_callix(self.login, self.senha, self.token),
+            headers=headers_login_callix(self.url.login_cliente_header(cliente)),
+            url=self.url.login_cliente(cliente),
+        )
+        self.log.log_info(f"Resposta do cliente novo: {cliente}", login.status_code)
+        try:
+            dados = login.json()
+        except ValueError as erro:
+            raise ValueError(
+                f"Resposta inválida no login de {cliente} (status={login.status_code})"
+            ) from erro
+
+        if not login.ok or "token" not in dados:
+            raise ValueError(
+                f"Login recusado para {cliente} (status={login.status_code}): {dados}"
+            )
+
+        return dados["token"]
 
     def get_token(self, token, cliente):
         '''Retorna o token do cliente usado em requisições de API'''
@@ -94,58 +95,57 @@ class GetTokenCallix:
 
 
     def fluxo_de_tokens(self, clientes_ativos):
-        lista_tokens = []
+        tokens_por_cliente = {}
 
         for selecao_cliente in clientes_ativos:
             try:
                 # Login no ambiente do cliente
                 token_login = self.login_callix(selecao_cliente)
 
-            except Exception as e:
-                self.log.log_erro(
-                    f"Falha no login para o cliente {selecao_cliente}",
-                    e
-                )
-                continue
-
-            tokens_api = self.get_token(
-                token=token_login,
-                cliente=selecao_cliente
-            )
-
-            dados = tokens_api.get("data") or []
-
-            token = (
-                dados[0].get("attributes", {}).get("token")
-                if dados
-                else None
-            )
-
-            # Se não houver token, tenta criar e consultar novamente
-            if not token:
-                self.create_token(token=token_login, cliente=selecao_cliente)
-
-                tokens_novos = self.get_token(
+                tokens_api = self.get_token(
                     token=token_login,
                     cliente=selecao_cliente
                 )
 
-                dados_novos = tokens_novos.get("data") or []
+                dados = tokens_api.get("data") or []
 
                 token = (
-                    dados_novos[0].get("attributes", {}).get("token")
-                    if dados_novos
+                    dados[0].get("attributes", {}).get("token")
+                    if dados
                     else None
                 )
 
-            if not token:
+                # Se não houver token, tenta criar e consultar novamente
+                if not token:
+                    self.create_token(token=token_login, cliente=selecao_cliente)
+
+                    tokens_novos = self.get_token(
+                        token=token_login,
+                        cliente=selecao_cliente
+                    )
+
+                    dados_novos = tokens_novos.get("data") or []
+
+                    token = (
+                        dados_novos[0].get("attributes", {}).get("token")
+                        if dados_novos
+                        else None
+                    )
+
+                if not token:
+                    self.log.log_erro(
+                        f"Não foi possível obter o token do cliente {selecao_cliente}",
+                        None
+                    )
+                    continue
+
+                tokens_por_cliente[selecao_cliente] = token
+
+            except Exception as e:
                 self.log.log_erro(
-                    f"Não foi possível obter o token do cliente "
-                    f"{selecao_cliente}",
-                    None
+                    f"Falha ao obter token para o cliente {selecao_cliente}",
+                    e
                 )
                 continue
 
-            lista_tokens.append(token)
-
-        return lista_tokens
+        return tokens_por_cliente

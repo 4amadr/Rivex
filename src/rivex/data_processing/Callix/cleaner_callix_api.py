@@ -2,11 +2,20 @@ from src.rivex.utils.infra_utils.date_config import DateConfig
 import json
     
     
-def _limpar_chamadas(resumo, tipo_chamada: str):
-    return resumo["data"][0]["attributes"][tipo_chamada]
+def _limpar_chamadas(resumo, tipo_chamada: str) -> int:
+    dados = resumo.get("data") or []
+    return sum(
+        item.get("attributes", {}).get(tipo_chamada, 0) or 0
+        for item in dados
+    )
 
-def _extrair_ids(campanha):
-    return [int(item) for item in campanha[0]]
+
+def _extrair_ids(campanha) -> list[int]:
+    if not campanha:
+        return []
+    if isinstance(campanha[0], (list, tuple)):
+        return [int(item) for item in campanha[0]]
+    return [int(item) for item in campanha]
 
 
 def processar_dados(dados_brutos_api):

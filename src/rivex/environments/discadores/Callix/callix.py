@@ -35,7 +35,13 @@ class CallixAPICollector:
         return resumo_campanha
             
     def api_callix(self, token, cliente):
-        campanha_json = self.campanha(token, cliente).json()
+        resposta_campanha = self.campanha(token, cliente)
+        campanha_json = resposta_campanha.json()
+        if "data" not in campanha_json:
+            raise RuntimeError(
+                f"Resposta inesperada em campaigns para {cliente} "
+                f"(status={resposta_campanha.status_code}): {campanha_json}"
+            )
         campanhas = [campanha['id'] for campanha in campanha_json['data']]
         resumo_campanha = self.resumo_campanha(cliente, token)
         

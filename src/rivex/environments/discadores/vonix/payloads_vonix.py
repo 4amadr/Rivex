@@ -1,5 +1,3 @@
-import os
-
 def payload_de_login(username, password, token):
     payload_login = {
         'authenticity_token': token,

@@ -1,10 +1,6 @@
-import os
 import requests
-from dotenv import load_dotenv
-from src.rivex.utils.infra_utils.date_config import DateConfig
 from src.rivex.utils.requests_utils.requests import HttpRequisitions
 from src.rivex.environments.discadores.vonix.payloads_vonix import *
-from src.rivex.utils.infra_utils.vonix_processing import ClientSimulator
 from bs4 import BeautifulSoup
 
 '''Classe feita para executar cada etapa do discador vonix contando com
@@ -13,10 +9,7 @@ Login + TOKEN -> Filtragem + TOKEN -> Chamadas + TOKEN -> Agentes online + TOKEN
 class GerarUrlVonix:
     def __init__(self, url_base):
         self.url_base = url_base
-        
-    def _url_base(self):
-        return self.url_base
-    
+
     def _url_login(self):
         return f"{self.url_base}/login/signin"
     
@@ -48,7 +41,6 @@ class ExecucaoVonix:
         self.session = requests.Session()
         self.url = GerarUrlVonix(url_base)
         self.http_requisitions = HttpRequisitions(self.session)
-        self.real_client = ClientSimulator(self.session)
 
     def get_cookie(self):
         return self.session.get(self.url._url_login())

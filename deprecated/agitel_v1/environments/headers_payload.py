@@ -32,16 +32,3 @@ def payload_get_id_cliente():
         'nome_cliente ': ""
     }
     return payload
-
-def payload_chamadas_tarifadas(id_cliente, data):
-    payload = {
-        'customer_id': f'{id_cliente}',
-        'startDate': f'{data}',
-        'finalDate': f'{data}',
-        'sipcode': 200,
-        'tipo_exibicao': 'tela',
-        'checkbox_columns': '1',
-        'exibir_totais': '1',
-        'action': 'Buscar'
-    }
-    return payload

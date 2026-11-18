@@ -5,20 +5,6 @@ def limpar_cliente(cliente):
     return re.sub(r'(?i)^contech\s*-\s*', '', cliente).strip()
 
 
-def get_clientes_callix(clientes_json):
-    """
-    Retorna uma lista com o nome dos clientes ativos no servidor.
-    """
-    return limpar_cliente(clientes_json['data']['attributes']['name'])
-
-
-def get_status_cliente(clientes_json):
-    return [{
-        "cliente": get_clientes_callix(clientes_json),
-        "status": estado['attributes']['status']}
-        for estado in clientes_json['data']
-    ]
-    
 def get_clientes_servidor_callix(clientes_json):
     lista_callix = []
 

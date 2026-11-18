@@ -1,58 +1,48 @@
-import pandas as pd
-from src.rivex.environments.discadores.Callix.callix_req import CAllixRequisition
-from collections import namedtuple
-import unicodedata
+import logging
 import re
+import unicodedata
 
-'''
-Modulo para limpar os dados que vem de requisições do callix.
-Aqui serão limpos:
-1 - Dados coletados via requests, sem API
-2 - Dados coletados em fontes do callix que não tem documentação explicita
-3 - Dados que não estão contidos no resultado da API
-'''
-AgenteData = namedtuple(
-    "AgenteData",
-    []    
-)
+log = logging.getLogger(__name__)
 
 
-def limpar_chamadas_agentes(json_agentes):
-    dados = json_agentes
-
-    # se não houver "included", não há agentes para processar
-    if "included" not in dados:
-        print("Sem dados de agentes na resposta da API")
+def limpar_chamadas_agentes(json_agentes: dict) -> list[dict]:
+    if "included" not in json_agentes:
+        log.debug("Sem dados de agentes na resposta da API")
         return []
 
     usuarios = {
-        user["id"]: user["attributes"]["name"]
-        for user in dados["included"]
-        if user["type"] == "users"
+        user["id"]: user.get("attributes", {}).get("name", "Desconhecido")
+        for user in json_agentes["included"]
+        if user.get("type") == "users" and "id" in user
     }
 
     if not usuarios:
-        print("Sem dados")
+        log.debug("Nenhum usuario encontrado em included")
         return []
 
-    resultado = [
-        {
-            "agente": usuarios.get(item["relationships"]["user"]["data"]["id"], "Desconhecido"),
-            "Chamadas atendidas": item["attributes"]["answeredCount"]
-        }
-        for item in dados["data"]
-    ]
+    resultado = []
+    for item in json_agentes.get("data", []):
+        user_data = (
+            (item.get("relationships") or {}).get("user") or {}
+        ).get("data") or {}
+        user_id = user_data.get("id")
+        answered = (item.get("attributes") or {}).get("answeredCount", 0)
+        resultado.append({
+            "agente": usuarios.get(user_id, "Desconhecido"),
+            "Chamadas atendidas": answered,
+        })
 
     return resultado
 
+
 def _normalizar_texto(texto: str) -> str:
     texto = unicodedata.normalize("NFD", texto)
-    
     return "".join(
         caractere
         for caractere in texto
         if unicodedata.category(caractere) != "Mn"
     ).lower()
+
 
 def _rota_valida(name: str) -> bool:
     """
@@ -61,72 +51,44 @@ def _rota_valida(name: str) -> bool:
     Rotas contendo #Geral, Manual ou MaximaVoip são ignoradas.
     """
     nome = _normalizar_texto(name)
-
-    termos_ignorados = (
-        "#geral",
-        "manual",
-        "maximavoip",
-    )
-
+    termos_ignorados = ("#geral", "manual", "maximavoip")
     return not any(termo in nome for termo in termos_ignorados)
+
 
 def _extrair_tech(name: str) -> str | None:
     """
     Extrai o valor da Tech presente no nome da rota.
 
     Exemplo:
-        '1036#01 - Pentagono (Tech: 103601)'
-        -> '103601'
+        '1036#01 - Pentagono (Tech: 103601)' -> '103601'
     """
     match = re.search(r"\(Tech:\s*(\d+)\)", name)
+    return match.group(1) if match else None
 
-    if match:
-        return match.group(1)
-
-    return None
 
 def limpeza_techs_callix(outbound_routes: dict) -> str:
-    """
-    Recebe o JSON de outbound-routes e retorna a Tech
-    apropriada para ser enviada ao banco de dados.
-    """
+    """Extrai a Tech da primeira rota válida em outbound-routes."""
     for rota in outbound_routes.get("data", []):
-
-        attributes = rota.get("attributes", {})
-        name = attributes.get("name", "")
-
+        name = rota.get("attributes", {}).get("name", "")
         if not _rota_valida(name):
             continue
 
         tech = _extrair_tech(name)
-
         if tech:
             return tech
 
-    raise ValueError("Cliente sem rota valida, retornando zero como valor padrão.")
-
-def produtos_contratados(produto):
-    return produto["webAccess"]["professional"]["units"]
-
-def preco_produto(produto):
-    return produto["webAccess"]["professional"]["unitPrice"]
+    raise ValueError("Cliente sem rota válida para extração de Tech.")
 
 
 def extrair_operadores_contratados(accounts: dict) -> dict:
     contas = accounts.get("data", [])
-
     if not contas:
         raise ValueError("Nenhuma conta encontrada no Callix.")
 
     attributes = contas[0].get("attributes", {})
-
     return {
-        "operadores_contratados": attributes.get(
-            "simultaneousWebAccessPaidQty"
-        ),
-        "valor_operador": attributes.get(
-            "simultaneousWebAccessPrice"
-        ),
+        "operadores_contratados": attributes.get("simultaneousWebAccessPaidQty"),
+        "valor_operador": attributes.get("simultaneousWebAccessPrice"),
     }
 
 
@@ -134,11 +96,8 @@ def limpar_agressividade(campanhas: dict) -> float:
     valores = [
         item.get("attributes", {}).get("powerAggressiveness")
         for item in campanhas.get("data", [])
-        if item.get("attributes", {}).get(
-            "powerAggressiveness"
-        ) is not None
+        if item.get("attributes", {}).get("powerAggressiveness") is not None
     ]
-
     return round(sum(valores) / len(valores), 2) if valores else 0.0
 
 
@@ -148,20 +107,13 @@ def extrair_historico_agressividade(audit_logs: dict) -> list:
     for registro in audit_logs.get("data", []):
         attributes = registro.get("attributes", {})
         alteracoes = attributes.get("propertiesChanged", {})
-
         serialized = alteracoes.get("$serialized", {})
 
-        agressividade = serialized.get(
-            "powerAggressiveness", {}
-        )
-
+        agressividade = serialized.get("powerAggressiveness", {})
         if not agressividade:
-            agressividade = alteracoes.get(
-                "powerAggressiveness", {}
-            )
+            agressividade = alteracoes.get("powerAggressiveness", {})
 
         valor = agressividade.get("value")
-
         if valor is not None:
             historico.append({
                 "valor": valor,
@@ -180,33 +132,28 @@ def mapear_rotas(outbound_routes: dict) -> dict:
     }
 
 
-def extrair_rota_real(chamadas_completas: dict, mapa_rotas: dict):
+def extrair_rota_real(chamadas_completas: dict, mapa_rotas: dict) -> list[dict]:
     rotas_utilizadas = []
 
     for chamada in chamadas_completas.get("data", []):
         attributes = chamada.get("attributes", {})
-
         for leg in attributes.get("legs", []):
             route_id = leg.get("routeId")
-
             if route_id in mapa_rotas:
                 nome_rota = mapa_rotas[route_id]
-                tech = _extrair_tech(nome_rota)
-
                 rotas_utilizadas.append({
                     "route_id": route_id,
                     "rota": nome_rota,
-                    "tech": tech,
+                    "tech": _extrair_tech(nome_rota),
                 })
 
     return rotas_utilizadas
 
 
-def extrair_tech_rotas(rotas_utilizadas: list):
+def extrair_tech_rotas(rotas_utilizadas: list) -> str | None:
     for rota in rotas_utilizadas:
         if rota.get("tech"):
             return rota["tech"]
-
     return None
 
 
@@ -246,5 +193,3 @@ def limpeza_req_callix(dados_brutos_req: dict) -> dict:
         "operadores_contratados": operadores["operadores_contratados"],
         "valor_operador": operadores["valor_operador"],
     }
-
-    

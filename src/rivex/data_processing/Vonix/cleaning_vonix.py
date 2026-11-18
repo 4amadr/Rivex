@@ -132,9 +132,6 @@ def get_cliente_nome(html):
     cliente = find_name(html_cliente)
     return cliente
 
-def find_html_tech(tech_convertida):
-    return [tech.get_text(strip=True) for tech in tech_convertida]
-
 def get_lista_techs(tech_html):
     tech_convertida = get_html(tech_html)
     select = tech_convertida.find("select", {"id": "lcr_profile"})
@@ -180,14 +177,18 @@ def tratar_nome_cliente(cliente: str):
 
 def get_tech_vez(lista_techs, cliente):
     cliente = tratar_nome_cliente(cliente)
+    if not cliente:
+        return 0
 
     for tech in lista_techs:
         nome_tech = tratar_nome_cliente(tech["nome"])
-
-        if cliente == nome_tech:
+        if nome_tech and cliente == nome_tech:
             return tech["tech"].replace("#", "")
 
-        if cliente in nome_tech or nome_tech in cliente:
+    for tech in lista_techs:
+        nome_tech = tratar_nome_cliente(tech["nome"])
+        if nome_tech and (cliente in nome_tech or nome_tech in cliente):
             return tech["tech"].replace("#", "")
+
     return 0
 

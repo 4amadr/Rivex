@@ -10,27 +10,33 @@ import time
 
 logger = logging.getLogger(__name__)
 
-formato = logging.Formatter(
-    "%(asctime)s - %(levelname)s [%(filename)s:%(lineno)d] - %(message)s",
-    datefmt="%Y-%m-%d %H:%M:%S"
-)
 
-handler_vonix = logging.FileHandler(f"Log/vonix_log/vonix_dia_{DateConfig.data_selecionadas().replace("/", "-")}.log")
-handler_vonix.setFormatter(formato)
+def _configurar_logger():
+    if logger.handlers:
+        return
+    formato = logging.Formatter(
+        "%(asctime)s - %(levelname)s [%(filename)s:%(lineno)d] - %(message)s",
+        datefmt="%Y-%m-%d %H:%M:%S"
+    )
+    handler_vonix = logging.FileHandler(
+        f"Log/vonix_log/vonix_dia_{DateConfig.data_selecionadas().replace('/', '-')}.log"
+    )
+    handler_vonix.setFormatter(formato)
+    logger.addHandler(handler_vonix)
 
-logger.addHandler(handler_vonix)
-
-logger.info("Iniciando configuração do servidor Vonix...")
 
 class PipelineVonix:
     def __init__(self, usar_db: bool = True):
+        _configurar_logger()
+        logger.info("Iniciando configuração do servidor Vonix...")
         load_dotenv()
         self.data = DateConfig()
         self.login = os.getenv('LOGIN_VONIX')
         self.senha = os.getenv('SENHA_VONIX')
         self.url = os.getenv('URL_BASE_VONIX6')
-        self.tempo_espera = os.getenv('TEMPO_VONIX', '35')
+        self.tempo_espera = os.getenv('TEMPO_VONIX', '2')
         self.tempo_int = int(self.tempo_espera)
+        self.tempo_backoff_erro = 15
         self.vonix_execucao = ExecucaoVonix(
             login=self.login,
             senha=self.senha,
@@ -123,38 +129,61 @@ class PipelineVonix:
         return resultados
 
     def execucao_vonix(self):
-        lista_clientes, token = self.inicial_config()
-        clientes_validos = [
-        cliente
-        for cliente in lista_clientes
-        if "itelink" not in cliente.lower()
-        and not cliente.lower().endswith("manual")
-        ]
+        try:
+            lista_clientes, token = self.inicial_config()
+            clientes_validos = [
+                cliente
+                for cliente in lista_clientes
+                if "itelink" not in cliente.lower()
+                and not cliente.lower().endswith("manual")
+            ]
 
-        for cliente_selecionado in clientes_validos:
+            total_clientes = len(clientes_validos)
+            for idx, cliente_selecionado in enumerate(clientes_validos):
+                houve_erro = False
+                try:
+                    response_dict = self.get_dados_sujos(cliente_selecionado, token)
 
+                    logger.info(f"Iniciando a coleta do cliente: {cliente_selecionado}")
 
-            response_dict = self.get_dados_sujos(cliente_selecionado, token)
+                    cliente = self.execucao_limpeza_chamadas_vonix(
+                        cliente_selecionado,
+                        response_dict["Totais"],
+                        response_dict["Aceitas"],
+                        response_dict["Abandonadas"],
+                        response_dict["Recusadas"],
+                        response_dict["config"],
+                        response_dict["Tech"],
+                    )
 
-            logger.info(f"Iniciando a coleta do cliente: {cliente_selecionado}")
+                    agentes = self.execucao_limpeza_agentes_vonix(
+                        cliente["cliente"],
+                        response_dict["Agentes"],
+                        cliente["tech"],
+                        cliente["data"],
+                    )
 
+                    print(f"Dados dos cliente {cliente['cliente']} após a coleta e processamento de dados: {cliente}")
+                    logger.info(f"Dados dos agentes após coleta e processamento de dados: {agentes}")
 
-            cliente = self.execucao_limpeza_chamadas_vonix(cliente_selecionado, response_dict["Totais"], 
-                                  response_dict["Aceitas"],
-                                  response_dict["Abandonadas"],
-                                  response_dict["Recusadas"],
-                                  response_dict["config"],
-                                  response_dict["Tech"]
-            )
-
-            agentes = self.execucao_limpeza_agentes_vonix(cliente["cliente"], response_dict["Agentes"], cliente["tech"], cliente["data"])
-            
-            print(f"Dados dos cliente {cliente["cliente"]} após a coleta e processamento de dados: {cliente}")
-            logger.info(f"Dados dos agentes após coleta e processamento de dados: {agentes}")
-            
-            self.db.db_vonix(cliente, agentes)
-            time.sleep(self.tempo_int)
-        self.db.fechar_db_vonix()
+                    if self.db is not None:
+                        self.db.db_vonix(cliente, agentes)
+                except Exception as erro:
+                    houve_erro = True
+                    logger.error(
+                        f"Erro ao processar cliente Vonix {cliente_selecionado}: {erro}",
+                        exc_info=True,
+                    )
+                finally:
+                    if idx < total_clientes - 1:
+                        pausa = self.tempo_backoff_erro if houve_erro else self.tempo_int
+                        time.sleep(pausa)
+        finally:
+            sessao = getattr(self.vonix_execucao, "session", None)
+            if sessao is not None:
+                sessao.close()
+            if self.db is not None:
+                self.db.fechar_db_vonix()
 
 
 if __name__ == "__main__":

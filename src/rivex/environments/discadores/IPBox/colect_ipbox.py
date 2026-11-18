@@ -3,16 +3,14 @@ from src.rivex.environments.discadores.IPBox.payloads_ipbox import *
 from src.rivex.utils.utils_system.server_retry import *
 import requests
 import logging
-from typing import Dict, Any, NamedTuple
-from collections import namedtuple
-from requests.models import Response
+from typing import Dict, Any
 
 # Configuração de log
 logger = logging.getLogger(__name__)
 
 class UrlIpbox:
     def __init__(self, url):
-        self.url = url
+        self.url = (url or "").rstrip("/")
 
     def _gerar_url_login(self):
         return f'{self.url}/contech/autenticacao.php'
@@ -31,10 +29,7 @@ class UrlIpbox:
     
     def _gerar_url_painel_clientes_ativos(self):
         return f'{self.url}/contech/listTime.php'
-    
-    def _gerar_url_painel_operadores_ativos(self):
-        return f'{self.url}/contech/editTime.php'
-    
+
 class IpboxInit:
     def __init__(self, login, senha, data, url):
         self.url = UrlIpbox(url)
@@ -110,13 +105,6 @@ class IpboxClientConfig:
                                                 payload_post=payload_get_clientes_painel_de_estado(),
                                                 url=self.url._gerar_url_painel_clientes_ativos()
                                                 )
-        
-    def get_operadores_ativos(self, id_cliente):
-        operadores = self.http_client.requisicao_get(headers=headers_ipbox(),
-                                                payload_get=payload_get_operadores_ativos(id_cliente),
-                                                url=self.url._gerar_url_painel_operadores_ativos())
-        return operadores
-        
 
     def execucao_ipbox(self, nome_cliente, id_cliente):
         agressividade = self.get_agressividade(id_cliente)

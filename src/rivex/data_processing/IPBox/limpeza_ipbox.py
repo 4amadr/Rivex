@@ -2,7 +2,6 @@ from bs4 import BeautifulSoup
 from urllib.parse import urlparse, parse_qs
 from html import unescape
 import re
-import json
 
 def gerar_html(texto):
     return BeautifulSoup(texto, "html.parser")
@@ -49,19 +48,11 @@ def get_chamadas_recusadas_cliente(chamadas_json):
 
 def get_chamadas_abandonadas_cliente(chamadas_json):
     return chamadas_json.get('data', {}).get('resultado', {}).get('CONGESTIONADO', {}).get('qtd', 0)
-  
-  
-def get_lista_agentes(agentes_json):
-    return [dados["agente"] for dados in agentes_json["data"]]          
-        
-        
+
+
 def limpar_nome_cliente(time):
     return unescape(time).split(" - ", 1)[0]
-    
-        
 
-def get_chamadas_completas_agente(agentes_json):
-    return agentes_json['atendimentos']
 
 def get_operadores(operadores_html):
     soup = gerar_html(operadores_html)

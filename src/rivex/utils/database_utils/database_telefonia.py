@@ -1,5 +1,5 @@
 import psycopg2
-from src.rivex.database.config_database import ConexaoDatabaseRivex, DatabaseBase
+from src.rivex.database.config_database import ConexaoDatabaseRivex
 from src.rivex.utils.logging_config.logging_config import LoggingDatabaseConfig
 
 class DatabaseClientesCallix:
@@ -9,15 +9,6 @@ class DatabaseClientesCallix:
         self.conexao = self.db.conexao
         self.query_insert_clientes_callix = query_insert_cliente
         self.log = LoggingDatabaseConfig()
-
-    def criar_tabela_cliente(self, query_criar_tabela):
-        try:
-            self.cursor.execute(query_criar_tabela)
-            self.conexao.commit()
-        except psycopg2.Error as erro:
-            self.conexao.rollback()
-            self.log.erro_db(query_criar_tabela, erro)
-            raise
 
     def enviar_info_cliente(self, dados_cliente):
         try:

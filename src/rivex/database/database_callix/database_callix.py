@@ -16,6 +16,7 @@ class DatabaseCallix:
 
         PRIMARY KEY (
             tech,
+            cliente_nome,
             data
         )
     );
@@ -31,6 +32,7 @@ class DatabaseCallix:
 
         PRIMARY KEY (
             tech,
+            cliente_nome,
             data,
             nome_agente
         )
@@ -53,7 +55,7 @@ class DatabaseCallix:
                                          %(chamadas_aceitas)s, \
                                          %(chamadas_recusadas)s, \
                                          %(chamadas_abandonadas)s,
-                                      %(agressividade)s) ON CONFLICT (tech, data)
+                                      %(agressividade)s) ON CONFLICT (tech, cliente_nome, data)
         DO \
                               UPDATE SET
                                   chamadas = EXCLUDED.chamadas, \
@@ -73,7 +75,7 @@ class DatabaseCallix:
                                      %(cliente)s,
                                      %(data)s, \
                                         %(nome_agente)s, \
-                                        %(chamadas_aceitas_agente)s) ON CONFLICT (tech, data, nome_agente)
+                                        %(chamadas_aceitas_agente)s) ON CONFLICT (tech, cliente_nome, data, nome_agente)
         DO \
                              UPDATE SET
                                  chamadas_agente = EXCLUDED.chamadas_agente; \

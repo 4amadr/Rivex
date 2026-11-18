@@ -36,8 +36,9 @@ class ConexaoDatabaseRivex:
             raise
     
     def fechar_db(self, cursor, conexao):
-        if conexao:
+        if cursor:
             cursor.close()
+        if conexao:
             conexao.close()
             print("Conexão com o DB fechada!")
 
@@ -73,7 +74,6 @@ class DatabaseBase:
     def enviar_dados(self, dados_cliente, agentes):
         try:
             self.enviar_cliente(dados_cliente)
-            self.conexao.commit()
             for agente in agentes:
                 self.enviar_operador(agente)
             self.conexao.commit()

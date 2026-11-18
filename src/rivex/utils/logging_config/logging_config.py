@@ -3,7 +3,6 @@ import os
 import logging.config
 from typing import Dict, Any, Optional
 from src.rivex.utils.infra_utils.date_config import DateConfig
-import uuid
 
 data_exec = DateConfig.data_selecionadas().replace("/", "-")
 
@@ -84,10 +83,6 @@ class LoggingConfig:
         self.data_exec = DateConfig.data_selecionadas()
         self.sufixo_arquivo = self.data_exec
         self.subdiretorio = subdiretorio
-    
-    def infos_logging_conf(self):
-        self.log.info(f"Data da coleta de dados Rivex: %s", self.data_exec)
-        self.log.info(f"Subdiretório: %s", self.subdiretorio)
 
     def log_info(self, informacao, registro):
         if registro:
@@ -105,12 +100,6 @@ class LoggingConfig:
             )
         else:
             self.log.error(info)
-
-    def log_debug(self, info, teste):
-        if teste != "":
-            self.log.debug("%s: %s",info, teste)
-        else:
-            self.log.debug(info)
 
 class ExtractLogger:
     def __init__(self):
@@ -170,10 +159,7 @@ class TransformLogger:
         
     def registrar_limpeza_chamadas(self, pacote):
         self.log_conf.log.info("Exec[%s] CLIENT DATA VALIDATION: %s", self.log_conf.data_exec, pacote)
-        
-    def registrar_limpeza_rota(self, dados_cliente_rota):
-        self.log_conf.log.info("Exec[%s] ROUTE CLEAN DATA: %s",self.log_conf.data_exec, dados_cliente_rota)
-        
+
     def registrar_limpeza_agente(self, dados_agente):
         self.log_conf.log.info("Exec[%s] OPERATOR DATA: %s", self.log_conf.data_exec, dados_agente)
         
@@ -190,21 +176,12 @@ class LoadLogger:
 class LoggingDatabaseConfig:
     def __init__(self):
         self.log_conf = LoggingConfig("database_config", "database")
-        
-    def verificar_query(self, query):
-        self.log_conf.log_debug("Debug da query", query)
 
     def erro_configuracao(self, erro):
         self.log_conf.log_erro("ERROR DB CONFIG: %s", erro, )
 
-    def decode_erro(self, erro_decode):
-        self.log_conf.log_erro(f"DECODE ERROR", erro_decode)
-
     def registro_erro_envio(self, erro):
         self.log_conf.log_erro("Erro envio DB!", erro)
-
-    def erro_db(self, erro, query):
-        self.log_conf.log_erro(f"ERRO -  QUERY: {query} - ERRO: {erro}")
 
     def erro_db_comentado(self, comentario, erro):
         self.log_conf.log_erro(comentario, erro)

@@ -9,7 +9,6 @@ quebrada e mantêm abertura/fechamento corretos. Por isso a extração é feita
 sempre pela posição (índice) da célula dentro da linha, e não por contagem total
 de <td>.
 """
-import re
 from bs4 import BeautifulSoup
 
 def passar_para_html(pagina_inicial):
@@ -90,56 +89,6 @@ def _separar_tech_e_cliente(texto_bruto):
     return int(tech), nome.strip()
 
 
-
-# --------------------------------------------------------------------------
-# As 4 funções pedidas
-# --------------------------------------------------------------------------
-
-def get_cliente(pagina_inicial):
-    """Retorna [{'cliente': nome}, ...] -- só o nome do cliente, sem a tech."""
-    soup = passar_para_html(pagina_inicial)
-    resultado = []
-    for colunas in _localizar_linhas_de_clientes(soup):
-        _, nome = _separar_tech_e_cliente(colunas[0].get_text())
-        resultado.append({"cliente": nome})
-    return resultado
-
-
-def get_tech(pagina_inicial):
-    """Retorna [{'cliente': nome, 'tech': tech}, ...] -- a numeração antes do nome."""
-    soup = passar_para_html(pagina_inicial)
-    resultado = []
-    for colunas in _localizar_linhas_de_clientes(soup):
-        tech, nome = _separar_tech_e_cliente(colunas[0].get_text())
-        resultado.append({"cliente": nome, "tech": tech})
-    return resultado
-
-
-def get_custo(pagina_inicial):
-    """Retorna [{'cliente': nome, 'custo': valor}, ...]."""
-    soup = passar_para_html(pagina_inicial)
-    resultado = []
-    for colunas in _localizar_linhas_de_clientes(soup):
-        _, nome = _separar_tech_e_cliente(colunas[0].get_text())
-        custo = colunas[4].get_text(strip=True)
-        resultado.append({"cliente": nome, "custo": custo})
-    return resultado
-
-
-def get_minutagem(pagina_inicial):
-    """Retorna [{'cliente': nome, 'minutagem': valor}, ...]."""
-    soup = passar_para_html(pagina_inicial)
-    resultado = []
-    for colunas in _localizar_linhas_de_clientes(soup):
-        _, nome = _separar_tech_e_cliente(colunas[0].get_text())
-        minutagem = colunas[2].get_text(strip=True)
-        resultado.append({"cliente": nome, "minutagem": minutagem})
-    return resultado
-
-
-# --------------------------------------------------------------------------
-# Bônus: as 4 informações já juntas por cliente (útil pro pipeline do Rivex)
-# --------------------------------------------------------------------------
 
 def get_dados_clientes(pagina_inicial):
     """

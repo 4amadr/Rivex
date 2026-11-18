@@ -1,7 +1,3 @@
-from src.rivex.utils.infra_utils.date_config import DateConfig
-import json
-    
-    
 def _limpar_chamadas(resumo, tipo_chamada: str) -> int:
     dados = resumo.get("data") or []
     return sum(

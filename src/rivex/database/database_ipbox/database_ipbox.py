@@ -41,6 +41,7 @@ class DatabaseIpbox:
                                                KEY \
                                            ( \
                                                tech_cliente, \
+                                               cliente_nome, \
                                                data \
                                            )
                                                ); \
@@ -72,6 +73,7 @@ class DatabaseIpbox:
                                               KEY \
                                           ( \
                                               tech, \
+                                              cliente_nome, \
                                               data, \
                                               nome_agente \
                                           )
@@ -94,7 +96,7 @@ class DatabaseIpbox:
                                       %(completas)s,
                                       %(recusadas)s,
                                       %(abandonadas)s,
-                                      %(agressividade)s) ON CONFLICT (tech_cliente, data)
+                                      %(agressividade)s) ON CONFLICT (tech_cliente, cliente_nome, data)
     DO \
                               UPDATE SET
                                   chamadas = EXCLUDED.chamadas, \
@@ -113,7 +115,7 @@ class DatabaseIpbox:
                                      %(cliente_nome)s,
                                      %(data)s,
                                      %(nome_agente)s,
-                                     %(chamadas_agente)s) ON CONFLICT (tech, data, nome_agente)
+                                     %(chamadas_agente)s) ON CONFLICT (tech, cliente_nome, data, nome_agente)
 DO \
                              UPDATE SET
                                  chamadas_agente = EXCLUDED.chamadas_agente; \

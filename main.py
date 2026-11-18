@@ -3,18 +3,10 @@ import logging
 from src.rivex.pipeline.pipeline_discador.pipeline_callix import PipelineCallix
 from src.rivex.pipeline.pipeline_discador.pipeline_ipbox import PipelineIpbox    
 from src.rivex.pipeline.pipeline_discador.pipeline_vonix import PipelineVonix
-from src.rivex.pipeline.pipeline_operadora.pipeline_agitel import ExecAgitel
-from src.rivex.pipeline.pipeline_operadora.pipeline_gerax import ExecucaoGerax
-from src.rivex.pipeline.pipeline_operadora.pipeline_pentagono import ExecucaoPentagono
-from src.rivex.pipeline.pipeline_operadora.pipeline_ultracom import PipelineUltracom
 
 log = logging.getLogger(__name__)
 
 
-def main_agitel():
-    execucao = ExecAgitel()
-    execucao.pipeline_agitel()
-    
 def main_ipbox():
    pipeline = PipelineIpbox()
    pipeline.executar()
@@ -30,10 +22,8 @@ def main_callix():
 
 PIPELINES = {
     "callix": main_callix,
-    "agitel": main_agitel,
     "ipbox": main_ipbox,
     "vonix": main_vonix,
-
 }
 
 def main():

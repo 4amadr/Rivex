@@ -1,6 +1,4 @@
-import requests
 from src.rivex.utils.requests_utils.http_response import analista_de_erros
-import logging
 from src.rivex.utils.logging_config.logging_config import ExtractLogger
 
 
@@ -12,7 +10,7 @@ class HttpRequisitions:
     def _requisitar(self, metodo: str, url:str, headers: dict,
                     params: dict | None = None, data: dict | None = None,
                     json: dict | None = None, cookies: str | None = None,
-                    verify: bool = True): # verify = True para coleta da rota agitel 
+                    verify: bool = True):
 
 
         resposta = self.session.request(
@@ -46,13 +44,6 @@ class HttpRequisitions:
         """POST enviando o payload como JSON no corpo, em vez de form-data."""
         return self._requisitar("POST", url, headers, json=payload_post)
 
- 
-    def requisicao_get_com_verificado(self, headers: dict, url: str, payload_get: dict,
-                                       verificacao: bool, cookies_requisicao: str | None = None):
-        """GET com controle explícito de verify, com ou sem cookies."""
-        return self._requisitar("GET", url, headers, params=payload_get,
-                               cookies=cookies_requisicao, verify=verificacao)
- 
     def requisicao_get(self, headers: dict, url: str, payload_get: dict,
                         cookies_requisicao: str | None = None):
         """GET padrão (verify=True), com ou sem cookies."""

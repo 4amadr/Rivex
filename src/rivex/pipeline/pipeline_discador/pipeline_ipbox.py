@@ -1,3 +1,4 @@
+import time
 import os
 from src.rivex.environments.discadores.IPBox.colect_ipbox import *
 from src.rivex.utils.infra_utils.date_config import DateConfig
@@ -9,15 +10,19 @@ from src.rivex.data_processing.IPBox.limpeza_ipbox import *
 load_dotenv()
 logger = logging.getLogger(__name__)
 
-formato = logging.Formatter(
-    "%(asctime)s - %(levelname)s [%(filename)s:%(lineno)d] - %(message)s",
-    datefmt="%Y-%m-%d %H:%M:%S"
-)
 
-handler_ipbox = logging.FileHandler(f"Log/ipbox_log/ipbox_dia_{DateConfig.data_selecionadas().replace("/", "-")}.log")
-handler_ipbox.setFormatter(formato)
-
-logger.addHandler(handler_ipbox)
+def _configurar_logger():
+    if logger.handlers:
+        return
+    formato = logging.Formatter(
+        "%(asctime)s - %(levelname)s [%(filename)s:%(lineno)d] - %(message)s",
+        datefmt="%Y-%m-%d %H:%M:%S"
+    )
+    handler_ipbox = logging.FileHandler(
+        f"Log/ipbox_log/ipbox_dia_{DateConfig.data_selecionadas().replace('/', '-')}.log"
+    )
+    handler_ipbox.setFormatter(formato)
+    logger.addHandler(handler_ipbox)
 
 class PipelineIpbox:
     """
@@ -26,6 +31,7 @@ class PipelineIpbox:
     """
     
     def __init__(self):
+        _configurar_logger()
         date_config = DateConfig()
         self.data_ipbox = date_config.data_ipbox()
         self.data_agentes = date_config.data_ipbox_payload() 
@@ -61,71 +67,76 @@ class PipelineIpbox:
             
     def executar(self):
         logger.info('Iniciando a configuração do servidor IPBOX.....')
+        sessao_logada = None
 
-        sessao_logada, clientes_texto = self.autenticar_e_listar_clientes()
+        try:
+            sessao_logada, clientes_texto = self.autenticar_e_listar_clientes()
 
-        logger.info('Iniciando a coleta de dados dos clientes...')
+            logger.info('Iniciando a coleta de dados dos clientes...')
 
-        execucao_ipbox = IpboxClientConfig(
-            url=self.url,
-            login=self.login,
-            senha=self.senha,
-            data=self.data_ipbox,
-            data_agentes=self.data_agentes,
-            sessao_anterior=sessao_logada,
-            token=self.token
-        )
-
-        html_clientes = gerar_html(clientes_texto)
-        lista_clientes = gerar_lista_clientes(html_clientes)     
-        agentes_json = execucao_ipbox.get_relatorio_agente().json()
-
-        for cliente in lista_clientes:
-
-            # cliente limpo aqui
-            cliente_coletado = get_cliente(cliente)
-            id_cliente = get_identificador(cliente)
-
-            dados_cliente = self.processar_cliente(
-                cliente_coletado,
-                execucao_ipbox,
-                id_cliente
-                )
-
-            
-            if dados_cliente is None:
-                continue
-
-            lista_agentes = []
-
-            for agente in agentes_json["data"]:
-
-                if agente["agente"] == "TOTAIS":
-                    continue
-
-                nome_cliente = limpar_nome_cliente(
-                    agente["times"][0]
-                )
-
-                if nome_cliente not in cliente_coletado:
-                    continue
-
-                lista_agentes.append(
-                    empacotar_dados_agentes(
-                        agente,
-                        cliente_coletado,
-                        self.data_ipbox
-                    )
-                )
-                
-
-                logger.debug("Cliente: %s", dados_cliente)
-                logger.debug("Agentes: %s", lista_agentes)
-
-            # carregamento
-            self.banco_ipbox.db_ipbox(
-                dados_cliente,
-                lista_agentes
+            execucao_ipbox = IpboxClientConfig(
+                url=self.url,
+                login=self.login,
+                senha=self.senha,
+                data=self.data_ipbox,
+                data_agentes=self.data_agentes,
+                sessao_anterior=sessao_logada,
+                token=self.token
             )
-            time.sleep(5)
-        self.banco_ipbox.fechar_db_ipbox()
+
+            html_clientes = gerar_html(clientes_texto)
+            lista_clientes = gerar_lista_clientes(html_clientes)
+            agentes_json = execucao_ipbox.get_relatorio_agente().json()
+
+            for cliente in lista_clientes:
+
+                # cliente limpo aqui
+                cliente_coletado = get_cliente(cliente)
+                id_cliente = get_identificador(cliente)
+
+                dados_cliente = self.processar_cliente(
+                    cliente_coletado,
+                    execucao_ipbox,
+                    id_cliente
+                )
+
+                if dados_cliente is None:
+                    continue
+
+                lista_agentes = []
+
+                for agente in agentes_json.get("data", []):
+
+                    if agente.get("agente") == "TOTAIS":
+                        continue
+
+                    times = agente.get("times") or []
+                    if not times:
+                        continue
+
+                    nome_cliente = limpar_nome_cliente(times[0])
+
+                    if nome_cliente not in cliente_coletado:
+                        continue
+
+                    lista_agentes.append(
+                        empacotar_dados_agentes(
+                            agente,
+                            cliente_coletado,
+                            self.data_ipbox
+                        )
+                    )
+
+                    logger.debug("Cliente: %s", dados_cliente)
+                    logger.debug("Agentes: %s", lista_agentes)
+
+                # carregamento
+                self.banco_ipbox.db_ipbox(
+                    dados_cliente,
+                    lista_agentes
+                )
+                time.sleep(5)
+        finally:
+            if sessao_logada is not None:
+                sessao_logada.close()
+            self.banco_ipbox.fechar_db_ipbox()

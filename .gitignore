@@ -7,5 +7,6 @@ __pycache__/
 .venv/
 .idea/
 .vscode/
-s -ExecutionPolicy RemoteSigned) ; (& cUsersLucas ContechDocumentsprojetoscontechrivexRivex.venvScriptsActivate
-h --force-with-lease origin main
+.agents/skills/
+docs/investigacao_vonix/
+skills-lock.json

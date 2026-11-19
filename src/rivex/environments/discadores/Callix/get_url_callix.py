@@ -16,9 +16,6 @@ class UrlGetData:
     def url_campanhas_v4(self, cliente: str) -> str:
         return f"https://{cliente}.callix.com.br/api/v4/entities/campaigns"
 
-    def url_audit_logs(self, cliente: str) -> str:
-        return f"https://{cliente}.callix.com.br/api/v4/entities/audit-logs"
-
     def url_chamadas_completas_v4(self, cliente: str) -> str:
         return f"https://{cliente}.callix.com.br/api/v4/entities/campaign-completed-calls"
 

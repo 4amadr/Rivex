@@ -1,56 +1,90 @@
+from __future__ import annotations
+
 import argparse
-import logging
+import sys
+from datetime import date, datetime
+
+from src.rivex.config.settings import Settings, carregar_settings
+from src.rivex.domain.registros import PipelineProtocol, ResumoExecucao
 from src.rivex.pipeline.pipeline_discador.pipeline_callix import PipelineCallix
-from src.rivex.pipeline.pipeline_discador.pipeline_ipbox import PipelineIpbox    
+from src.rivex.pipeline.pipeline_discador.pipeline_ipbox import PipelineIpbox
 from src.rivex.pipeline.pipeline_discador.pipeline_vonix import PipelineVonix
+from src.rivex.utils.infra_utils.date_config import DateConfig
+from src.rivex.utils.logging_config import PipelineLogger
 
-log = logging.getLogger(__name__)
+log = PipelineLogger("executions")
 
-
-def main_ipbox():
-   pipeline = PipelineIpbox()
-   pipeline.executar()
-
-def main_vonix():
-    pipeline = PipelineVonix()
-    pipeline.execucao_vonix()
-
-def main_callix():
-    pipeline_callix = PipelineCallix()
-    pipeline_callix.executar()
-
-
-PIPELINES = {
-    "callix": main_callix,
-    "ipbox": main_ipbox,
-    "vonix": main_vonix,
+PIPELINES: dict[str, type] = {
+    "callix": PipelineCallix,
+    "ipbox": PipelineIpbox,
+    "vonix": PipelineVonix,
 }
 
-def main():
-    parser = argparse.ArgumentParser(description='Execução de pipelines')
 
+def _parse_data(valor: str) -> date:
+    try:
+        return datetime.strptime(valor, "%Y-%m-%d").date()
+    except ValueError as erro:
+        raise argparse.ArgumentTypeError(
+            f"Data inválida '{valor}'. Use o formato YYYY-MM-DD."
+        ) from erro
+
+
+def _executar_pipeline(
+    nome: str,
+    pipeline_cls: type,
+    settings: Settings,
+    data_ref: date,
+) -> ResumoExecucao:
+    pipeline: PipelineProtocol = pipeline_cls(settings=settings)
+    log.inicio("Iniciando execução da pipeline", alvo=nome, data=str(data_ref))
+    resumo = pipeline.executar(data=data_ref)
+    log.fim(
+        "Execução da pipeline finalizada",
+        alvo=nome,
+        total=resumo.total,
+        persistidos=resumo.persistidos,
+        falhas=len(resumo.falhas),
+    )
+    return resumo
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser(description="Execução de pipelines ETL do Rivex")
     parser.add_argument(
         "--pipeline",
         required=True,
         choices=[*PIPELINES.keys(), "all"],
-        help="pipeline + sistema para ser executado  ouu 'all' para executar tudo"
+        help="Nome do discador a executar ou 'all' para executar todos",
     )
-
+    parser.add_argument(
+        "--data",
+        type=_parse_data,
+        default=None,
+        help="Data de referência no formato YYYY-MM-DD (padrão: ontem)",
+    )
     args = parser.parse_args()
+    data_ref = args.data or DateConfig.ontem()
 
-    if args.pipeline =="all":
-        for nome, pipeline in PIPELINES.items():
-            log.info(f"Executando pipeline: {nome}")
+    settings = carregar_settings(args.pipeline)
+    alvos = list(PIPELINES.keys()) if args.pipeline == "all" else [args.pipeline]
 
-            try:
-                pipeline()
-            except Exception as error:
-                log.error(f"Erro durante a execução da pipeline {nome}: {error}")
-        return
+    houve_falha_critica = False
+    for nome in alvos:
+        pipeline_cls = PIPELINES[nome]
+        try:
+            resumo = _executar_pipeline(nome, pipeline_cls, settings, data_ref)
+            if len(resumo.falhas) > settings.max_falhas_pipeline or (
+                resumo.total > 0 and resumo.persistidos == 0
+            ):
+                houve_falha_critica = True
+        except Exception as error:
+            houve_falha_critica = True
+            log.erro("Erro durante a execução da pipeline", erro=error, alvo=nome)
+            continue
 
-    pipeline = PIPELINES[args.pipeline]
+    return 1 if houve_falha_critica else 0
 
-    return pipeline()
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main())

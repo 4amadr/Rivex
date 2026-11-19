@@ -1,12 +1,10 @@
 from types import SimpleNamespace
-from unittest.mock import MagicMock, patch
 
-from src.rivex.environments.discadores.vonix.fluxo_limpeza import LimpezaVonix
+from src.rivex.data_processing.Vonix.fluxo_limpeza import LimpezaVonix
 from src.rivex.environments.discadores.vonix.payloads_vonix import (
     headers_operadores_cliente,
     payload_de_operadores_cliente,
 )
-from src.rivex.pipeline.pipeline_discador.pipeline_vonix import PipelineVonix
 
 
 SAMPLE_AGENT_LIST_HTML = """
@@ -62,24 +60,3 @@ def test_limpeza_extrair_operadores_cliente_vazio():
     limpeza = LimpezaVonix()
     assert limpeza.extrair_operadores_cliente("") == []
     assert limpeza.extrair_operadores_cliente(None) == []
-
-
-def test_pipeline_vonix_execucao_teste_operadores_mockada():
-    with patch("src.rivex.pipeline.pipeline_discador.pipeline_vonix.ExecucaoVonix") as MockExec:
-        mock_exec = MagicMock()
-        MockExec.return_value = mock_exec
-        mock_exec.token_pronto.return_value = "tok_test"
-        mock_exec.get_clientes.return_value = '<li id="container_oneinvest"></li>'
-        mock_exec.get_operadores_cliente.return_value = SimpleNamespace(
-            status_code=200,
-            text=SAMPLE_AGENT_LIST_HTML,
-        )
-
-        pipeline = PipelineVonix(usar_db=False)
-        resultado = pipeline.execucao_teste_operadores_vonix(clientes_teste=["oneinvest"])
-
-        mock_exec.get_filtragem.assert_called_once_with("oneinvest", "tok_test")
-        mock_exec.get_operadores_cliente.assert_called_once_with("tok_test")
-        assert "oneinvest" in resultado
-        assert len(resultado["oneinvest"]) == 1
-        assert resultado["oneinvest"][0]["matricula"] == "9901"

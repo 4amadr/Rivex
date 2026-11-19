@@ -1,22 +1,23 @@
+from contextlib import contextmanager
+from decimal import Decimal
 from unittest.mock import MagicMock, patch
+
 import pytest
 
-from src.rivex.pipeline.pipeline_discador.pipeline_callix import PipelineCallix
 from src.rivex.database.database_callix.database_callix_clientes import DatabaseClientes
+from src.rivex.domain.registros import ClienteRegistro, OperadorRegistro
+from src.rivex.pipeline.pipeline_discador.pipeline_callix import PipelineCallix
 
 
 def _make_pipeline():
-    """Cria uma instância de PipelineCallix com dependências externas (DB/HTTP/env) mockadas."""
-    with (
-        patch("src.rivex.pipeline.pipeline_discador.pipeline_callix.load_dotenv"),
-        patch("src.rivex.pipeline.pipeline_discador.pipeline_callix.DatabaseCallix") as mock_db_callix,
-        patch("src.rivex.pipeline.pipeline_discador.pipeline_callix.DatabaseClientes") as mock_db_clientes,
-    ):
-        pipeline = PipelineCallix()
-        return pipeline, {
-            "db_callix": mock_db_callix.return_value,
-            "db_clientes": mock_db_clientes.return_value,
-        }
+    """Cria uma instância de PipelineCallix com dependências externas mockadas."""
+    pipeline = PipelineCallix()
+    mock_db_callix = MagicMock()
+    mock_db_clientes = MagicMock()
+    return pipeline, {
+        "db_callix": mock_db_callix,
+        "db_clientes": mock_db_clientes,
+    }
 
 
 def _sample_dados_brutos_api(campanhas=None, resumo_data=None):
@@ -57,7 +58,6 @@ def _sample_dados_brutos_req(tech_route="1036#01 - Pentagono (Tech: 103601)"):
                 {"attributes": {"powerAggressiveness": 3.5}},
             ]
         },
-        "audit_logs": {"data": []},
         "outbound_routes": {
             "data": [
                 {"id": "r1", "attributes": {"name": tech_route}},
@@ -83,7 +83,7 @@ def _sample_dados_brutos_req(tech_route="1036#01 - Pentagono (Tech: 103601)"):
 
 
 class TestPipelineCallixLimpeza:
-    def test_limpar_dados_extrai_ids_campanha_corretamente(self):
+    def test_limpar_dados_extrai_ids_campanha_e_valor_cliente(self):
         pipeline, _ = _make_pipeline()
         dados_api = _sample_dados_brutos_api(campanhas=["101", "202"])
         dados_req = _sample_dados_brutos_req()
@@ -99,6 +99,9 @@ class TestPipelineCallixLimpeza:
         assert dict_limpeza["Chamadas abandonadas"] == 10
         assert metricas_req["tech"] == "103601"
         assert metricas_req["agressividade"] == 3.0
+        assert metricas_req["operadores_contratados"] == 10
+        assert metricas_req["valor_cliente"] == Decimal("1500.00")
+        assert metricas_req["rota_cliente"] == "1036#01 - Pentagono (Tech: 103601)"
 
     def test_limpar_dados_sem_campanhas(self):
         pipeline, _ = _make_pipeline()
@@ -165,7 +168,7 @@ class TestPipelineCallixColeta:
 
 
 class TestPipelineCallixEmpacotamento:
-    def test_empacotar_dados_sucesso(self):
+    def test_empacotar_dados_sucesso_com_pydantic(self):
         pipeline, _ = _make_pipeline()
         dict_limpeza = {
             "Chamadas totais": 100,
@@ -178,17 +181,25 @@ class TestPipelineCallixEmpacotamento:
             "agressividade": 2.5,
             "chamadas_agentes": [{"agente": "Maria", "Chamadas atendidas": 12}],
             "tech": "103601",
+            "operadores_contratados": 5,
+            "valor_cliente": Decimal("750.00"),
+            "rota_cliente": "1036#01 - Pentagono (Tech: 103601)",
         }
 
-        dict_chamadas, lista_agentes = pipeline.empacotar_dados(
+        cliente_reg, lista_agentes = pipeline.empacotar_dados(
             dict_limpeza, metricas_req, "pentagonocontech"
         )
 
-        assert dict_chamadas is not None
-        assert dict_chamadas["cliente"] == "pentagono"
-        assert dict_chamadas["tech"] == 103601
+        assert isinstance(cliente_reg, ClienteRegistro)
+        assert cliente_reg.cliente == "pentagono"
+        assert cliente_reg.tech == 103601
+        assert cliente_reg.operadores_contratados == 5
+        assert cliente_reg.lucro_empresa == Decimal("750.00")
+        assert lista_agentes is not None
         assert len(lista_agentes) == 1
-        assert lista_agentes[0]["nome_agente"] == "Maria"
+        assert isinstance(lista_agentes[0], OperadorRegistro)
+        assert lista_agentes[0].nome_operador == "Maria"
+        assert lista_agentes[0].id == cliente_reg.id
 
 
 class TestPipelineCallixExecutar:
@@ -199,18 +210,26 @@ class TestPipelineCallixExecutar:
             {"cliente": "sem_token", "token": None},
         ]
 
+        @contextmanager
+        def _fake_conn(_settings=None):
+            yield MagicMock()
+
         with (
+            patch("src.rivex.pipeline.pipeline_discador.pipeline_callix.conexao_rivex", _fake_conn),
+            patch("src.rivex.pipeline.pipeline_discador.pipeline_callix.DatabaseClientes", return_value=mocks["db_clientes"]),
+            patch("src.rivex.pipeline.pipeline_discador.pipeline_callix.DatabaseCallix", return_value=mocks["db_callix"]),
             patch("src.rivex.pipeline.pipeline_discador.pipeline_callix.CallixAPICollector") as mock_api_cls,
             patch("src.rivex.pipeline.pipeline_discador.pipeline_callix.CAllixRequisition") as mock_req_cls,
         ):
             mock_api_cls.return_value.api_callix.return_value = _sample_dados_brutos_api()
             mock_req_cls.return_value.requisicao_callix.return_value = _sample_dados_brutos_req()
 
-            pipeline.executar()
+            resumo = pipeline.executar()
 
         mocks["db_callix"].db_callix.assert_called_once()
-        mocks["db_callix"].fechar.assert_called_once()
-        mocks["db_clientes"].fechar.assert_called_once()
+        assert resumo.total == 2
+        assert resumo.persistidos == 1
+        assert len(resumo.falhas) == 1
 
     def test_executar_ignora_cliente_com_erro_e_persiste_validos(self):
         pipeline, mocks = _make_pipeline()
@@ -224,46 +243,59 @@ class TestPipelineCallixExecutar:
                 raise ValueError("Server SDK não retornou userSessionToken (status=403)")
             return _sample_dados_brutos_req()
 
+        @contextmanager
+        def _fake_conn(_settings=None):
+            yield MagicMock()
+
         with (
+            patch("src.rivex.pipeline.pipeline_discador.pipeline_callix.conexao_rivex", _fake_conn),
+            patch("src.rivex.pipeline.pipeline_discador.pipeline_callix.DatabaseClientes", return_value=mocks["db_clientes"]),
+            patch("src.rivex.pipeline.pipeline_discador.pipeline_callix.DatabaseCallix", return_value=mocks["db_callix"]),
             patch("src.rivex.pipeline.pipeline_discador.pipeline_callix.CallixAPICollector") as mock_api_cls,
             patch("src.rivex.pipeline.pipeline_discador.pipeline_callix.CAllixRequisition") as mock_req_cls,
         ):
             mock_api_cls.return_value.api_callix.return_value = _sample_dados_brutos_api()
             mock_req_cls.return_value.requisicao_callix.side_effect = _req_side_effect
 
-            pipeline.executar()
+            resumo = pipeline.executar()
 
         mocks["db_callix"].db_callix.assert_called_once()
-        mocks["db_callix"].fechar.assert_called_once()
-        mocks["db_clientes"].fechar.assert_called_once()
+        assert resumo.persistidos == 1
+        assert len(resumo.falhas) == 1
 
-    def test_executar_sem_clientes_ativos_levanta_erro_e_fecha_banco(self):
+    def test_executar_sem_clientes_ativos_levanta_erro(self):
         pipeline, mocks = _make_pipeline()
         mocks["db_clientes"].consultar_view.return_value = []
 
-        with pytest.raises(RuntimeError, match="Nenhum cliente ativo"):
+        @contextmanager
+        def _fake_conn(_settings=None):
+            yield MagicMock()
+
+        with (
+            patch("src.rivex.pipeline.pipeline_discador.pipeline_callix.conexao_rivex", _fake_conn),
+            patch("src.rivex.pipeline.pipeline_discador.pipeline_callix.DatabaseClientes", return_value=mocks["db_clientes"]),
+            pytest.raises(RuntimeError, match="Nenhum cliente ativo"),
+        ):
             pipeline.executar()
 
-        mocks["db_callix"].fechar.assert_called_once()
-        mocks["db_clientes"].fechar.assert_called_once()
-
-    def test_coletar_clientes_paralelo_loga_aviso_sem_token(self, caplog):
+    def test_coletar_clientes_paralelo_loga_aviso_sem_token(self):
         pipeline, _ = _make_pipeline()
         clientes = [{"cliente": "sem_token", "token": None}]
 
-        with caplog.at_level("WARNING"):
-            resultados = pipeline.coletar_clientes_paralelo(clientes)
+        with patch.object(pipeline.log, "aviso") as mock_aviso:
+            resultados, falhas = pipeline.coletar_clientes_paralelo(clientes)
 
         assert resultados == []
-        assert "sem_token" in caplog.text
+        assert falhas == ["sem_token: sem token"]
+        mock_aviso.assert_called_once()
+        assert mock_aviso.call_args.kwargs["cliente"] == "sem_token"
 
 
 class TestDatabaseClientes:
     def test_consultar_view_mapeia_colunas_corretas(self):
-        with (
-            patch("src.rivex.database.database_callix.database_callix_clientes.ConexaoDatabaseRivex") as mock_conn_cls,
-            patch("src.rivex.database.database_callix.database_callix_clientes.DatabaseTelefonia"),
-        ):
+        with patch(
+            "src.rivex.database.database_callix.database_callix_clientes.ConexaoDatabaseRivex"
+        ) as mock_conn_cls:
             mock_conn = mock_conn_cls.return_value
             mock_conn.cursor.fetchall.return_value = [
                 ("afsilvacontech", "tok-123"),

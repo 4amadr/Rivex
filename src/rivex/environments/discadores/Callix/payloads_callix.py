@@ -49,14 +49,6 @@ def payload_campanhas_v4() -> dict:
     }
 
 
-def payload_audit_campanhas() -> dict:
-    return {
-        "filter": "(modelName,:eq,`Campaign`)",
-        "page[limit]": 200,
-        "sort": "-createdAt",
-    }
-
-
 def payload_rotas_chamadas_v4(data_inicio_iso: str) -> dict:
     return {
         "filter": f"(startedAt,:gte,`{data_inicio_iso}`)",

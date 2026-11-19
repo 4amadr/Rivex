@@ -1,48 +1,33 @@
+from __future__ import annotations
+
 from datetime import date, timedelta
 
+
 class DateConfig:
+    @staticmethod
+    def ontem() -> date:
+        return date.today() - timedelta(days=1)
 
     @staticmethod
-    def data_selecionadas():
-        data_ref = date.today() - timedelta(days=1)
-        data_formatada = data_ref.strftime("%d/%m/%Y")
+    def data_selecionadas(data_ref: date | None = None) -> str:
+        ref = data_ref or DateConfig.ontem()
+        return ref.strftime("%d/%m/%Y")
 
-        return data_formatada
-    
-    def data_callix(self):
-        data_ref = date.today() - timedelta(days=1)
-        data_formatada = data_ref.strftime("%Y-%m-%d")
+    @staticmethod
+    def data_callix(data_ref: date | None = None) -> str:
+        ref = data_ref or DateConfig.ontem()
+        return ref.strftime("%Y-%m-%d")
 
-        return data_formatada
+    @staticmethod
+    def data_ipbox(dias_atras: int = 1, data_ref: date | None = None) -> str:
+        ref = data_ref or (date.today() - timedelta(days=dias_atras))
+        return ref.strftime("%Y%m%d")
 
-    def data_ipbox(self, dias_atras=1):
-        data_ref = date.today() - timedelta(days=dias_atras)
-
-        return data_ref.strftime('%Y%m%d')
-    
-    def data_ipbox_payload(self, dias_atras=1):
-        """
-        Gera o payload no formato:
-        de=YYYYMMDD000000&ate=YYYYMMDD235959
-
-        O horário permanece fixo:
-        - início do dia -> 000000
-        - fim do dia -> 235959
-        """
-
-        # Define a data base
-        data_ref = date.today() - timedelta(days=dias_atras)
-
-        # Formata apenas a parte da data
-        data_formatada = data_ref.strftime("%Y%m%d")
-
-        # Monta o payload usando a MESMA variável de data
-        payload = {
+    @staticmethod
+    def data_ipbox_payload(dias_atras: int = 1, data_ref: date | None = None) -> dict[str, str]:
+        ref = data_ref or (date.today() - timedelta(days=dias_atras))
+        data_formatada = ref.strftime("%Y%m%d")
+        return {
             "de": f"{data_formatada}000000",
-            "ate": f"{data_formatada}235959"
-            
+            "ate": f"{data_formatada}235959",
         }
-
-        return payload
-    
-    

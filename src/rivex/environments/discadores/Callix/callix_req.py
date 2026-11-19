@@ -1,29 +1,35 @@
-import logging
 import urllib.parse
 import requests
 
-from src.rivex.utils.requests_utils.requests import HttpRequisitions
-from src.rivex.utils.environments_utils.discador.callix.get_url_callix import UrlGetData
-from src.rivex.utils.environments_utils.discador.callix.payloads_callix import (
+from src.rivex.environments.discadores.Callix.get_url_callix import UrlGetData
+from src.rivex.environments.discadores.Callix.payloads_callix import (
     headers_callix,
     headers_v4_sessao,
-    payload_audit_campanhas,
     payload_campanhas_v4,
     payload_de_requisicao_de_chamadas,
     payload_get_tech,
     payload_rotas_chamadas_v4,
 )
-
-log = logging.getLogger(__name__)
+from src.rivex.utils.requests_utils.requests import HttpRequisitions
 
 
 class CAllixRequisition:
     """Coleta métricas complementares do Callix via Server SDK e endpoints v4."""
 
-    def __init__(self, data: str):
+    def __init__(
+        self,
+        data: str,
+        retry_429_wait: float = 60.0,
+        retry_429_max: int = 5,
+    ):
         self.data = data
         self.session = requests.Session()
-        self.http_request = HttpRequisitions(session=self.session)
+        self.http_request = HttpRequisitions(
+            session=self.session,
+            servico="callix",
+            retry_429_wait=retry_429_wait,
+            retry_429_max=retry_429_max,
+        )
         self.url = UrlGetData()
 
     def conversor_de_url(self, url_chamadas_agentes: str) -> str:
@@ -114,8 +120,33 @@ class CAllixRequisition:
         return self.http_request.requisicao_get(
             headers=headers_v4_sessao(user_session_token),
             url=url,
-            payload_get=payload_get,
+            payload_get=payload_get or {},
         )
+
+    def _paginar_get_sessao(
+        self,
+        user_session_token: str,
+        url_inicial: str,
+        max_paginas: int = 20,
+    ) -> dict:
+        """Agrega registros paginados via links.next da API v4."""
+        pagina = self.requisicao_get_sessao(user_session_token, url_inicial).json()
+        dados = list(pagina.get("data", []))
+        incluidos = list(pagina.get("included", []))
+
+        proxima_url = (pagina.get("links") or {}).get("next")
+        paginas = 1
+        while proxima_url and paginas < max_paginas:
+            pagina = self.requisicao_get_sessao(user_session_token, proxima_url).json()
+            dados.extend(pagina.get("data", []))
+            incluidos.extend(pagina.get("included", []))
+            proxima_url = (pagina.get("links") or {}).get("next")
+            paginas += 1
+
+        resultado = {"data": dados}
+        if incluidos:
+            resultado["included"] = incluidos
+        return resultado
 
     def requisicao_callix(self, cliente: str, token: str) -> dict:
         user_session_token = self.criar_sessao_usuario(cliente, token)
@@ -137,11 +168,6 @@ class CAllixRequisition:
                     self.url.url_campanhas_v4(cliente),
                     payload_campanhas_v4(),
                 ).json(),
-                "audit_logs": self.requisicao_get_sessao(
-                    user_session_token,
-                    self.url.url_audit_logs(cliente),
-                    payload_audit_campanhas(),
-                ).json(),
                 "outbound_routes": self.requisicao_get_sessao(
                     user_session_token,
                     self.url.url_outbound_routes(cliente),
@@ -152,19 +178,17 @@ class CAllixRequisition:
                     self.url.url_chamadas_completas_v4(cliente),
                     payload_rotas_chamadas_v4(data_iso),
                 ).json(),
-                "user_performance_histories": self.requisicao_get_sessao(
+                "user_performance_histories": self._paginar_get_sessao(
                     user_session_token,
                     self.conversor_de_url(
                         self.url.url_user_performance_histories(cliente)
                     ),
-                ).json(),
+                ),
             }
         finally:
             try:
                 self.encerrar_sessao_usuario(cliente, user_session_token)
             except Exception as erro:
-                log.warning(
-                    "Falha ao encerrar sessão Callix em %s: %s",
-                    cliente,
-                    erro,
+                self.http_request.extract_logger.log_conf.log_warning(
+                    f"Falha ao encerrar sessão Callix em {cliente}: {erro}"
                 )

@@ -1,121 +1,146 @@
+from __future__ import annotations
+
 import requests
-from src.rivex.utils.requests_utils.requests import HttpRequisitions
-from src.rivex.environments.discadores.vonix.payloads_vonix import *
 from bs4 import BeautifulSoup
 
-'''Classe feita para executar cada etapa do discador vonix contando com
-Login + TOKEN -> Filtragem + TOKEN -> Chamadas + TOKEN -> Agentes online + TOKEN -> Agressividade + TOKEN'''
+from src.rivex.domain.exceptions import ErroAutenticacao
+from src.rivex.environments.discadores.vonix.payloads_vonix import (
+    headers,
+    headers_operadores_cliente,
+    payload_de_agentes,
+    payload_de_agressividade,
+    payload_de_chamadas,
+    payload_de_filtragem,
+    payload_de_login,
+    payload_de_operadores_cliente,
+)
+from src.rivex.utils.requests_utils.requests import HttpRequisitions
+
 
 class GerarUrlVonix:
-    def __init__(self, url_base):
-        self.url_base = url_base
+    def __init__(self, url_base: str):
+        self.url_base = (url_base or "").rstrip("/")
 
-    def _url_login(self):
+    def _url_login(self) -> str:
         return f"{self.url_base}/login/signin"
-    
-    def _url_filtragem(self):
+
+    def _url_filtragem(self) -> str:
         return f"{self.url_base}/login/set_show_queue"
-    
-    def _url_get_agentes(self):
+
+    def _url_get_agentes(self) -> str:
         return f"{self.url_base}/agents/calls_overview"
-    
-    def _url_get_agressividade(self):
+
+    def _url_get_agressividade(self) -> str:
         return f"{self.url_base}/admin/queue_edit/"
-    
-    def _url_get_chamadas(self):
+
+    def _url_get_chamadas(self) -> str:
         return f"{self.url_base}/calls"
-    
-    def _url_techs(self):
+
+    def _url_techs(self) -> str:
         return f"{self.url_base}/admin/routes"
 
-    def _url_operadores_cliente(self):
+    def _url_operadores_cliente(self) -> str:
         return f"{self.url_base}/admin/agent_list"
-    
+
 
 class ExecucaoVonix:
-    def __init__(self, login, senha, data, url_base):
+    def __init__(self, login: str, senha: str, data: str, url_base: str):
         self.login = login
         self.senha = senha
         self.data = data
-        self.url_base = url_base
+        self.url_base = (url_base or "").rstrip("/")
         self.session = requests.Session()
-        self.url = GerarUrlVonix(url_base)
-        self.http_requisitions = HttpRequisitions(self.session)
+        self.url = GerarUrlVonix(self.url_base)
+        self.http_requisitions = HttpRequisitions(self.session, servico="vonix")
 
     def get_cookie(self):
-        return self.session.get(self.url._url_login())
-    
-    def get_html(self, pag):
-        return BeautifulSoup(pag, 'html.parser')
-    
-    def get_token(self, token):
-        token = token.find("input", {'name': "authenticity_token"})
-        
+        return self.http_requisitions.requisicao_get(
+            headers=headers(),
+            url=self.url._url_login(),
+            payload_get={},
+        )
+
+    def get_html(self, pag: str) -> BeautifulSoup:
+        return BeautifulSoup(pag, "html.parser")
+
+    def get_token(self, token_html: BeautifulSoup) -> str:
+        token = token_html.find("input", {"name": "authenticity_token"})
         if token is None:
             raise ValueError("Não foi encontrado o token de autenticidade do vonix!")
-        
         return token.get("value")
 
-    def login_vonix(self, token):
-        return self.http_requisitions.requisicao_post(payload_post=payload_de_login(self.login, self.senha, token), headers=headers(), url=self.url._url_login())
-    
+    def login_vonix(self, token: str) -> requests.Response:
+        resposta = self.http_requisitions.requisicao_post(
+            payload_post=payload_de_login(self.login, self.senha, token),
+            headers=headers(),
+            url=self.url._url_login(),
+        )
+        if "login/signin" in (resposta.url or "").lower():
+            raise ErroAutenticacao("Falha na autenticação do Vonix: credenciais inválidas.")
+        return resposta
 
-    def get_clientes_ambiente(self):
-        return self.http_requisitions.requisicao_get(payload_get={},
-                                                     headers={},
-                                                     url=self.url.url_base)
-        
-    
-    def get_filtragem(self, equipe, token):
-        # função que executa todo o processo de filtragem do vonix
-        return self.http_requisitions.requisicao_post(payload_de_filtragem(token, equipe), headers(), self.url._url_filtragem())
+    def get_clientes_ambiente(self) -> requests.Response:
+        resposta = self.http_requisitions.requisicao_get(
+            payload_get={},
+            headers={},
+            url=self.url.url_base,
+        )
+        if "login/signin" in (resposta.url or "").lower():
+            raise ErroAutenticacao("Sessão Vonix inválida ao consultar lista de clientes.")
+        return resposta
 
+    def get_filtragem(self, equipe: str, token: str) -> requests.Response:
+        resposta = self.http_requisitions.requisicao_post(
+            payload_de_filtragem(token, equipe),
+            headers(),
+            self.url._url_filtragem(),
+        )
+        if "login/signin" in (resposta.url or "").lower():
+            raise ErroAutenticacao(f"Sessão Vonix expirada ao filtrar cliente {equipe}.")
+        return resposta
 
     def get_chamadas(self, tipo_chamada: str | None = None):
-        return self.http_requisitions.requisicao_get(payload_get=payload_de_chamadas(self.data, tipo_chamada),
-                                                     headers=headers(),
-                                                     url=self.url._url_get_chamadas()
-                                                     )
+        return self.http_requisitions.requisicao_get(
+            payload_get=payload_de_chamadas(self.data, tipo_chamada),
+            headers=headers(),
+            url=self.url._url_get_chamadas(),
+        )
 
     def get_techs(self):
-        return self.http_requisitions.requisicao_get(payload_get={},
-                                                     headers=headers(),
-                                                     url=self.url._url_techs())
+        return self.http_requisitions.requisicao_get(
+            payload_get={},
+            headers=headers(),
+            url=self.url._url_techs(),
+        )
 
-    
     def get_agentes(self):
-        return self.http_requisitions.requisicao_get(payload_get=payload_de_agentes(self.data),
-                                    headers=headers(),
-                                    url=self.url._url_get_agentes())
+        return self.http_requisitions.requisicao_get(
+            payload_get=payload_de_agentes(self.data),
+            headers=headers(),
+            url=self.url._url_get_agentes(),
+        )
 
     def get_operadores_cliente(self, token=None):
         """Coleta a lista HTML de operadores vinculados ao(s) cliente(s) filtrado(s) na sessão."""
         return self.http_requisitions.requisicao_get(
             payload_get=payload_de_operadores_cliente(),
             headers=headers_operadores_cliente(self.url_base, token),
-            url=self.url._url_operadores_cliente()
+            url=self.url._url_operadores_cliente(),
         )
-    
-    def coleta_de_agressividade_vonix(self, cliente, token):
-        # função para coletar informações de agressividade por equipe     
-        return self.http_requisitions.requisicao_get(payload_get=payload_de_agressividade(token),
-                                          headers=headers(), 
-                                          url=f"{self.url._url_get_agressividade()}{cliente}")
 
-    def token_pronto(self):
-        """
-        FLUXO deve seguir uma ordem lógica, após o login a filtragem de clientes é fundamental
-        caso contrário o ambiente retorna o HTML da página de login
-        """
+    def coleta_de_agressividade_vonix(self, cliente: str, token: str):
+        return self.http_requisitions.requisicao_get(
+            payload_get=payload_de_agressividade(token),
+            headers=headers(),
+            url=f"{self.url._url_get_agressividade()}{cliente}",
+        )
+
+    def token_pronto(self) -> str:
         tokens = self.get_cookie()
         html_token = self.get_html(tokens.text)
-        token_vonix = self.get_token(html_token)
-        return token_vonix
-        
-    def get_clientes(self, token):
-        login = self.login_vonix(token)
+        return self.get_token(html_token)
+
+    def get_clientes(self, token: str) -> str:
+        self.login_vonix(token)
         clientes = self.get_clientes_ambiente()
         return clientes.text
-    
-
-        

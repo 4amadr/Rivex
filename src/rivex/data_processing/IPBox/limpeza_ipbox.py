@@ -1,60 +1,84 @@
-from bs4 import BeautifulSoup
-from urllib.parse import urlparse, parse_qs
-from html import unescape
-import re
+from __future__ import annotations
 
-def gerar_html(texto):
+import re
+import unicodedata
+from datetime import date
+from html import unescape
+from urllib.parse import parse_qs, urlparse
+
+from bs4 import BeautifulSoup
+
+from src.rivex.domain.registros import ClienteRegistro, OperadorRegistro
+
+
+def gerar_html(texto: str) -> BeautifulSoup:
     return BeautifulSoup(texto, "html.parser")
 
-def gerar_lista_clientes(html_agentes):
-    return html_agentes.find_all('tr', class_='linha1')
 
-def get_cliente(cliente_html):
-    return cliente_html.find('td', attrs={"nowrap": ""}).get_text()
+def gerar_lista_clientes(html_agentes: BeautifulSoup):
+    return html_agentes.find_all("tr", class_="linha1")
 
-def get_tech_cliente(cliente):
+
+def get_cliente(cliente_html) -> str:
+    return cliente_html.find("td", attrs={"nowrap": ""}).get_text()
+
+
+def get_tech_cliente(cliente: str) -> int:
     match = re.search(r"(\d{4})#(\d{2})", cliente)
-
     if not match:
         return 0
-
     return int(f"{match.group(1)}{match.group(2)}")
 
-def get_identificador(cliente_html):
+
+def get_identificador(cliente_html) -> str:
     href = cliente_html.find("a")["href"]
     return parse_qs(urlparse(href).query)["obj_fila_id"][0]
 
-def select_agressividade(select):
+
+def select_agressividade(select) -> str:
     return select.find("option", selected=True).get_text()
 
-def get_agressividade(agressividade_html):
-    agressividade_html = gerar_html(agressividade_html)
-    select = agressividade_html.find('select', id='obj_fila_valor_overdial')
-    return select_agressividade(select)
 
-def get_chamadas_totais_cliente(chamadas_json):
-    return chamadas_json.get('data', {}).get('resultado', {}).get('total', {}).get('qtd', 0)
-    
-def get_chamadas_completas_cliente(chamadas_json):
-    return chamadas_json.get('data', {}).get('resultado', {}).get('ATENDIDO', {}).get('qtd', 0)
+def get_agressividade(agressividade_html: str) -> float:
+    soup = gerar_html(agressividade_html)
+    select = soup.find("select", id="obj_fila_valor_overdial")
+    if select is None:
+        return 0.0
+    valor = select_agressividade(select).strip().replace(",", ".")
+    return float(valor) if valor else 0.0
 
 
-def get_chamadas_recusadas_cliente(chamadas_json):
-    ocupado = int(chamadas_json.get('data', {}).get('resultado', {}).get('OCUPADO', {}).get('qtd', 0))
-    sem_resposta = int(chamadas_json.get('data', {}).get('resultado', {}).get('SEM_RESPOSTA', {}).get('qtd', 0))
-    desconhecido = int(chamadas_json.get('data', {}).get('resultado', {}).get('DESCONHECIDO', {}).get('qtd', 0))
-    
+def get_chamadas_totais_cliente(chamadas_json: dict) -> int:
+    return int(chamadas_json.get("data", {}).get("resultado", {}).get("total", {}).get("qtd", 0) or 0)
+
+
+def get_chamadas_completas_cliente(chamadas_json: dict) -> int:
+    return int(chamadas_json.get("data", {}).get("resultado", {}).get("ATENDIDO", {}).get("qtd", 0) or 0)
+
+
+def get_chamadas_recusadas_cliente(chamadas_json: dict) -> int:
+    resultado = chamadas_json.get("data", {}).get("resultado", {})
+    ocupado = int(resultado.get("OCUPADO", {}).get("qtd", 0) or 0)
+    sem_resposta = int(resultado.get("SEM_RESPOSTA", {}).get("qtd", 0) or 0)
+    desconhecido = int(resultado.get("DESCONHECIDO", {}).get("qtd", 0) or 0)
     return ocupado + sem_resposta + desconhecido
 
-def get_chamadas_abandonadas_cliente(chamadas_json):
-    return chamadas_json.get('data', {}).get('resultado', {}).get('CONGESTIONADO', {}).get('qtd', 0)
+
+def get_chamadas_abandonadas_cliente(chamadas_json: dict) -> int:
+    return int(chamadas_json.get("data", {}).get("resultado", {}).get("CONGESTIONADO", {}).get("qtd", 0) or 0)
 
 
-def limpar_nome_cliente(time):
-    return unescape(time).split(" - ", 1)[0]
+def limpar_nome_cliente(time_nome: str) -> str:
+    return unescape(time_nome).split(" - ", 1)[0].strip()
 
 
-def get_operadores(operadores_html):
+def normalizar_nome_comparacao(nome: str) -> str:
+    texto = unicodedata.normalize("NFD", unescape(nome or ""))
+    sem_acento = "".join(c for c in texto if unicodedata.category(c) != "Mn")
+    return re.sub(r"\s+", " ", sem_acento).strip().lower()
+
+
+def get_operadores(operadores_html: str) -> list[str]:
     soup = gerar_html(operadores_html)
     container = soup.find(id="gridUsuarios") or soup.find(id="intGridUsuarios")
     if not container:
@@ -68,40 +92,46 @@ def get_operadores(operadores_html):
                 operadores.append(colunas[0].get_text(strip=True))
     return list(dict.fromkeys(operadores))
 
-def empacotar_dados_clientes(chamadas_json, cliente, data, agressividade, operadores):
-    return {
-        "tech": get_tech_cliente(cliente),
-        "cliente_nome": cliente,
-        "data": data,
-        "chamadas": get_chamadas_totais_cliente(chamadas_json),
-        "completas": get_chamadas_completas_cliente(chamadas_json),
-        "recusadas": get_chamadas_recusadas_cliente(chamadas_json),
-        "abandonadas": get_chamadas_abandonadas_cliente(chamadas_json),
-        "agressividade": get_agressividade(agressividade),
-        "operadores": get_operadores(operadores)
-    }
-    
-def chamadas_agente(agente):
-    if agente == "-":
+
+def empacotar_dados_clientes(
+    chamadas_json: dict,
+    cliente: str,
+    data: date,
+    agressividade: str,
+    operadores: str,
+) -> ClienteRegistro:
+    operadores_lista = get_operadores(operadores)
+    return ClienteRegistro(
+        discador="IPBox",
+        tech=get_tech_cliente(cliente),
+        cliente=cliente,
+        data=data,
+        chamadas=get_chamadas_totais_cliente(chamadas_json),
+        aceitas=get_chamadas_completas_cliente(chamadas_json),
+        recusadas=get_chamadas_recusadas_cliente(chamadas_json),
+        abandonadas=get_chamadas_abandonadas_cliente(chamadas_json),
+        agressividade=get_agressividade(agressividade),
+        operadores_contratados=len(operadores_lista),
+    )
+
+
+def chamadas_agente(agente_atendimentos: str | int) -> int:
+    if agente_atendimentos == "-" or agente_atendimentos is None:
         return 0
-    
-    else:
-        return int(agente)
-
-    
-def empacotar_dados_agentes(agente, cliente, data):
-    return {
-        "tech": get_tech_cliente(cliente),
-        "cliente_nome": cliente,
-        "data": data,
-        "nome_agente": agente["agente"],
-        "chamadas_agente": chamadas_agente(agente["atendimentos"])
-    }
-     
-    
-    
+    return int(agente_atendimentos)
 
 
-
-    
-
+def empacotar_dados_agentes(
+    agente: dict,
+    cliente_reg: ClienteRegistro,
+    data: date,
+) -> OperadorRegistro:
+    return OperadorRegistro(
+        id=cliente_reg.id,
+        discador="IPBox",
+        tech=cliente_reg.tech,
+        cliente=cliente_reg.cliente,
+        data=data,
+        nome_operador=agente["agente"],
+        chamada_aceita=chamadas_agente(agente.get("atendimentos")),
+    )

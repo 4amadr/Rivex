@@ -1,13 +1,14 @@
-import logging
 import re
 import unicodedata
+from decimal import Decimal
+from src.rivex.utils.logging_config import TransformLogger
 
-log = logging.getLogger(__name__)
+_transform_log = TransformLogger("callix")
 
 
 def limpar_chamadas_agentes(json_agentes: dict) -> list[dict]:
     if "included" not in json_agentes:
-        log.debug("Sem dados de agentes na resposta da API")
+        _transform_log.log_conf.log.debug("Sem dados de agentes na resposta da API")
         return []
 
     usuarios = {
@@ -17,7 +18,7 @@ def limpar_chamadas_agentes(json_agentes: dict) -> list[dict]:
     }
 
     if not usuarios:
-        log.debug("Nenhum usuario encontrado em included")
+        _transform_log.log_conf.log.debug("Nenhum usuario encontrado em included")
         return []
 
     resultado = []
@@ -101,29 +102,6 @@ def limpar_agressividade(campanhas: dict) -> float:
     return round(sum(valores) / len(valores), 2) if valores else 0.0
 
 
-def extrair_historico_agressividade(audit_logs: dict) -> list:
-    historico = []
-
-    for registro in audit_logs.get("data", []):
-        attributes = registro.get("attributes", {})
-        alteracoes = attributes.get("propertiesChanged", {})
-        serialized = alteracoes.get("$serialized", {})
-
-        agressividade = serialized.get("powerAggressiveness", {})
-        if not agressividade:
-            agressividade = alteracoes.get("powerAggressiveness", {})
-
-        valor = agressividade.get("value")
-        if valor is not None:
-            historico.append({
-                "valor": valor,
-                "data": attributes.get("createdAt"),
-                "campanha": attributes.get("modelId"),
-            })
-
-    return historico
-
-
 def mapear_rotas(outbound_routes: dict) -> dict:
     return {
         rota.get("id"): rota.get("attributes", {}).get("name")
@@ -157,10 +135,17 @@ def extrair_tech_rotas(rotas_utilizadas: list) -> str | None:
     return None
 
 
+def _formatar_rotas_cliente(rotas_utilizadas: list[dict]) -> str | None:
+    nomes = [r["rota"] for r in rotas_utilizadas if r.get("rota")]
+    if not nomes:
+        return None
+    unicos = list(dict.fromkeys(nomes))
+    return ", ".join(unicos)
+
+
 def limpeza_req_callix(dados_brutos_req: dict) -> dict:
     accounts = dados_brutos_req.get("accounts") or {}
     campanhas = dados_brutos_req.get("campanhas") or {}
-    audit_logs = dados_brutos_req.get("audit_logs") or {}
     outbound_routes = dados_brutos_req.get("outbound_routes") or {}
     chamadas_completas = dados_brutos_req.get("chamadas_completas") or {}
     user_performance_histories = (
@@ -168,7 +153,6 @@ def limpeza_req_callix(dados_brutos_req: dict) -> dict:
     )
 
     agressividade = limpar_agressividade(campanhas)
-    historico_agressividade = extrair_historico_agressividade(audit_logs)
     chamadas_agentes = limpar_chamadas_agentes(user_performance_histories)
 
     mapa_rotas = mapear_rotas(outbound_routes)
@@ -181,15 +165,19 @@ def limpeza_req_callix(dados_brutos_req: dict) -> dict:
     operadores = (
         extrair_operadores_contratados(accounts)
         if accounts.get("data")
-        else {"operadores_contratados": None, "valor_operador": None}
+        else {"operadores_contratados": 0, "valor_operador": 0}
     )
+    operadores_contratados = int(operadores.get("operadores_contratados") or 0)
+    valor_operador = Decimal(str(operadores.get("valor_operador") or 0))
+    valor_cliente = (Decimal(operadores_contratados) * valor_operador).quantize(Decimal("0.01"))
 
     return {
         "agressividade": agressividade,
-        "historico_agressividade": historico_agressividade,
         "chamadas_agentes": chamadas_agentes,
         "tech": tech,
         "rotas_utilizadas": rotas_utilizadas,
-        "operadores_contratados": operadores["operadores_contratados"],
-        "valor_operador": operadores["valor_operador"],
+        "rota_cliente": _formatar_rotas_cliente(rotas_utilizadas),
+        "operadores_contratados": operadores_contratados,
+        "valor_operador": valor_operador,
+        "valor_cliente": valor_cliente,
     }

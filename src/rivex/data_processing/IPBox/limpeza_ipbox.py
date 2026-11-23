@@ -16,7 +16,7 @@ def gerar_html(texto: str) -> BeautifulSoup:
 
 
 def gerar_lista_clientes(html_agentes: BeautifulSoup):
-    return html_agentes.find_all("tr", class_="linha1")
+    return html_agentes.find_all("tr", class_=["linha1", "linha2"])
 
 
 def get_cliente(cliente_html) -> str:

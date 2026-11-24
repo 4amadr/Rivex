@@ -10,6 +10,10 @@ class ErroAutenticacao(RivexError):
     """Falha ao autenticar no discador ou sessão expirada/inválida."""
 
 
+class ErroTechNaoEncontrada(RivexError):
+    """Falha ao resolver uma tech válida e imutável para a equipe."""
+
+
 class ErroHttpDiscador(RivexError):
     """Erro HTTP retornado pelo discador após esgotar tentativas aplicáveis."""
 

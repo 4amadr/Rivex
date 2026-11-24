@@ -59,6 +59,11 @@ class ClienteRegistro(BaseModel):
     @model_validator(mode="after")
     def _garantir_tech_ou_id(self) -> "ClienteRegistro":
         if self.tech == 0:
+            if self.discador == "Vonix":
+                raise ValueError(
+                    "Campo 'tech' deve ser maior que zero para registros Vonix "
+                    "(fallback randômico desabilitado)."
+                )
             object.__setattr__(self, "tech", self.id)
         return self
 
@@ -96,6 +101,11 @@ class OperadorRegistro(BaseModel):
     @model_validator(mode="after")
     def _garantir_tech_ou_id(self) -> "OperadorRegistro":
         if self.tech == 0:
+            if self.discador == "Vonix":
+                raise ValueError(
+                    "Campo 'tech' deve ser maior que zero para registros Vonix "
+                    "(fallback randômico desabilitado)."
+                )
             object.__setattr__(self, "tech", self.id)
         return self
 

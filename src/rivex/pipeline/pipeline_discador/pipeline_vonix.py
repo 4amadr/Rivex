@@ -10,13 +10,13 @@ from src.rivex.data_processing.Vonix.cleaning_vonix import (
     dict_agentes,
     gerar_lista_de_clientes,
     get_agressividade,
-    get_lista_techs,
-    get_tech_vez,
     limpar_chamadas,
+    resolver_tech_vonix,
 )
 from src.rivex.data_processing.Vonix.fluxo_limpeza import LimpezaVonix
 from src.rivex.database.config_database import conexao_rivex
 from src.rivex.database.database_vonix.database_vonix import DatabaseVonix
+from src.rivex.database.database_vonix.database_vonix_clientes import DatabaseClientesVonix
 from src.rivex.domain.exceptions import ErroAutenticacao
 from src.rivex.domain.registros import ClienteRegistro, OperadorRegistro, ResumoExecucao
 from src.rivex.environments.discadores.vonix.fluxo_coleta import ExecucaoVonix
@@ -77,20 +77,14 @@ class PipelineVonix:
         abandonadas,
         recusadas,
         config,
-        lista_techs: list[dict],
-    ) -> ClienteRegistro:
+        mapa_techs: dict[str, int],
+    ) -> tuple[ClienteRegistro, bool]:
         chamadas_totais = limpar_chamadas(totais.text)
         chamadas_aceitas = limpar_chamadas(aceitas.text)
         chamadas_abandonadas = limpar_chamadas(abandonadas.text)
         chamadas_recusadas = limpar_chamadas(recusadas.text)
         agressividade = get_agressividade(config.text)
-        tech = get_tech_vez(lista_techs, cliente)
-
-        if tech == 0:
-            self.log.aviso(
-                "Tech não identificada no Vonix; ID randômico será atribuído ao cliente",
-                cliente=cliente,
-            )
+        tech, nova_tech = resolver_tech_vonix(cliente, config.text, mapa_techs)
 
         dados_cliente = ClienteRegistro(
             discador="Vonix",
@@ -105,7 +99,7 @@ class PipelineVonix:
         )
 
         self.transform_log.registrar_limpeza_chamadas(dados_cliente)
-        return dados_cliente
+        return dados_cliente, nova_tech
 
     def execucao_limpeza_agentes_vonix(
         self, cliente_reg: ClienteRegistro, agentes, data: date
@@ -119,9 +113,17 @@ class PipelineVonix:
 
         self.log.inicio("Iniciando configuração do servidor Vonix", data=str(self.data_ref))
         registros_para_persistir: list[tuple[ClienteRegistro, list[OperadorRegistro]]] = []
+        novas_techs_para_registrar: dict[str, int] = {}
         assinaturas_vistas: set[tuple] = set()
         falhas: list[str] = []
         total_clientes = 0
+        mapa_techs: dict[str, int] = {}
+
+        if self.usar_db:
+            db_settings = self.settings.db if self.settings is not None else None
+            with conexao_rivex(db_settings) as conn:
+                db_clientes = DatabaseClientesVonix(conexao_compartilhada=conn)
+                mapa_techs = db_clientes.carregar_mapa_techs()
 
         try:
             clientes_validos, token = self.inicial_config()
@@ -130,8 +132,6 @@ class PipelineVonix:
                     "Nenhum cliente encontrado no Vonix (lista vazia ou sessão inválida)."
                 )
 
-            tech_html = self.vonix_execucao.get_techs()
-            lista_techs = get_lista_techs(tech_html.text)
             total_clientes = len(clientes_validos)
 
             for idx, cliente_selecionado in enumerate(clientes_validos):
@@ -140,15 +140,18 @@ class PipelineVonix:
                     response_dict = self.get_dados_sujos(cliente_selecionado, token)
                     self.log.etapa("Iniciando coleta do cliente", cliente=cliente_selecionado)
 
-                    cliente_reg = self.execucao_limpeza_chamadas_vonix(
+                    cliente_reg, nova_tech = self.execucao_limpeza_chamadas_vonix(
                         cliente_selecionado,
                         response_dict["Totais"],
                         response_dict["Aceitas"],
                         response_dict["Abandonadas"],
                         response_dict["Recusadas"],
                         response_dict["config"],
-                        lista_techs,
+                        mapa_techs,
                     )
+                    if nova_tech:
+                        mapa_techs[cliente_selecionado] = cliente_reg.tech
+                        novas_techs_para_registrar[cliente_selecionado] = cliente_reg.tech
 
                     assinatura = (
                         cliente_reg.tech,
@@ -197,9 +200,13 @@ class PipelineVonix:
                 sessao.close()
 
         persistidos = 0
-        if self.usar_db and registros_para_persistir:
+        if self.usar_db and (registros_para_persistir or novas_techs_para_registrar):
             db_settings = self.settings.db if self.settings is not None else None
             with conexao_rivex(db_settings) as conn:
+                if novas_techs_para_registrar:
+                    db_clientes = DatabaseClientesVonix(conexao_compartilhada=conn)
+                    for equipe, tech in novas_techs_para_registrar.items():
+                        db_clientes.registrar_tech(equipe, tech)
                 db = DatabaseVonix(conexao_compartilhada=conn)
                 for cliente_reg, agentes in registros_para_persistir:
                     try:

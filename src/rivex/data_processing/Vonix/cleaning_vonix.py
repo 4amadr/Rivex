@@ -1,11 +1,12 @@
 from __future__ import annotations
 
 import re
-import unicodedata
 from datetime import date
+from typing import Mapping, Optional
 
 from bs4 import BeautifulSoup
 
+from src.rivex.domain.exceptions import ErroTechNaoEncontrada
 from src.rivex.domain.registros import ClienteRegistro, OperadorRegistro
 
 
@@ -157,60 +158,46 @@ def dict_agentes(
     return gerar_dados_agentes(lista_infos, cliente_reg, data)
 
 
-def get_lista_techs(tech_html: str) -> list[dict]:
-    tech_convertida = get_html(tech_html)
-    select = tech_convertida.find("select", {"id": "lcr_profile"})
+def extrair_tech_queue_edit(config_html: str) -> Optional[int]:
+    """Extrai a Tech diretamente de ``<select id="queue_lcr_profile_id">`` em ``/admin/queue_edit/{cliente}``."""
+    soup = get_html(config_html)
+    select = soup.find("select", id="queue_lcr_profile_id")
     if select is None:
-        return []
+        return None
 
-    clientes = []
-    for option in select.find_all("option"):
-        value = option.get("value", "")
-        text = option.get_text(strip=True)
-        match = re.match(r"^(\d{4}#\d{2})\s*[-–]\s*(.+)$", text)
-        if match:
-            clientes.append(
-                {
-                    "lcr_profile_id": value,
-                    "tech": match.group(1),
-                    "nome": match.group(2).strip(),
-                }
-            )
-    return clientes
+    option_selected = select.find("option", selected=True)
+    if option_selected is None:
+        return None
+
+    texto = option_selected.get_text(strip=True)
+    match = re.match(r"^(\d{4})#(\d{2})(?:\b|\s|[-–])", texto)
+    if not match:
+        return None
+
+    return int(f"{match.group(1)}{match.group(2)}")
 
 
-def tratar_nome_cliente(cliente: str) -> str:
-    cliente = (cliente or "").lower()
-    cliente = "".join(
-        c for c in unicodedata.normalize("NFD", cliente) if unicodedata.category(c) != "Mn"
+def resolver_tech_vonix(
+    cliente: str,
+    config_html: str,
+    mapa_techs: Mapping[str, int],
+) -> tuple[int, bool]:
+    """Resolve a Tech imutável da equipe Vonix sem fallback para 0 ou ID randômico.
+
+    Prioridade:
+    1. Vínculo persistido em ``clientes.clientes_vonix`` (imutável).
+    2. Perfil LCR direto em ``/admin/queue_edit/{cliente}`` (sinaliza registro automático).
+    3. Caso ausente em ambos, levanta ``ErroTechNaoEncontrada``.
+    """
+    tech_salva = mapa_techs.get(cliente)
+    if tech_salva is not None and int(tech_salva) > 0:
+        return int(tech_salva), False
+
+    tech_extraida = extrair_tech_queue_edit(config_html)
+    if tech_extraida is not None and tech_extraida > 0:
+        return tech_extraida, True
+
+    raise ErroTechNaoEncontrada(
+        f"Tech não encontrada para a equipe Vonix '{cliente}' em "
+        "clientes.clientes_vonix nem no perfil LCR de /admin/queue_edit."
     )
-    cliente = cliente.replace("tarifado", "")
-    cliente = cliente.replace("manual", "")
-    cliente = cliente.replace(" e ", "")
-    cliente = re.sub(r"[^a-z0-9]", "", cliente)
-    cliente = re.sub(r"\d+$", "", cliente)
-    return cliente
-
-
-def get_tech_vez(lista_techs: list[dict], cliente: str) -> int:
-    """Resolve a Tech por igualdade normalizada ou correspondência unívoca; retorna 0 se ambígua/ausente."""
-    cliente_norm = tratar_nome_cliente(cliente)
-    if not cliente_norm:
-        return 0
-
-    for tech in lista_techs:
-        nome_tech = tratar_nome_cliente(tech["nome"])
-        if nome_tech and cliente_norm == nome_tech:
-            return int(tech["tech"].replace("#", ""))
-
-    candidatos = [
-        int(tech["tech"].replace("#", ""))
-        for tech in lista_techs
-        if (nome_tech := tratar_nome_cliente(tech["nome"]))
-        and (cliente_norm in nome_tech or nome_tech in cliente_norm)
-    ]
-    unicos = list(dict.fromkeys(candidatos))
-    if len(unicos) == 1:
-        return unicos[0]
-
-    return 0

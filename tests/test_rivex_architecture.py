@@ -11,8 +11,12 @@ from src.rivex.data_processing.IPBox.limpeza_ipbox import (
     empacotar_dados_agentes,
     empacotar_dados_clientes,
 )
-from src.rivex.data_processing.Vonix.cleaning_vonix import get_tech_vez
-from src.rivex.domain.exceptions import ErroAutenticacao, ErroHttpDiscador
+from src.rivex.data_processing.Vonix.cleaning_vonix import resolver_tech_vonix
+from src.rivex.domain.exceptions import (
+    ErroAutenticacao,
+    ErroHttpDiscador,
+    ErroTechNaoEncontrada,
+)
 from src.rivex.domain.registros import ClienteRegistro, OperadorRegistro, ResumoExecucao
 from src.rivex.environments.discadores.Callix.callix_req import CAllixRequisition
 from src.rivex.environments.discadores.IPBox.colect_ipbox import IpboxInit
@@ -90,9 +94,9 @@ def test_http_4xx_levanta_erro_tipado_sem_retry(status_code: int):
     assert session.request.call_count == 1
 
 
-def test_pydantic_cliente_sem_tech_gera_id_5_digitos_e_casa_com_operador():
+def test_pydantic_cliente_sem_tech_gera_id_5_digitos_para_ipbox_e_rejeita_vonix():
     cliente = ClienteRegistro(
-        discador="Vonix",
+        discador="IPBox",
         tech=0,
         cliente="cliente_sem_tech",
         data=date(2026, 11, 17),
@@ -107,7 +111,7 @@ def test_pydantic_cliente_sem_tech_gera_id_5_digitos_e_casa_com_operador():
 
     operador = OperadorRegistro(
         id=cliente.id,
-        discador="Vonix",
+        discador="IPBox",
         tech=cliente.tech,
         cliente=cliente.cliente,
         data=cliente.data,
@@ -116,6 +120,19 @@ def test_pydantic_cliente_sem_tech_gera_id_5_digitos_e_casa_com_operador():
     )
     assert operador.id == cliente.id
     assert operador.tech == cliente.tech
+
+    with pytest.raises(ValueError, match="Vonix"):
+        ClienteRegistro(
+            discador="Vonix",
+            tech=0,
+            cliente="cliente_sem_tech",
+            data=date(2026, 11, 17),
+            chamadas=10,
+            aceitas=5,
+            recusadas=3,
+            abandonadas=2,
+            agressividade=1.5,
+        )
 
 
 def test_ipbox_empacotar_operadores_contratados_e_id_casado():
@@ -187,14 +204,28 @@ def test_login_invalido_ipbox_e_vonix_levantam_erro_autenticacao():
         vonix.login_vonix("tok")
 
 
-def test_vonix_get_tech_vez_exato_e_ambiguo():
-    techs = [
-        {"tech": "1010#01", "nome": "Real Promotora"},
-        {"tech": "1010#02", "nome": "Real Cred"},
-    ]
-    assert get_tech_vez(techs, "realpromotora") == 101001
-    # "real" casa com duas techs -> não adivinha, retorna 0 para acionar ID randômico
-    assert get_tech_vez(techs, "real") == 0
+def test_vonix_resolver_tech_direto_imutavel_e_sem_fallback():
+    html_lcr = """
+    <select id="queue_lcr_profile_id">
+      <option value="18">Venditore</option>
+      <option value="45" selected="selected">1404#01 - TC Representação</option>
+    </select>
+    """
+    html_compartilhada = """
+    <select id="queue_lcr_profile_id">
+      <option value="18" selected="selected">Venditore</option>
+    </select>
+    """
+    # Descoberta direta pelo queue_lcr_profile_id
+    assert resolver_tech_vonix("tcrepresentacao", html_lcr, {}) == (140401, True)
+    # Vínculo imutável em clientes.clientes_vonix prevalece mesmo se rota mudar para Venditore
+    assert resolver_tech_vonix("realpromotora", html_compartilhada, {"realpromotora": 101001}) == (
+        101001,
+        False,
+    )
+    # Sem cadastro e sem perfil com tech -> erro explícito (sem retornar 0)
+    with pytest.raises(ErroTechNaoEncontrada):
+        resolver_tech_vonix("serrana", html_compartilhada, {})
 
 
 def test_main_retorna_exit_code_1_quando_pipeline_falha():

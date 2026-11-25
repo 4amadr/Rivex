@@ -1,9 +1,13 @@
-def payload_de_login(username, password, token):
+from src.rivex.config.settings import CredenciaisVonix
+
+load_vonix = CredenciaisVonix()
+
+def payload_de_login(token):
     payload_login = {
         'authenticity_token': token,
         'return_to': '',
-        'username': username,
-        'password': password,
+        'username': load_vonix.usuario,
+        'password': load_vonix.senha,
         'commit': 'Entrar'
     }
 

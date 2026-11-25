@@ -1,27 +1,31 @@
-class RivexError(Exception):
-    """Exceção base para falhas de domínio e infraestrutura do Rivex."""
+from src.rivex.utils.logging_config.logging_config import *
+
+class ErroHttpDiscador:
+    def __init__(self) -> None:
+        self.log = LoggingConfig('Req', 'HTTP', 0)
+        pass
 
 
-class ErroConfiguracao(RivexError):
-    """Variáveis de ambiente obrigatórias ausentes ou inválidas."""
+    def acesso_restrito(self, status_code, url):
+        if status_code in(401, 403):
+            self.log.log_erro(url, '[REQ]', 'Acesso restrito, verifique o token de acesso')
 
+    def erro_cliente(self, status_code, url):
+        if status_code in(400, 404, 422):
+            self.log.log_erro(url, '[REQ]', 'Erro de envio de dados')
 
-class ErroAutenticacao(RivexError):
-    """Falha ao autenticar no discador ou sessão expirada/inválida."""
+    def req_bloqueada(self, status_code):
+        if status_code == 429:
+            self.log.log_info('[REQ]', 'Servidor bloqueado por excesso de requisições. Realizando retry...')
 
+    def erro_servidor(self, status_code, url):
+        if status_code in(500, 502, 503, 504):
+            self.log.log_erro(url, '[REQ]', 'Erro de servidor, Realizando Retry...')
 
-class ErroTechNaoEncontrada(RivexError):
-    """Falha ao resolver uma tech válida e imutável para a equipe."""
-
-
-class ErroHttpDiscador(RivexError):
-    """Erro HTTP retornado pelo discador após esgotar tentativas aplicáveis."""
-
-    def __init__(self, status_code: int, url: str, mensagem: str = ""):
-        self.status_code = status_code
-        self.url = url
-        self.mensagem = mensagem
-        detalhe = f"HTTP {status_code} em {url}"
-        if mensagem:
-            detalhe = f"{detalhe}: {mensagem}"
-        super().__init__(detalhe)
+    def analisar_erros(self, status_code: int, url: str):
+        self.acesso_restrito(status_code, url)
+        self.erro_cliente(status_code, url)
+        self.req_bloqueada(status_code)
+        self.erro_servidor(status_code, url)
+    
+            

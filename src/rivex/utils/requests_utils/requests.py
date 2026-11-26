@@ -1,32 +1,49 @@
 from __future__ import annotations
 
-import requests
-from src.rivex.domain.exceptions import ErroHttpDiscador
-from src.rivex.utils.logging_config import ExtractLogger
+from typing import Any
 
+import requests
 
 
 class HttpRequisitions:
-    def __init__(self, session, servico):
+    def __init__(self, session: requests.Session, servico: str, timeout: int = 20):
         self.servico = servico
-        self.erro_http = ErroHttpDiscador()
         self.session = session
+        self.timeout = timeout
 
-    def requisicao(self, url, headers, get: bool, payload: None):
-
-        if get is True:
-            req = self.session.get(url=url, headers=headers, params=payload, timeout=20)
-        else: 
-            req = self.session.post(url=url, headers=headers, params=payload, timeout=20)
-
-        if req.status_code == 200:
-            return req
+    def requisicao(
+        self,
+        url: str,
+        method: str = "GET",
+        headers: dict[str, str] | None = None,
+        payload: dict[str, Any] | None = None,
+    ) -> requests.Response:
+        http_method = method.upper()
+        kwargs: dict[str, Any] = {
+            "headers": headers,
+            "timeout": self.timeout,
+        }
+        if http_method == "GET":
+            kwargs["params"] = payload
         else:
-            self.erro_http.analisar_erros(req.status_code, url)
+            kwargs["data"] = payload
 
-    def req_get(self, url, headers, payload):
-        return self.requisicao(url, headers, True, payload)
+        return self.session.request(method=http_method, url=url, **kwargs)
 
-    def req_post(self, url, headers, payload):
-        return self.requisicao(url, headers, False, payload)
+    def req_get(
+        self,
+        url: str,
+        headers: dict[str, str] | None = None,
+        payload: dict[str, Any] | None = None,
+    ) -> requests.Response:
+        return self.requisicao(url=url, method="GET", headers=headers, payload=payload)
+
+    def req_post(
+        self,
+        url: str,
+        headers: dict[str, str] | None = None,
+        payload: dict[str, Any] | None = None,
+    ) -> requests.Response:
+        return self.requisicao(url=url, method="POST", headers=headers, payload=payload)
+
 
